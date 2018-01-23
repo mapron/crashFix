@@ -13,6 +13,6 @@ endif(UNIX)
 add_executable(daemon_tests ${source_files})
 target_link_libraries(daemon_tests libdumper libtest)
 if(WIN32)
-target_link_libraries(daemon_tests ws2_32.lib libtest)
+target_link_libraries(daemon_tests ws2_32.lib psapi.lib libtest)
 endif(WIN32)
 

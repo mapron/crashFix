@@ -15,16 +15,15 @@ if(UNIX)
 else(UNIX)
 	ADD_MSVC_PRECOMPILED_HEADER("stdafx.h" "stdafx.cpp" source_files)
 endif(UNIX)
-
 add_executable(daemon ${source_files})
 target_link_libraries(daemon libdumper ${CMAKE_DL_LIBS})
 if(WIN32)
-target_link_libraries(daemon ws2_32.lib libeay32.lib)
+target_link_libraries(daemon ws2_32.lib psapi.lib)
 endif(WIN32)
 
 set_target_properties(daemon PROPERTIES OUTPUT_NAME crashfixd)
 
 if(UNIX)
-install(TARGETS daemon 
-        DESTINATION /usr/sbin/)
+install(TARGETS daemon
+		DESTINATION /usr/sbin/)
 endif(UNIX)

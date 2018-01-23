@@ -12,6 +12,7 @@
 #include <conio.h>
 
 #include <atlbase.h>
+#include <atltypes.h>
 #include <atlapp.h>
 extern CAppModule _Module;
 #define _WTL_NO_CSTRING
