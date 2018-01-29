@@ -30,13 +30,13 @@ CPdbReader::CPdbReader()
 
 CPdbReader::~CPdbReader()
 {
-	Destroy();
+    Destroy();
 }
 
 
 BOOL CPdbReader::Init(std::wstring sFileName)
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
 
     // If already initialized, destroy
     if(m_bInitialized)
@@ -51,7 +51,7 @@ BOOL CPdbReader::Init(std::wstring sFileName)
         return FALSE; // Error reading DBI stream
 
     m_bAMD64 = pDBI->GetMachineType()==34404;
-	
+
     // Save file name
     m_sFileName = sFileName;
 
@@ -63,13 +63,13 @@ BOOL CPdbReader::Init(std::wstring sFileName)
 
 BOOL CPdbReader::IsInitialized()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     return m_bInitialized;
 }
 
 void CPdbReader::Destroy()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
 
     if(!m_bInitialized)
         return; // Not initialized yet
@@ -133,7 +133,7 @@ void CPdbReader::Destroy()
         m_pSymbolStream = NULL;
     }
 
-	// Clear section map stream
+    // Clear section map stream
     if(m_pSectionMapStream)
     {
         delete m_pSectionMapStream;
@@ -152,25 +152,25 @@ void CPdbReader::Destroy()
     // Destroy raw MSF file reader
     m_MsfFile.Destroy();
 
-	m_bInitialized = FALSE;
+    m_bInitialized = FALSE;
 }
 
 std::wstring CPdbReader::GetFileName()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     return m_sFileName;
 }
 
 CPdbHeadersStream* CPdbReader::GetHeadersStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(NULL==m_pHeadersStream)
     {
         // Init headers stream (#1)
         BOOL bResult = FALSE;
         m_pHeadersStream = new CPdbHeadersStream(this, m_MsfFile.GetStream(PDB_STREAM_PDB), &bResult);
         if(!bResult || !m_pHeadersStream)
-            return NULL; 
+            return NULL;
     }
 
     // Return pointer to PDB headers stream.
@@ -179,14 +179,14 @@ CPdbHeadersStream* CPdbReader::GetHeadersStream()
 
 CPdbTypeInfoStream* CPdbReader::GetTypeInfoStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(NULL==m_pTypeInfoStream)
     {
         // Init type info stream (#2)
         BOOL bResult = FALSE;
         m_pTypeInfoStream = new CPdbTypeInfoStream(this, m_MsfFile.GetStream(PDB_STREAM_TPI), &bResult);
         if(!bResult || !m_pTypeInfoStream)
-            return NULL; 
+            return NULL;
     }
 
     // Return pointer to type info stream.
@@ -195,14 +195,14 @@ CPdbTypeInfoStream* CPdbReader::GetTypeInfoStream()
 
 CPdbDebugInfoStream* CPdbReader::GetDebugInfoStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(NULL==m_pDebugInfoStream)
     {
         // Init debug info stream (#3)
         BOOL bResult = FALSE;
-        m_pDebugInfoStream = new CPdbDebugInfoStream(this, m_MsfFile.GetStream(PDB_STREAM_DBI), &bResult);  
+        m_pDebugInfoStream = new CPdbDebugInfoStream(this, m_MsfFile.GetStream(PDB_STREAM_DBI), &bResult);
         if(!bResult || !m_pDebugInfoStream)
-            return NULL; 
+            return NULL;
     }
 
     // Return pointer to debug info stream.
@@ -211,14 +211,14 @@ CPdbDebugInfoStream* CPdbReader::GetDebugInfoStream()
 
 CPdbLinkInfoStream* CPdbReader::GetLinkInfoStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(NULL==m_pLinkInfoStream)
     {
         // Init link info stream (#4)
         BOOL bResult = FALSE;
-        m_pLinkInfoStream = new CPdbLinkInfoStream(this, m_MsfFile.GetStream(PDB_STREAM_LNK), &bResult);  
+        m_pLinkInfoStream = new CPdbLinkInfoStream(this, m_MsfFile.GetStream(PDB_STREAM_LNK), &bResult);
         if(!bResult || !m_pLinkInfoStream)
-            return NULL; 
+            return NULL;
     }
 
     return m_pLinkInfoStream;
@@ -226,18 +226,18 @@ CPdbLinkInfoStream* CPdbReader::GetLinkInfoStream()
 
 CPdbFPOStream* CPdbReader::GetFPOStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(NULL==m_pFPOStream)
     {
         // Init FPO stream (#5)
         BOOL bResult = FALSE;
         m_pFPOStream = new CPdbFPOStream(this, m_MsfFile.GetStream(PDB_STREAM_FPO), FALSE, &bResult);
         if(!bResult || !m_pFPOStream)
-		{
+        {
             if(m_pFPOStream)
-				delete m_pFPOStream;
-			m_pFPOStream = NULL;
-		}
+                delete m_pFPOStream;
+            m_pFPOStream = NULL;
+        }
     }
 
     // Return pointer to FPO stream.
@@ -246,31 +246,31 @@ CPdbFPOStream* CPdbReader::GetFPOStream()
 
 CPdbFPOStream* CPdbReader::GetNewFPOStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(NULL==m_pNewFPOStream)
     {
         // Init new FPO stream (#11 or #13)
         BOOL bResult = FALSE;
-		// Try stream #11
+        // Try stream #11
         m_pNewFPOStream = new CPdbFPOStream(this, m_MsfFile.GetStream(11), TRUE, &bResult);
         if(!bResult || !m_pNewFPOStream)
-		{
-			if(m_pNewFPOStream)
-				delete m_pNewFPOStream;  
-			m_pNewFPOStream = NULL;
-		}
+        {
+            if(m_pNewFPOStream)
+                delete m_pNewFPOStream;
+            m_pNewFPOStream = NULL;
+        }
 
-		if(NULL==m_pNewFPOStream)
-		{
-			// Try stream #13
-			m_pNewFPOStream = new CPdbFPOStream(this, m_MsfFile.GetStream(13), TRUE, &bResult);
-			if(!bResult || !m_pNewFPOStream)
-			{
-				if(m_pNewFPOStream)
-					delete m_pNewFPOStream;  
-				m_pNewFPOStream = NULL;
-			}
-		}
+        if(NULL==m_pNewFPOStream)
+        {
+            // Try stream #13
+            m_pNewFPOStream = new CPdbFPOStream(this, m_MsfFile.GetStream(13), TRUE, &bResult);
+            if(!bResult || !m_pNewFPOStream)
+            {
+                if(m_pNewFPOStream)
+                    delete m_pNewFPOStream;
+                m_pNewFPOStream = NULL;
+            }
+        }
     }
 
     // Return pointer to new FPO stream.
@@ -279,14 +279,14 @@ CPdbFPOStream* CPdbReader::GetNewFPOStream()
 
 CPdbGSIStream* CPdbReader::GetGSIStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(!m_pGSIStream)
     {
         // Init GSI stream (typically, #6)
         BOOL bResult = FALSE;
         m_pGSIStream = new CPdbGSIStream(this, m_MsfFile.GetStream(GetDebugInfoStream()->GetGSIStreamIndex()), &bResult);
         if(!bResult || !m_pGSIStream)
-            return NULL; 
+            return NULL;
     }
 
     // Return pointer to GSI stream.
@@ -295,14 +295,14 @@ CPdbGSIStream* CPdbReader::GetGSIStream()
 
 CPdbPSGSIStream* CPdbReader::GetPSIStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(!m_pPSIStream)
     {
         // Init PSI stream (typically, #7)
         BOOL bResult = FALSE;
         m_pPSIStream = new CPdbPSGSIStream(this, m_MsfFile.GetStream(GetDebugInfoStream()->GetPSIStreamIndex()), &bResult);
         if(!bResult || !m_pPSIStream)
-            return NULL; 
+            return NULL;
     }
 
     // Return pointer to PSGSI stream.
@@ -311,7 +311,7 @@ CPdbPSGSIStream* CPdbReader::GetPSIStream()
 
 CPdbSymbolStream* CPdbReader::GetSymbolStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
 
     if(!m_pSymbolStream)
     {
@@ -320,7 +320,7 @@ CPdbSymbolStream* CPdbReader::GetSymbolStream()
         CMsfStream* pStream = m_MsfFile.GetStream(GetDebugInfoStream()->GetSymbolStreamIndex());
         m_pSymbolStream = new CPdbSymbolStream(this, pStream, 0, pStream->GetStreamLen(), &bResult);
         if(!bResult || !m_pSymbolStream)
-            return FALSE; 
+            return FALSE;
     }
 
     // Return pointer to symbol stream.
@@ -329,46 +329,39 @@ CPdbSymbolStream* CPdbReader::GetSymbolStream()
 
 CPdbSectionMapStream* CPdbReader::GetSectionMapStream()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
     if(!m_pSectionMapStream)
     {
         // Init section map stream (typically, #9 or #8)
-		// This stream is typically #9 for x86, but can be sometimes #8 for x64 when FPO streams missing
+        // This stream is typically #9 for x86, but can be sometimes #8 for x64 when FPO streams missing
 
         BOOL bResult = FALSE;
-        CMsfStream* pStream = m_MsfFile.GetStream(9);
-        m_pSectionMapStream = new CPdbSectionMapStream(this, pStream, &bResult);
-        if(!bResult)		
-		{
-			// Delete stream
-			delete m_pSectionMapStream;
-			m_pSectionMapStream = NULL;
-						
-			// Try stream #8
-			pStream = m_MsfFile.GetStream(8);
-			m_pSectionMapStream = new CPdbSectionMapStream(this, pStream, &bResult);
-			if(!bResult || !m_pSectionMapStream)		
-			{
-				// Delete stream
-				delete m_pSectionMapStream;
-				m_pSectionMapStream = NULL;
-	            return FALSE; 
-			}
-		}
-	}
+        int try_streams[] = { 9, 8 , 10, 11, 12 };
+        int i;
+        for (i = 0; i < sizeof(try_streams)/sizeof(try_streams[0]); ++i) {
+            int stream = try_streams[i];
+            CMsfStream* pStream = m_MsfFile.GetStream(stream);
+            m_pSectionMapStream = new CPdbSectionMapStream(this, pStream, &bResult);
+            if (bResult && m_pSectionMapStream)
+                return m_pSectionMapStream;
+
+            delete m_pSectionMapStream;
+            m_pSectionMapStream = NULL;
+        }
+    }
 
     return m_pSectionMapStream;
 }
 
 CPdbCompilandStream* CPdbReader::GetCompilandStream(DBI_ModuleInfo* pModuleInfo)
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
 
     // Determine stream number.
     int nStreamNumber = (int)pModuleInfo->m_Info.wStreamNumber;
 
     if(m_bAMD64)
-    {   
+    {
         if(nStreamNumber==10)
             nStreamNumber=11;
         else
@@ -385,7 +378,7 @@ CPdbCompilandStream* CPdbReader::GetCompilandStream(DBI_ModuleInfo* pModuleInfo)
     if(pMsfStream==NULL)
         return NULL; // Couldn't get MSF stream.
 
-    // Create new compiland stream  
+    // Create new compiland stream
     CPdbCompilandStream* pCompiland = new CPdbCompilandStream();
 
     // Init compiland stream
@@ -404,44 +397,44 @@ CPdbCompilandStream* CPdbReader::GetCompilandStream(DBI_ModuleInfo* pModuleInfo)
 
 BOOL CPdbReader::ReduceMemoryConsumption()
 {
-	CAutoLock lock(&m_AccessLock);
+    CAutoLock lock(&m_AccessLock);
 
-	// Release all compiland streams
-	std::map<int, CPdbCompilandStream*>::iterator it;
-	for(it=m_apCompilandStreams.begin(); it!=m_apCompilandStreams.end(); it++)
-	{
-		// Delete stream
-        delete it->second; 		
-	}
+    // Release all compiland streams
+    std::map<int, CPdbCompilandStream*>::iterator it;
+    for(it=m_apCompilandStreams.begin(); it!=m_apCompilandStreams.end(); it++)
+    {
+        // Delete stream
+        delete it->second;
+    }
 
-	m_apCompilandStreams.clear();
+    m_apCompilandStreams.clear();
 
-	return TRUE;
+    return TRUE;
 }
 
 BOOL CPdbReader::IsAMD64()
 {
-	CAutoLock lock(&m_AccessLock);
-	return m_bAMD64;
+    CAutoLock lock(&m_AccessLock);
+    return m_bAMD64;
 }
 
 DWORD CPdbReader::GetFileSize()
 {
 #ifdef _WIN32
-	struct _stat filestatus;
-	if(0!=_wstat(m_sFileName.c_str() , &filestatus ))
-		return 0;
+    struct _stat filestatus;
+    if(0!=_wstat(m_sFileName.c_str() , &filestatus ))
+        return 0;
 #else
-	struct stat filestatus;
-	if(0!=stat(strconv::w2utf8(m_sFileName).c_str() , &filestatus ))
-		return 0;
+    struct stat filestatus;
+    if(0!=stat(strconv::w2utf8(m_sFileName).c_str() , &filestatus ))
+        return 0;
 #endif
-	return filestatus.st_size;
+    return filestatus.st_size;
 }
 
 std::wstring CPdbReader::GetMD5Hash()
 {
-	std::wstring sMD5;
-	CalcFileMD5Hash(m_sFileName, sMD5);
-	return sMD5;
+    std::wstring sMD5;
+    CalcFileMD5Hash(m_sFileName, sMD5);
+    return sMD5;
 }
