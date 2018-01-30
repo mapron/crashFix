@@ -13,7 +13,9 @@ else(UNIX)
 endif(UNIX)
 
 add_executable(dumper ${source_files})
-target_link_libraries(dumper libdumper psapi.lib )
-
+target_link_libraries(dumper libdumper )
+if (WIN32)
+	target_link_libraries(dumper psapi.lib )
+endif()
 set_target_properties(dumper PROPERTIES RUNTIME_OUTPUT_DIRECTORY_Debug "${CMAKE_BINARY_DIR}/bin")
 set_target_properties(dumper PROPERTIES RUNTIME_OUTPUT_DIRECTORY_Release "${CMAKE_BINARY_DIR}/bin")

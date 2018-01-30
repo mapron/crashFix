@@ -1,5 +1,7 @@
 project(daemon)
-
+# linux example start:
+# sudo start-stop-daemon --start --background --pidfile /home/mapron/crashfix/pid --exec /home/mapron/src/crashFix/build-crashfix_service-Desktop-Debug/bin/crashfixd -- --config /home/mapron/crashfixd.conf.linux --start
+#
 aux_source_directory( . source_files )
 
 # In Windows, use UNICODE
