@@ -98,9 +98,9 @@ void CDaemon::Run()
 	// Read config file.
 	ReadConfig();
 
-    // Check if process is already running.
-    if(0<CheckProcessExists())
-        exit(EXIT_FAILURE);
+	// Check if process is already running.
+	if(0<CheckProcessExists())
+		exit(EXIT_FAILURE);
 
 	// In Linux, we need to spawn the child process
 	// and continue further initialization in that child process.
@@ -111,9 +111,9 @@ void CDaemon::Run()
 start:
 #endif
 
-    // Reread config file.
+	// Reread config file.
 	ReadConfig();
-		
+
 	// If we are not a monitor process...
 	if(m_MonitorOption!=MO_IS_MONITOR)
 	{
@@ -124,51 +124,51 @@ start:
 	// Check if we should launch monitor process.
 	if(m_MonitorOption!=MO_IS_MONITOR && m_bLaunchMonitorProcess)
 	{
-	    // This will fork monitor process. The monitor process will
-	    // periodically check our state.
-	    LaunchMonitorProcess();
+		// This will fork monitor process. The monitor process will
+		// periodically check our state.
+		LaunchMonitorProcess();
 	}
 
-    if(m_MonitorOption!=MO_IS_MONITOR)
+	if(m_MonitorOption!=MO_IS_MONITOR)
 	{
 		// Init socket server.
 		InitSocketServer();
 
-        // We have initialized ourselves successfully.
-        // If we are not a monitor process, output the success message.
+		// We have initialized ourselves successfully.
+		// If we are not a monitor process, output the success message.
 		//fprintf(stderr, "CrashFix daemon has started successfully.\n");
 	}
 
-    // Init logging.
-    // In Linux, this will redirect the standard file descriptors to log file.
+	// Init logging.
+	// In Linux, this will redirect the standard file descriptors to log file.
 	// Since now, we will use the log file for output.
 	InitErrorLog();
 
 	/*CR_EXCEPTION_INFO ei;
-    memset(&ei, 0, sizeof(CR_EXCEPTION_INFO));
-    ei.cb = sizeof(CR_EXCEPTION_INFO);
-    ei.exctype = CR_SEH_EXCEPTION;
-    ei.code = 1234;
-    ei.pexcptrs = NULL;
+	memset(&ei, 0, sizeof(CR_EXCEPTION_INFO));
+	ei.cb = sizeof(CR_EXCEPTION_INFO);
+	ei.exctype = CR_SEH_EXCEPTION;
+	ei.code = 1234;
+	ei.pexcptrs = NULL;
 	crGenerateErrorReport(&ei);*/
 
 	// Check if we are the monitor process ourselves
 	if(m_MonitorOption==MO_IS_MONITOR)
 	{
-	    // We are the monitor process. Enter the loop and perform sanity checks
-	    // of the parent daemon process.
-	    RunAsMonitor();
+		// We are the monitor process. Enter the loop and perform sanity checks
+		// of the parent daemon process.
+		RunAsMonitor();
 
 #ifndef _WIN32
-	    // If the function above has exited, this means the daemon has crashed,
-	    // the new daemon process was forked, and we are now the new daemon.
-	    goto start;
+		// If the function above has exited, this means the daemon has crashed,
+		// the new daemon process was forked, and we are now the new daemon.
+		goto start;
 #endif
 	}
-    else
+	else
 	{
-	    // Run server. This function doesn't return until server is stopped.
-        RunSocketServer();
+		// Run server. This function doesn't return until server is stopped.
+		RunSocketServer();
 	}
 
 	// Exit.
@@ -178,18 +178,18 @@ start:
 
 int CDaemon::ReadPidFile()
 {
-    // Open fipdfile
+	// Open fipdfile
 	FILE* f = fopen(m_sPIDFile.c_str(), "rt");
 	if(f==NULL)
 	{
-	    std::stringstream str;
-	    str<<"Could not read PID file ";
-	    str<<m_sPIDFile;
+		std::stringstream str;
+		str<<"Could not read PID file ";
+		str<<m_sPIDFile;
 		perror(str.str().c_str());
 		return -1;
 	}
 
-    int nPid = -1;
+	int nPid = -1;
 	if(1!=fscanf(f, "%d", &nPid))
 	{
 		printf("Error reading PID from pidfile %s.\n", m_sPIDFile.c_str());
@@ -201,7 +201,7 @@ int CDaemon::ReadPidFile()
 	fclose(f);
 	f = NULL;
 
-    return nPid;
+	return nPid;
 }
 
 int CDaemon::CheckProcessExists()
@@ -209,32 +209,32 @@ int CDaemon::CheckProcessExists()
 #ifdef _WIN32
 	return -1; // Not implemented
 #else
-    printf("Checking if crashfixd process exists...\n");
+	printf("Checking if crashfixd process exists...\n");
 
-    // Read PID-file
-    int nPid = ReadPidFile();
-    if(nPid==-1)
-        return -1; // PID file does not exist.
+	// Read PID-file
+	int nPid = ReadPidFile();
+	if(nPid==-1)
+		return -1; // PID file does not exist.
 
-    // Check if a process with such a PID exists
-    if (kill(nPid, 0) == 0)
-    {
-        /* process is running or a zombie */
-        printf("The crashfixd daemon process is already running.\n");
-        return nPid;
-    }
-    else if (errno == ESRCH)
-    {
-        /* no such process with the given pid is running */
-        printf("There is no running process with such a PID.\n");
-        return -2;
-    }
-    else
-    {
-        /* some other error... use perror("...") or strerror(errno) to report */
-        perror("Error checking crashfixd process existance");
-        return -3;
-    }
+	// Check if a process with such a PID exists
+	if (kill(nPid, 0) == 0)
+	{
+		/* process is running or a zombie */
+		printf("The crashfixd daemon process is already running.\n");
+		return nPid;
+	}
+	else if (errno == ESRCH)
+	{
+		/* no such process with the given pid is running */
+		printf("There is no running process with such a PID.\n");
+		return -2;
+	}
+	else
+	{
+		/* some other error... use perror("...") or strerror(errno) to report */
+		perror("Error checking crashfixd process existance");
+		return -3;
+	}
 #endif
 
 
@@ -269,7 +269,7 @@ void CDaemon::LaunchMonitorProcess()
 
 
 #else
-    // Spawn the child monitor process
+	// Spawn the child monitor process
 	Daemonize(DT_SPAWN_MONITOR_PROCESS);
 
 #endif
@@ -443,11 +443,11 @@ void CDaemon::InitErrorLog()
 	if(m_MonitorOption==MO_IS_MONITOR)
 	{
 #ifndef _WIN32
-        // In Linux, we have to first close the handle to error.log file,
-        // which is already opened.
-        m_Log.term();
+		// In Linux, we have to first close the handle to error.log file,
+		// which is already opened.
+		m_Log.term();
 #endif
-        bInitLog = m_Log.init(strconv::a2w(m_sMonitorLogFile), true);
+		bInitLog = m_Log.init(strconv::a2w(m_sMonitorLogFile), true);
 	}
 	else
 		bInitLog = m_Log.init(strconv::a2w(m_sErrorLogFile), true);
@@ -458,9 +458,9 @@ void CDaemon::InitErrorLog()
 		Die(sErrorMsg.c_str(), true);
 	}
 
-    // Set logging level (take the level from config).
-    m_Log.set_level(m_nLoggingLevel);
-    m_Log.set_max_size(m_nErrorLogMaxSizeKB);
+	// Set logging level (take the level from config).
+	m_Log.set_level(m_nLoggingLevel);
+	m_Log.set_max_size(m_nErrorLogMaxSizeKB);
 
 	// Write general server info to error.log
 	m_Log.write(0, "==================================\n");
@@ -468,7 +468,7 @@ void CDaemon::InitErrorLog()
 		m_Log.write(0, "CrashFix Daemon Monitor Log\n");
 	else
 		m_Log.write(0, "CrashFix Daemon Log\n");
-    m_Log.write(0, "==================================\n");
+	m_Log.write(0, "==================================\n");
 	m_Log.write(0, "Configuration summary:\n");
 	m_Log.write(0, "Path to configuration file is '%s'\n", m_sConfigFile.c_str());
 	m_Log.write(0, "Logging level is %d\n", m_nLoggingLevel);
@@ -529,30 +529,30 @@ bool CDaemon::Daemonize(eDaemonizeType Flag)
 	pid = fork();
 	if (pid < 0)
 	{
-	    sErrorMsg = "Couldn't fork off the parent process.";
-	    goto cleanup;
+		sErrorMsg = "Couldn't fork off the parent process.";
+		goto cleanup;
 	}
 
 	if(pid>0) // If pid>0, we are in parent process
 	{
-	    if(Flag==DT_SPAWN_DAEMON_PROCESS)
-	    {
-            // We (root-launched process) have spawned the child (daemon) process
-            printf("Forked the CrashFix daemon process: pid = %d.\n", pid);
-            exit(EXIT_SUCCESS);
-	    }
-	    else if(Flag==DT_SPAWN_DAEMON_ON_CRASH)
-	    {
-            // We (monitor) have spawned the child (daemon) process
-            m_Log.write(0, "Spawned the daemon process: pid = %d.\n", pid);
-            m_nPidToMonitor = pid;
-	    }
-	    else if(Flag==DT_SPAWN_MONITOR_PROCESS)
-	    {
-	        // We have spawned the monitor process
-	        m_Log.write(0, "Spawned the monitoring process: pid = %d\n", pid);
-	        m_nPidToMonitor = pid;
-	    }
+		if(Flag==DT_SPAWN_DAEMON_PROCESS)
+		{
+			// We (root-launched process) have spawned the child (daemon) process
+			printf("Forked the CrashFix daemon process: pid = %d.\n", pid);
+			exit(EXIT_SUCCESS);
+		}
+		else if(Flag==DT_SPAWN_DAEMON_ON_CRASH)
+		{
+			// We (monitor) have spawned the child (daemon) process
+			m_Log.write(0, "Spawned the daemon process: pid = %d.\n", pid);
+			m_nPidToMonitor = pid;
+		}
+		else if(Flag==DT_SPAWN_MONITOR_PROCESS)
+		{
+			// We have spawned the monitor process
+			m_Log.write(0, "Spawned the monitoring process: pid = %d\n", pid);
+			m_nPidToMonitor = pid;
+		}
 	}
 	else // pid==0
 	{
@@ -576,53 +576,53 @@ bool CDaemon::Daemonize(eDaemonizeType Flag)
 			goto cleanup;
 		}
 
-        // Get parent pid
-        int nParentPid = getppid();
+		// Get parent pid
+		int nParentPid = getppid();
 
-        // If bFlag is false, this means the parent process wants us to be the monitor.
+		// If bFlag is false, this means the parent process wants us to be the monitor.
 		if(Flag==DT_SPAWN_MONITOR_PROCESS)
 		{
-	        // We are now the monitor process.
-            m_MonitorOption = MO_IS_MONITOR;
-            m_nPidToMonitor = nParentPid; // Monitor the parent daemon process.
+			// We are now the monitor process.
+			m_MonitorOption = MO_IS_MONITOR;
+			m_nPidToMonitor = nParentPid; // Monitor the parent daemon process.
 
-            // In Linux, we need to handle SIGCHLD signal to avoid
-            // zombie process records in system table (if our child process terminates unexpectedly)
-            RegisterCHLDHandler(true);
-	    }
-	    else if(Flag==DT_SPAWN_DAEMON_ON_CRASH)
-	    {
-            // The daemon was restarted by the monitoring process, possibly after segmentation fault.
-            m_bRestartedAfterCrash = true;
-            m_MonitorOption = MO_NO_MONITOR; // Do not launch the monitor another time, there is already one.
+			// In Linux, we need to handle SIGCHLD signal to avoid
+			// zombie process records in system table (if our child process terminates unexpectedly)
+			RegisterCHLDHandler(true);
+		}
+		else if(Flag==DT_SPAWN_DAEMON_ON_CRASH)
+		{
+			// The daemon was restarted by the monitoring process, possibly after segmentation fault.
+			m_bRestartedAfterCrash = true;
+			m_MonitorOption = MO_NO_MONITOR; // Do not launch the monitor another time, there is already one.
 
-            // Ignore SIGCHLD signal (default behavior)
-            RegisterCHLDHandler(false);
-	    }
+			// Ignore SIGCHLD signal (default behavior)
+			RegisterCHLDHandler(false);
+		}
 
-	    // In Linux, we register the SIGTERM signal handler.
-	    // The sigterm signal is sent by the system when it wants us to shut down.
-	    RegisterTermHandler();
+		// In Linux, we register the SIGTERM signal handler.
+		// The sigterm signal is sent by the system when it wants us to shut down.
+		RegisterTermHandler();
 	}
 
 cleanup:
 
-    if(!sErrorMsg.empty())
-    {
-        if(Flag==DT_SPAWN_DAEMON_ON_CRASH)
-        {
-            m_Log.write(0, sErrorMsg.c_str());
-            std::string sErr = "Error spawning the child process while restarting the daemon: ";
-            sErr += sErrorMsg;
-            AddError(true, sErr.c_str());
-        }
-        else
-            Die(sErrorMsg.c_str(), true);
-    }
+	if(!sErrorMsg.empty())
+	{
+		if(Flag==DT_SPAWN_DAEMON_ON_CRASH)
+		{
+			m_Log.write(0, sErrorMsg.c_str());
+			std::string sErr = "Error spawning the child process while restarting the daemon: ";
+			sErr += sErrorMsg;
+			AddError(true, sErr.c_str());
+		}
+		else
+			Die(sErrorMsg.c_str(), true);
+	}
 
-    // Return true to indicate we are in child process now.
-    // Return false to indicate we are still in the parent process.
-    return (pid==0)?true:false;
+	// Return true to indicate we are in child process now.
+	// Return false to indicate we are still in the parent process.
+	return (pid==0)?true:false;
 #endif
 
 	// Return false to indicate we are still in the parent process.
@@ -663,25 +663,25 @@ void CDaemon::TerminateHandler(int)
 	CLog* pLog = CDaemon::GetInstance()->GetLog();
 	pLog->write(0, "SIGTERM signal caught (the system wants us to shut down).\n");
 
-    // Soft shutdown
-    if(CDaemon::GetInstance()->GetMonitorOption()!=MO_IS_MONITOR)
-    {
-        // In Linux, we need to send SIGTERM signal to our monitoring process.
-        // Otherwise the monitoring process will relaunch the daemon.
-        int nPid = CDaemon::GetInstance()->GetPidToMonitor();
-        if(nPid!=0)
-        {
-            pLog->write(0, "Sending SIGTERM signal to monitoring process (pid = %d) to avoid relaunching the daemon.\n", nPid);
-            kill(nPid, SIGTERM);
-        }
+	// Soft shutdown
+	if(CDaemon::GetInstance()->GetMonitorOption()!=MO_IS_MONITOR)
+	{
+		// In Linux, we need to send SIGTERM signal to our monitoring process.
+		// Otherwise the monitoring process will relaunch the daemon.
+		int nPid = CDaemon::GetInstance()->GetPidToMonitor();
+		if(nPid!=0)
+		{
+			pLog->write(0, "Sending SIGTERM signal to monitoring process (pid = %d) to avoid relaunching the daemon.\n", nPid);
+			kill(nPid, SIGTERM);
+		}
 
-        // Now we shut down our socket server.
-        // We need to close all socket connections, especially server socket
-        // to minimize possible risk of socket binding errors and system resources exhaustion.
-        CDaemon::GetInstance()->GetSocketServer()->Terminate();
-    }
+		// Now we shut down our socket server.
+		// We need to close all socket connections, especially server socket
+		// to minimize possible risk of socket binding errors and system resources exhaustion.
+		CDaemon::GetInstance()->GetSocketServer()->Terminate();
+	}
 
-    pLog->write(0, "Terminated. Bue!\n");
+	pLog->write(0, "Terminated. Bue!\n");
 
 	// Terminate the process.
 	exit(0);
@@ -701,9 +701,9 @@ void CDaemon::RegisterTermHandler()
 /* SIGCHLD handler. */
 void CDaemon::SIGCHLDHandler(int)
 {
-    // Log error message
+	// Log error message
 	CDaemon::GetInstance()->GetLog()->write(0, "SIGCHLD signal caught (the child process has terminated).\n");
-    CDaemon::GetInstance()->GetLog()->write(0, "Waiting for all child zombie processes...\n");
+	CDaemon::GetInstance()->GetLog()->write(0, "Waiting for all child zombie processes...\n");
 
 	/* Wait for all dead processes.
 	 * We use a non-blocking call to be sure this signal handler will not
@@ -712,7 +712,7 @@ void CDaemon::SIGCHLDHandler(int)
 	{
 	}
 
-    CDaemon::GetInstance()->GetLog()->write(0, "Cleaned up all child zombie processes.\n");
+	CDaemon::GetInstance()->GetLog()->write(0, "Cleaned up all child zombie processes.\n");
 }
 
 void CDaemon::RegisterCHLDHandler(bool bRegister)
@@ -722,19 +722,19 @@ void CDaemon::RegisterCHLDHandler(bool bRegister)
 	// received by the parent process when its child has terminated.
 	// The parent process should read the child's exit code to avoid zombie records
 	// in system process table. A zombie process or defunct process is a process that
-    // has completed execution but still has an entry in the process table. This entry
-    // is still needed to allow the parent process to read its child's exit status.
+	// has completed execution but still has an entry in the process table. This entry
+	// is still needed to allow the parent process to read its child's exit status.
 
-    if(bRegister)
-    {
-        struct sigaction sigterm_handler;
-        sigterm_handler.sa_handler = SIGCHLDHandler;
-        sigaction(SIGCHLD, &sigterm_handler, &m_OldSIGCHLDAction);
-    }
-    else
-    {
-        sigaction(SIGCHLD, &m_OldSIGCHLDAction, NULL);
-    }
+	if(bRegister)
+	{
+		struct sigaction sigterm_handler;
+		sigterm_handler.sa_handler = SIGCHLDHandler;
+		sigaction(SIGCHLD, &sigterm_handler, &m_OldSIGCHLDAction);
+	}
+	else
+	{
+		sigaction(SIGCHLD, &m_OldSIGCHLDAction, NULL);
+	}
 }
 #endif
 
@@ -765,12 +765,12 @@ void CDaemon::Die(const char* szMessage, bool bUsePStr)
 
 int CDaemon::Start()
 {
-#ifdef _WIN32
-	return StartNTService();
-#else
+//#ifdef _WIN32
+//	return StartNTService();
+//#else
 	Run();
 	return 0;
-#endif
+//#endif
 }
 
 int CDaemon::Restart()
@@ -788,7 +788,7 @@ int CDaemon::Restart()
 
 int CDaemon::Stop()
 {
-    int nStatus = 1;
+	int nStatus = 1;
 	int nPid = -1;
 	int i = 0;
 	bool bExists = false;
@@ -802,59 +802,59 @@ int CDaemon::Stop()
 	return StartNTService(FALSE);
 
 #else
-    // Read config
-    ReadConfig();
+	// Read config
+	ReadConfig();
 
-    // Check if daemon process exists
-    nPid = CheckProcessExists();
-    if(nPid>0)
-    {
-        // Send SIGTERM signal
-        printf("Sending TERM signal.");
-        kill(nPid, SIGTERM);
-        for(i=0; i<10; i++)
-        {
-            // Wait for a while
-            Sleep(1000);
-            printf(".");
-            fflush(stdout);
+	// Check if daemon process exists
+	nPid = CheckProcessExists();
+	if(nPid>0)
+	{
+		// Send SIGTERM signal
+		printf("Sending TERM signal.");
+		kill(nPid, SIGTERM);
+		for(i=0; i<10; i++)
+		{
+			// Wait for a while
+			Sleep(1000);
+			printf(".");
+			fflush(stdout);
 
-            // Check if process still exists
-            if(kill(nPid, 0)!=0 && errno==ESRCH)
-            {
-                // Process does not exist
-                bTerminated = true;
-                break;
-            }
-        }
+			// Check if process still exists
+			if(kill(nPid, 0)!=0 && errno==ESRCH)
+			{
+				// Process does not exist
+				bTerminated = true;
+				break;
+			}
+		}
 
-        printf("\n");
+		printf("\n");
 
-        if(bTerminated)
-            printf("CrashFix daemon has been stopped by TERM signal.\n");
-    }
+		if(bTerminated)
+			printf("CrashFix daemon has been stopped by TERM signal.\n");
+	}
 
 
-    // Deleting pidfile
-    printf("Deleting pidfile.\n");
-    if(0!=unlink(m_sPIDFile.c_str()))
-    {
-        perror("Could not delete pidfile");
-    }
+	// Deleting pidfile
+	printf("Deleting pidfile.\n");
+	if(0!=unlink(m_sPIDFile.c_str()))
+	{
+		perror("Could not delete pidfile");
+	}
 
-    if(!bTerminated)
-    {
-        printf("Trying killall command.\n");
-        if(0!=system("killall -KILL crashfixd"))
-        {
-            perror("Error killing crashfixd daemon process");
-        }
-    }
+	if(!bTerminated)
+	{
+		printf("Trying killall command.\n");
+		if(0!=system("killall -KILL crashfixd"))
+		{
+			perror("Error killing crashfixd daemon process");
+		}
+	}
 
-    printf("CrashFix service has been stopped OK.\n");
+	printf("CrashFix service has been stopped OK.\n");
 #endif
 
-    nStatus = 0;
+	nStatus = 0;
 	return nStatus;
 }
 
@@ -876,10 +876,10 @@ void CDaemon::RunAsMonitor()
 	// Here we enter the infinite loop of checking the daemon process status
 	// periodically and notify webmaster on unexpected events through Email.
 
-    int nStatus = -1;
-    int nExecute = -1;
-    int nServerRetCode = -1;
-    std::vector<std::string> asServerErrors;
+	int nStatus = -1;
+	int nExecute = -1;
+	int nServerRetCode = -1;
+	std::vector<std::string> asServerErrors;
 
 	m_Log.write(0, "Running as monitoring process (pid to monitor = %d)\n", m_nPidToMonitor);
 
@@ -949,55 +949,55 @@ void CDaemon::RunAsMonitor()
 		}
 #else
 
-        if(kill(m_nPidToMonitor, 0)<0)
-        {
-            // The process seems to be terminated.
-            m_Log.write(0, "Unexpected event: error opening process to monitor (PID = %d)\n", m_nPidToMonitor);
-            m_Log.log_last_error(0, "kill function returned error code");
-            AddError(true, "The monitoring process has detected that the daemon process is inactive (not launched at all or has terminated by some reason). The daemon process will be relaunched.");
-            bError = TRUE;   // There is an error event
-            bRestart = TRUE; // We have to restart the process
-            goto skip;
-        }
+		if(kill(m_nPidToMonitor, 0)<0)
+		{
+			// The process seems to be terminated.
+			m_Log.write(0, "Unexpected event: error opening process to monitor (PID = %d)\n", m_nPidToMonitor);
+			m_Log.log_last_error(0, "kill function returned error code");
+			AddError(true, "The monitoring process has detected that the daemon process is inactive (not launched at all or has terminated by some reason). The daemon process will be relaunched.");
+			bError = TRUE;   // There is an error event
+			bRestart = TRUE; // We have to restart the process
+			goto skip;
+		}
 
 #endif
 
-        // If we came here, the process we are watching at seems to be running.
-        // But we want to additionally perform the check of server's status by issuing the 'daemon status' command.
-        asServerErrors.clear();
-        nExecute = ExecuteClientRequest("daemon status\n", sErrorMsg, nServerRetCode, asServerErrors);
-        if(0!=nExecute)
-        {
-            // Critical error - couldn't execute request to daemon.
-            // We need to notify webmaster, but do not restart the process.
-            m_Log.write(0, "Unexpected event: couldn't execute a request to daemon: %s.\n", sErrorMsg.c_str());
-            std::string sErr = "The monitoring process couldn't connect to daemon: " + sErrorMsg;
-            AddError(true, sErr.c_str());
+		// If we came here, the process we are watching at seems to be running.
+		// But we want to additionally perform the check of server's status by issuing the 'daemon status' command.
+		asServerErrors.clear();
+		nExecute = ExecuteClientRequest("daemon status\n", sErrorMsg, nServerRetCode, asServerErrors);
+		if(0!=nExecute)
+		{
+			// Critical error - couldn't execute request to daemon.
+			// We need to notify webmaster, but do not restart the process.
+			m_Log.write(0, "Unexpected event: couldn't execute a request to daemon: %s.\n", sErrorMsg.c_str());
+			std::string sErr = "The monitoring process couldn't connect to daemon: " + sErrorMsg;
+			AddError(true, sErr.c_str());
 
-            bError = TRUE;
-            bRestart = FALSE;
-            goto skip;
-        }
-        else
-        {
-            // Request executed ok, now read what daemon returned
-            if(nServerRetCode!=0)
-            {
-                // It seems that the daemon reports an error status.
-                // We need to notify webmaster, but do not restart the process.
-                m_Log.write(0, "Unexpected event: the daemon reports some errors.\n");
-                size_t i;
-                for(i=0; i<asServerErrors.size(); i++)
-                {
-                    AddError(false, asServerErrors[i].c_str());
-                    m_Log.write(0, "Error %d. %s\n", i+1, asServerErrors[i].c_str());
-                }
+			bError = TRUE;
+			bRestart = FALSE;
+			goto skip;
+		}
+		else
+		{
+			// Request executed ok, now read what daemon returned
+			if(nServerRetCode!=0)
+			{
+				// It seems that the daemon reports an error status.
+				// We need to notify webmaster, but do not restart the process.
+				m_Log.write(0, "Unexpected event: the daemon reports some errors.\n");
+				size_t i;
+				for(i=0; i<asServerErrors.size(); i++)
+				{
+					AddError(false, asServerErrors[i].c_str());
+					m_Log.write(0, "Error %d. %s\n", i+1, asServerErrors[i].c_str());
+				}
 
-                bError = TRUE;
-                bRestart = FALSE;
-                goto skip;
-            }
-        }
+				bError = TRUE;
+				bRestart = FALSE;
+				goto skip;
+			}
+		}
 
 skip:
 		// If there were errors
@@ -1006,22 +1006,22 @@ skip:
 			// Restart daemon
 			if(bRestart)
 			{
-                if(RestartDaemonOnCrash())
-                {
-                    // If the function returned true, we are in child process.
-                    // We need to exit the loop to let the new daemon run.
-                    return;
-                }
-                else
-                {
-                    // The function returned false, we are in parent (monitor) process.
-                }
+				if(RestartDaemonOnCrash())
+				{
+					// If the function returned true, we are in child process.
+					// We need to exit the loop to let the new daemon run.
+					return;
+				}
+				else
+				{
+					// The function returned false, we are in parent (monitor) process.
+				}
 			}
 
 			// Notify webmaster about errors
-            NotifyWebmasterOnError();
+			NotifyWebmasterOnError();
 
-            // Then continue monitoring in loop.
+			// Then continue monitoring in loop.
 		}
 	}
 }
@@ -1040,7 +1040,7 @@ int CDaemon::LaunchDaemonProcess(int &nPid)
 #endif
 
 int CDaemon::ExecuteClientRequest(const char* szCmdLine, std::string& sErrorMsg,
-                                  int& nServerRetCode, std::vector<std::string>& asServerErrors)
+								  int& nServerRetCode, std::vector<std::string>& asServerErrors)
 {
 	// This method sends a request to daemon through socket connection
 	// and gets a response code and a list of error messages.
@@ -1052,16 +1052,16 @@ int CDaemon::ExecuteClientRequest(const char* szCmdLine, std::string& sErrorMsg,
 	const int a = 10;
 	std::string sResponse;
 	char* pPtr = NULL;
-    const char* szInput = NULL;
-    size_t nBufSize = 0;
-    char* pToken = NULL;
+	const char* szInput = NULL;
+	size_t nBufSize = 0;
+	char* pToken = NULL;
 	const int MAX_IN_BUFF_SIZE = 10240;
 	const int TIMEOUT = 5;
 
-    sErrorMsg = "Unspecified error.";
+	sErrorMsg = "Unspecified error.";
 
-    // Init output
-    asServerErrors.clear();
+	// Init output
+	asServerErrors.clear();
 
 	// Get host address
 	server = gethostbyname("localhost");
@@ -1092,81 +1092,81 @@ int CDaemon::ExecuteClientRequest(const char* szCmdLine, std::string& sErrorMsg,
 	}
 
 	// Read server greeting message.
-    if(0!=m_SocketServer.RecvMsgWithTimeout(sock, TIMEOUT, MAX_IN_BUFF_SIZE, sResponse, sErrorMsg))
-    {
-        // Error reading server greeting message
-        sErrorMsg = "Error reading greeting message: " + sErrorMsg;
-        goto exit;
-    }
+	if(0!=m_SocketServer.RecvMsgWithTimeout(sock, TIMEOUT, MAX_IN_BUFF_SIZE, sResponse, sErrorMsg))
+	{
+		// Error reading server greeting message
+		sErrorMsg = "Error reading greeting message: " + sErrorMsg;
+		goto exit;
+	}
 
-    // Get numeric status code
+	// Get numeric status code
 	if(atoi(sResponse.c_str())!=100)
 	{
-	    sErrorMsg = "Invalid server response (expected greeting message).";
-	    goto exit;
+		sErrorMsg = "Invalid server response (expected greeting message).";
+		goto exit;
 	}
 
 	m_Log.write(2, "Server invitation: %s\n", sResponse.c_str());
 
 	// Send request to server.
 
-    m_Log.write(2, "Sending request to server: %s\n", szCmdLine);
-    if(0!=m_SocketServer.SendMsgWithTimeout(sock, szCmdLine, TIMEOUT, sErrorMsg))
-    {
-        // Error reading server greeting
-        sErrorMsg = "Error sending request to server: " + sErrorMsg;
-        goto exit;
-    }
+	m_Log.write(2, "Sending request to server: %s\n", szCmdLine);
+	if(0!=m_SocketServer.SendMsgWithTimeout(sock, szCmdLine, TIMEOUT, sErrorMsg))
+	{
+		// Error reading server greeting
+		sErrorMsg = "Error sending request to server: " + sErrorMsg;
+		goto exit;
+	}
 
-    // Read response from server.
-    m_Log.write(2, "Reading response from server\n");
-    if(0!=m_SocketServer.RecvMsgWithTimeout(sock, TIMEOUT, MAX_IN_BUFF_SIZE, sResponse, sErrorMsg))
-    {
-        // Error reading server greeting
-        sErrorMsg = "Error reading server response: " + sErrorMsg;
-        goto exit;
-    }
+	// Read response from server.
+	m_Log.write(2, "Reading response from server\n");
+	if(0!=m_SocketServer.RecvMsgWithTimeout(sock, TIMEOUT, MAX_IN_BUFF_SIZE, sResponse, sErrorMsg))
+	{
+		// Error reading server greeting
+		sErrorMsg = "Error reading server response: " + sErrorMsg;
+		goto exit;
+	}
 
 	m_Log.write(2, "Server response: %s.\n", sResponse.c_str());
 
-    szInput = sResponse.c_str();
-    nBufSize = sResponse.size();
+	szInput = sResponse.c_str();
+	nBufSize = sResponse.size();
 
-    // Get numeric status code
-    pToken = strtok_r((char*)szInput, " ", &pPtr);
-    if(pToken==NULL)
-    {
-        sErrorMsg = "Invalid server response code.";
-        goto exit;
-    }
+	// Get numeric status code
+	pToken = strtok_r((char*)szInput, " ", &pPtr);
+	if(pToken==NULL)
+	{
+		sErrorMsg = "Invalid server response code.";
+		goto exit;
+	}
 
 	nServerRetCode = atoi(pToken);
 	m_Log.write(2, "Server ret code: %d.\n", nServerRetCode);
 
-    // Now split the error message list using ';' character as a separator.
+	// Now split the error message list using ';' character as a separator.
 
-    // Get first error message
-    pToken = strtok_r(pPtr, ";\n", &pPtr);
-    while( pToken != NULL )
-    {
-        if(strlen(pToken)!=0)
-        {
-            // Add command to the list
-            asServerErrors.push_back(pToken);
-        }
+	// Get first error message
+	pToken = strtok_r(pPtr, ";\n", &pPtr);
+	while( pToken != NULL )
+	{
+		if(strlen(pToken)!=0)
+		{
+			// Add command to the list
+			asServerErrors.push_back(pToken);
+		}
 
-        // Get the next token
-        pToken = strtok_r(NULL, ";\n", &pPtr);
-    }
+		// Get the next token
+		pToken = strtok_r(NULL, ";\n", &pPtr);
+	}
 
-    // Request executed successfully
-    sErrorMsg = "Success.";
-    nStatus = 0;
+	// Request executed successfully
+	sErrorMsg = "Success.";
+	nStatus = 0;
 
 exit:
 
-    if(sock!=0)
-        CLOSESOCK(sock);
+	if(sock!=0)
+		CLOSESOCK(sock);
 
 	return nStatus;
 }
@@ -1216,23 +1216,23 @@ void CDaemon::NotifyWebmasterOnError()
 		mail.SetPassword(m_sSmtpPassword.c_str());
 		mail.SetSenderMail("noreply@localhost");
 		if(bCriticalError)
-            mail.SetSubject("[CRITICAL] CrashFix Daemon Message");
-        else
-            mail.SetSubject("[WARNING] CrashFix Daemon Message");
+			mail.SetSubject("[CRITICAL] CrashFix Daemon Message");
+		else
+			mail.SetSubject("[WARNING] CrashFix Daemon Message");
 		mail.AddRecipient(m_sWebmasterEmail.c_str());
 		mail.SetXPriority(XPRIORITY_HIGH);
 		mail.SetXMailer("CrashFix Daemon Monitor");
 		mail.AddMsgLine("Hello,");
 		mail.AddMsgLine("");
-        mail.AddMsgLine("I have to inform you that the CrashFix Daemon has encountered a problem:");
+		mail.AddMsgLine("I have to inform you that the CrashFix Daemon has encountered a problem:");
 		size_t i;
 		for(i=0; i<asErrorsToSend.size(); i++)
 		{
 			std::string sErrorMsg = asErrorsToSend[i];
 
-		    std::string sMsg =" - ";
+			std::string sMsg =" - ";
 			sMsg += sErrorMsg;
-		    mail.AddMsgLine(sMsg.c_str());
+			mail.AddMsgLine(sMsg.c_str());
 		}
 
 		// Clear old error messages
@@ -1256,7 +1256,7 @@ void CDaemon::NotifyWebmasterOnError()
 		std::string sServerResponse = e.GetServerResponce();
 		if(!sServerResponse.empty())
 		{
-            m_Log.write(0, "SMTP server response: %s.\n", sServerResponse.c_str());
+			m_Log.write(0, "SMTP server response: %s.\n", sServerResponse.c_str());
 		}
 	}
 }
@@ -1269,9 +1269,9 @@ bool CDaemon::RestartDaemonOnCrash()
 	// Check our config - should we restart the daemon on crash or not?
 	if(m_bRestartDaemonOnCrash==false)
 	{
-	    m_Log.write(0, "Daemon restart disabled by config settings.\n");
-	    // Return false to indicate we are still in parent process.
-	    return false;
+		m_Log.write(0, "Daemon restart disabled by config settings.\n");
+		// Return false to indicate we are still in parent process.
+		return false;
 	}
 
 	m_Log.write(0, "Restarting the daemon.\n");
@@ -1303,10 +1303,10 @@ bool CDaemon::RestartDaemonOnCrash()
 	return false;
 
 #else
-    // Spawn the child daemon process.
-    // DT_SPAWN_DAEMON_ON_CRASH parameter tells not to die on process creation errors,
-    // because we need to continue monitoring.
-    // Daemonize() will return false for the parent process, and true for the child process.
+	// Spawn the child daemon process.
+	// DT_SPAWN_DAEMON_ON_CRASH parameter tells not to die on process creation errors,
+	// because we need to continue monitoring.
+	// Daemonize() will return false for the parent process, and true for the child process.
 	return Daemonize(DT_SPAWN_DAEMON_ON_CRASH);
 
 #endif
@@ -1314,49 +1314,49 @@ bool CDaemon::RestartDaemonOnCrash()
 
 CSocketServer* CDaemon::GetSocketServer()
 {
-    return &m_SocketServer;
+	return &m_SocketServer;
 }
 
 eMonitorOption CDaemon::GetMonitorOption()
 {
-    return m_MonitorOption;
+	return m_MonitorOption;
 }
 
 int CDaemon::GetPidToMonitor()
 {
-    return m_nPidToMonitor;
+	return m_nPidToMonitor;
 }
 
 void CDaemon::AddError(bool bCritical, const char* szErrorMsg)
 {
 	CAutoLock lock(&m_csLock);
 
-    // Ensure there are not too many errors in the list
-    if(m_asErrors.size()<50)
-    {
-        // Search for duplicate errors
-        std::map<std::string, ErrorInfo>::iterator it = m_asErrors.find(szErrorMsg);
-        if(it==m_asErrors.end())
-        {
-            // There are no such a message, add it
+	// Ensure there are not too many errors in the list
+	if(m_asErrors.size()<50)
+	{
+		// Search for duplicate errors
+		std::map<std::string, ErrorInfo>::iterator it = m_asErrors.find(szErrorMsg);
+		if(it==m_asErrors.end())
+		{
+			// There are no such a message, add it
 			ErrorInfo ei;
 			time(&ei.tmCreateTime);
 			time(&ei.tmUpdateTime);
 			ei.m_bCriticalError = bCritical;
-            m_asErrors[szErrorMsg] = ei;
-        }
+			m_asErrors[szErrorMsg] = ei;
+		}
 		else
 		{
 			// There is such a message, update its timestamp
 			ErrorInfo& ei = it->second;
 			time(&ei.tmUpdateTime);
 		}
-    }
-    else
-    {
-        // There are too many errors
-        m_Log.write(0, "AddError: Could not add error message '%s' to error list, because error message list is too long.", szErrorMsg);
-    }
+	}
+	else
+	{
+		// There are too many errors
+		m_Log.write(0, "AddError: Could not add error message '%s' to error list, because error message list is too long.", szErrorMsg);
+	}
 }
 
 void CDaemon::ClearErrors(bool bOnlyRetired)
@@ -1397,14 +1397,14 @@ void CDaemon::ClearErrors(bool bOnlyRetired)
 int CDaemon::GetErrorCount()
 {
 	CAutoLock lock(&m_csLock);
-    return (int)m_asErrors.size();
+	return (int)m_asErrors.size();
 }
 
 bool CDaemon::GetError(int nIndex, std::string& sError)
 {
 	CAutoLock lock(&m_csLock);
-    if(nIndex<0 || nIndex>=(int)m_asErrors.size())
-        return false;
+	if(nIndex<0 || nIndex>=(int)m_asErrors.size())
+		return false;
 
 	std::map<std::string, ErrorInfo>::iterator it = m_asErrors.begin();
 	int i;
@@ -1412,7 +1412,7 @@ bool CDaemon::GetError(int nIndex, std::string& sError)
 		it++;
 
 	sError = it->first;
-    return true;
+	return true;
 }
 
 #ifdef _WIN32
@@ -1456,20 +1456,20 @@ int CDaemon::InstallNTService()
 
 	// Install the service into SCM by calling CreateService
 	SC_HANDLE hService = CreateService(
-        hSCManager,                     // SCManager database
-        SERVICE_NAME,                   // Name of service
-        SERVICE_DISPLAY_NAME,           // Name to display
-        SERVICE_QUERY_STATUS,           // Desired access
-        SERVICE_WIN32_OWN_PROCESS,      // Service type
-        SERVICE_AUTO_START,             // Service start type
-        SERVICE_ERROR_NORMAL,           // Error control type
+		hSCManager,                     // SCManager database
+		SERVICE_NAME,                   // Name of service
+		SERVICE_DISPLAY_NAME,           // Name to display
+		SERVICE_QUERY_STATUS,           // Desired access
+		SERVICE_WIN32_OWN_PROCESS,      // Service type
+		SERVICE_AUTO_START,             // Service start type
+		SERVICE_ERROR_NORMAL,           // Error control type
 		szModulePath,                   // Service's binary
-        NULL,                           // No load ordering group
-        NULL,                           // No tag identifier
-        NULL,                           // Dependencies
-        NULL,                           // Service running account
-        NULL                            // Password of the account
-        );
+		NULL,                           // No load ordering group
+		NULL,                           // No tag identifier
+		NULL,                           // Dependencies
+		NULL,                           // Service running account
+		NULL                            // Password of the account
+		);
 
 	if(!hService)
 	{
@@ -1523,7 +1523,7 @@ int CDaemon::RemoveNTService()
 
 	// Open existing service
 	SC_HANDLE hService = OpenService(hSCManager, SERVICE_NAME, SERVICE_STOP |
-        SERVICE_QUERY_STATUS | DELETE);
+		SERVICE_QUERY_STATUS | DELETE);
 	if(!hService)
 	{
 		wprintf(L"Error opening service: %s\n", GetErrorMsg().c_str());
@@ -1532,30 +1532,30 @@ int CDaemon::RemoveNTService()
 	}
 
 	// Try to stop the service
-    if(ControlService(hService, SERVICE_CONTROL_STOP, &ssSvcStatus))
-    {
-        wprintf(L"Stopping %s.", SERVICE_NAME);
-        Sleep(1000);
+	if(ControlService(hService, SERVICE_CONTROL_STOP, &ssSvcStatus))
+	{
+		wprintf(L"Stopping %s.", SERVICE_NAME);
+		Sleep(1000);
 
-        while (QueryServiceStatus(hService, &ssSvcStatus))
-        {
-            if (ssSvcStatus.dwCurrentState == SERVICE_STOP_PENDING)
-            {
-                wprintf(L".");
-                Sleep(1000);
-            }
-            else break;
-        }
+		while (QueryServiceStatus(hService, &ssSvcStatus))
+		{
+			if (ssSvcStatus.dwCurrentState == SERVICE_STOP_PENDING)
+			{
+				wprintf(L".");
+				Sleep(1000);
+			}
+			else break;
+		}
 
-        if (ssSvcStatus.dwCurrentState == SERVICE_STOPPED)
-        {
-            wprintf(L"\n%s is stopped.\n", SERVICE_NAME);
-        }
-        else
-        {
-            wprintf(L"\n%s failed to stop.\n", SERVICE_NAME);
-        }
-    }
+		if (ssSvcStatus.dwCurrentState == SERVICE_STOPPED)
+		{
+			wprintf(L"\n%s is stopped.\n", SERVICE_NAME);
+		}
+		else
+		{
+			wprintf(L"\n%s failed to stop.\n", SERVICE_NAME);
+		}
+	}
 
 	// Remove service
 	if(!DeleteService(hService))
@@ -1673,16 +1673,16 @@ int CDaemon::StartNTService(BOOL bStart)
 void CDaemon::EnterServiceMain()
 {
 	SERVICE_TABLE_ENTRY serviceTable[] =
-    {
-        { SERVICE_NAME, ServiceMain },
-        { NULL, NULL }
-    };
+	{
+		{ SERVICE_NAME, ServiceMain },
+		{ NULL, NULL }
+	};
 
-    // Connects the main thread of a service process to the service control
-    // manager, which causes the thread to be the service control dispatcher
-    // thread for the calling process. This call returns when the service has
-    // stopped. The process should simply terminate when the call returns.
-    StartServiceCtrlDispatcher(serviceTable);
+	// Connects the main thread of a service process to the service control
+	// manager, which causes the thread to be the service control dispatcher
+	// thread for the calling process. This call returns when the service has
+	// stopped. The process should simply terminate when the call returns.
+	StartServiceCtrlDispatcher(serviceTable);
 }
 
 void WINAPI CDaemon::ServiceMain(DWORD dwArgc, PWSTR *pszArgv)
@@ -1714,7 +1714,7 @@ void WINAPI CDaemon::ServiceMain(DWORD dwArgc, PWSTR *pszArgv)
 	CDaemon* pDaemon = CDaemon::GetInstance();
 
 	// Report initial status to the SCM
-    pDaemon->SetServiceStatus( SERVICE_START_PENDING, NO_ERROR, 3000 );
+	pDaemon->SetServiceStatus( SERVICE_START_PENDING, NO_ERROR, 3000 );
 
 	// Init service
 	pDaemon->SetMonitorOption(MO_IS_MONITOR, -1);
@@ -1746,7 +1746,7 @@ void CDaemon::ServiceControlHandler(DWORD request)
 		g_log.write(0, "Stopping the service.\n");
 
 		// Tell SCM that the service is stopping.
-        CDaemon::GetInstance()->SetServiceStatus(SERVICE_STOP_PENDING);
+		CDaemon::GetInstance()->SetServiceStatus(SERVICE_STOP_PENDING);
 
 		SetEvent(CDaemon::GetInstance()->m_hEventStop);
 
@@ -1768,24 +1768,24 @@ void CDaemon::ServiceControlHandler(DWORD request)
 }
 
 void CDaemon::SetServiceStatus(DWORD dwCurrentState,
-                                    DWORD dwWin32ExitCode,
-                                    DWORD dwWaitHint)
+									DWORD dwWin32ExitCode,
+									DWORD dwWaitHint)
 {
-    static DWORD dwCheckPoint = 1;
+	static DWORD dwCheckPoint = 1;
 
-    // Fill in the SERVICE_STATUS structure of the service.
+	// Fill in the SERVICE_STATUS structure of the service.
 
-    m_ServiceStatus.dwCurrentState = dwCurrentState;
-    m_ServiceStatus.dwWin32ExitCode = dwWin32ExitCode;
-    m_ServiceStatus.dwWaitHint = dwWaitHint;
+	m_ServiceStatus.dwCurrentState = dwCurrentState;
+	m_ServiceStatus.dwWin32ExitCode = dwWin32ExitCode;
+	m_ServiceStatus.dwWaitHint = dwWaitHint;
 
-    m_ServiceStatus.dwCheckPoint =
-        ((dwCurrentState == SERVICE_RUNNING) ||
-        (dwCurrentState == SERVICE_STOPPED)) ?
-        0 : dwCheckPoint++;
+	m_ServiceStatus.dwCheckPoint =
+		((dwCurrentState == SERVICE_RUNNING) ||
+		(dwCurrentState == SERVICE_STOPPED)) ?
+		0 : dwCheckPoint++;
 
-    // Report the status of the service to the SCM.
-    ::SetServiceStatus(m_ServiceStatusHandle, &m_ServiceStatus);
+	// Report the status of the service to the SCM.
+	::SetServiceStatus(m_ServiceStatusHandle, &m_ServiceStatus);
 }
 
 DWORD WINAPI CDaemon::StopWaitingThread(LPVOID lpParam)
