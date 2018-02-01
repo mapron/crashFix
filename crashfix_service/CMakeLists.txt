@@ -78,8 +78,8 @@ add_subdirectory("dumper")
 add_subdirectory("daemon")
 
 add_subdirectory("libtest")
-add_subdirectory("libdumper_tests")
-add_subdirectory("daemon_tests")
+#add_subdirectory("libdumper_tests")
+#add_subdirectory("daemon_tests")
 
 
 add_subdirectory("thirdparty/zlib")
