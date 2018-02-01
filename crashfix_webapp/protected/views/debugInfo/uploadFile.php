@@ -23,7 +23,8 @@ $this->breadcrumbs=array(
 			$versions = Yii::app()->user->getCurProjectVersions($selVer);			
 			echo CHtml::dropDownList('ver', array('selected'=>$selVer), $versions); 
 		?>		
-	</div>
+		<input type="submit" value="Ok" />
+		</div>
 	<?php echo CHtml::endForm(); ?>		
 </div>
 

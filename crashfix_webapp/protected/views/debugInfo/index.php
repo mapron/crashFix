@@ -27,7 +27,8 @@ You have no projects assigned.
 			$selVer = -1;
 			$versions = Yii::app()->user->getCurProjectVersions($selVer);			
 			echo CHtml::dropDownList('ver', array('selected'=>$selVer), $versions); 
-		?>					
+		?>		
+		<input type="submit" value="Ok" />
 	</div>
 	<?php echo CHtml::endForm(); ?>
 </div>
