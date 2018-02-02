@@ -456,12 +456,18 @@ class CrashReportController extends Controller
 			
 			if(isset($_POST['crashguid']))
 				$report->crashguid = $_POST['crashguid'];
-							
+			$verSuffix = '';				
 			if(isset($_POST['appname']))
 			{
 				$projectName = $_POST['appname'];
 				$project = Project::model()->find('name=:name', 
 						array(':name'=>$projectName));
+				if($project===null)
+				{
+					$project = Project::model()->find('name=:name', 
+						array(':name'=>'Default'));
+					$verSuffix = $projectName . '-';
+				}
 				if($project===null)
 					throw new Exception('Such a project name not found');
 				$report->project_id = $project->id;
@@ -480,7 +486,7 @@ class CrashReportController extends Controller
 			}
 							
 			if(isset($_POST['appversion']))
-				$report->appversion = $_POST['appversion'];
+				$report->appversion = $verSuffix . $_POST['appversion'];
 							
 			if(isset($_POST['md5']))
 				$report->md5 = $_POST['md5'];
