@@ -459,7 +459,7 @@ int CCommandProcessor::ReadDump(LPCSTR szFileName, LPCSTR szOutFile)
 	fprintf(f, "\n== Exception Info ==\n\n");
 	MiniDumpExceptionInfo* pExcInfo = dmp.GetExceptionInfo();
 	fprintf(f, "Exception code = 0x%X\n", pExcInfo->m_uExceptionCode);
-	fprintf(f, "Exception address = %"PRIu64" (0x%"PRIx64")\n", pExcInfo->m_uExceptionAddress, pExcInfo->m_uExceptionAddress);
+	fprintf(f, "Exception address = %" PRIu64 " (0x%" PRIx64 ")\n", pExcInfo->m_uExceptionAddress, pExcInfo->m_uExceptionAddress);
 	fprintf(f, "Thread ID = %u\n", pExcInfo->m_uThreadId);
 	fprintf(f, "Thread context RVA = %u\n", pExcInfo->m_uExceptionThreadContextRva);
 
@@ -469,7 +469,7 @@ int CCommandProcessor::ReadDump(LPCSTR szFileName, LPCSTR szOutFile)
 	{
 		MiniDumpThreadInfo* pti = dmp.GetThreadInfo(i);
 
-		fprintf(f, "%d. Thread ID = %u Teb=%"PRIu64" StackStart=%"PRIu64" StackSize=%u CtxRva=%u\n",
+		fprintf(f, "%d. Thread ID = %u Teb=%" PRIu64 " StackStart=%" PRIu64 " StackSize=%u CtxRva=%u\n",
 			i+1, pti->m_uThreadId, pti->m_u64Teb, pti->m_uStackStart, pti->m_uStackSize, pti->m_uThreadContextRva);
 	}
 
@@ -479,7 +479,7 @@ int CCommandProcessor::ReadDump(LPCSTR szFileName, LPCSTR szOutFile)
 	{
 		MiniDumpMemRange* pmr = dmp.GetMemRangeInfo(i);
 
-		fprintf(f, "%d. Start = %"PRIu64" Size=%u\n",
+		fprintf(f, "%d. Start = %" PRIu64 " Size=%u\n",
 			i+1, pmr->m_uStart, pmr->m_uSize);
 	}
 
@@ -884,7 +884,7 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 			dwRVA = pSection->VirtualAddress+pSym->GetOffset();
 		}
 
-		fprintf(f, "%s: [%"PRIx64"][%"PRIx64"][%04x:%08x] %s\n", sType.c_str(), dwRVA,
+		fprintf(f, "%s: [%" PRIx64 "][%" PRIx64 "][%04x:%08x] %s\n", sType.c_str(), dwRVA,
 			dwRVA, pSym->GetSegment(), pSym->GetOffset(), sName.c_str());
 	}
 
@@ -1219,7 +1219,7 @@ int CCommandProcessor::DumpCrashReport(LPCWSTR szCrashRptFileName, LPCWSTR szOut
 					}
 					else
 					{
-						sprintf(szBuffer, "0x%"PRIX64" ", pStackFrame->m_dwAddrPC);
+						sprintf(szBuffer, "0x%" PRIX64 " ", pStackFrame->m_dwAddrPC);
 						sFrameTitle += strconv::a2w(szBuffer);
 					}
 
