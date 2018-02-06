@@ -39,14 +39,16 @@ BOOL CPdbSectionMapStream::Init(CPdbReader* pPdbReader, CMsfStream* pStream)
 
     int nSectionCount = dwStreamLen/sizeof(IMAGE_SECTION_HEADER);
     int i;
+    bool hasTextSection = false;
     for(i=0; i<nSectionCount; i++)
     {
         IMAGE_SECTION_HEADER* pSection = ((IMAGE_SECTION_HEADER*)buf.GetPtr())+i;
-
+        if (memcmp(".text", pSection->Name, 5) == 0)
+            hasTextSection = true;
         m_aSections.push_back(*pSection);
-    }  
+    }
 
-    return TRUE;  
+    return hasTextSection;  
 }
 
 CPdbSectionMapStream::~CPdbSectionMapStream()
