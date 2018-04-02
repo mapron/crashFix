@@ -11,6 +11,10 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_CXX_FLAGS_RELEASE        "-O2 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
 
+if(UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+endif()
+
 # Set output directory for executable files
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
@@ -35,40 +39,9 @@ include_directories(${PROJECT_BINARY_DIR}
 		)
 
 MACRO(ADD_MSVC_PRECOMPILED_HEADER PrecompiledHeader PrecompiledSource SourcesVar)
-#[[
-  IF(MSVC)
-	GET_FILENAME_COMPONENT(PrecompiledBasename ${PrecompiledHeader} NAME_WE)
-	SET(PrecompiledBinary "${CMAKE_CURRENT_BINARY_DIR}/${PrecompiledBasename}.pch")
-	SET(Sources ${${SourcesVar}})
-
-	SET_SOURCE_FILES_PROPERTIES(${PrecompiledSource}
-								PROPERTIES COMPILE_FLAGS "/Yc\"${PrecompiledHeader}\" /Fp\"${PrecompiledBinary}\""
-										   OBJECT_OUTPUTS "${PrecompiledBinary}")
-	SET_SOURCE_FILES_PROPERTIES(${Sources}
-								PROPERTIES COMPILE_FLAGS "/Yu\"${PrecompiledBinary}\" /FI\"${PrecompiledBinary}\" /Fp\"${PrecompiledBinary}\""
-										   OBJECT_DEPENDS "${PrecompiledBinary}")
-	# Add precompiled header to SourcesVar
-	LIST(APPEND ${SourcesVar} ${PrecompiledSource})
-  ENDIF(MSVC)
-#]]
 ENDMACRO(ADD_MSVC_PRECOMPILED_HEADER)
 
 MACRO (ADD_PCH_RULE  _header_filename _src_list)
-#[[
-	SET(_gch_filename "${_header_filename}.gch")
-	LIST(APPEND ${_src_list} ${_gch_filename})
-	SET (_args ${CMAKE_CXX_FLAGS})
-	LIST(APPEND _args -c ${_header_filename} -o ${_gch_filename})
-	GET_DIRECTORY_PROPERTY(DIRINC INCLUDE_DIRECTORIES)
-	foreach (_inc ${DIRINC})
-		LIST(APPEND _args "-I" ${_inc})
-	endforeach(_inc ${DIRINC})
-	SEPARATE_ARGUMENTS(_args)
-	add_custom_command(OUTPUT ${_gch_filename}
-		   COMMAND rm -f ${_gch_filename}
-		   COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_args}
-				DEPENDS ${_header_filename})
-#]]
 ENDMACRO(ADD_PCH_RULE _header_filename _src_list)
 
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_LIST_DIR}/thirdparty/wtl/")
