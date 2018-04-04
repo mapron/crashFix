@@ -294,6 +294,7 @@ typedef struct _IMAGE_RESOURCE_DATA_ENTRY {
 #define RT_VERSION      MAKEINTRESOURCE(16)
 
 #define PROCESSOR_ARCHITECTURE_INTEL            0
+#define PROCESSOR_ARCHITECTURE_AMD64            9
 
 #endif //!_WIN32
 
