@@ -1008,7 +1008,7 @@ int CCommandProcessor::DumpCrashReport(LPCWSTR szCrashRptFileName, LPCWSTR szOut
 		pSysInfo = pMiniDump->GetSystemInfo();
 	}
 
-	if(pSysInfo && pSysInfo->m_uProcessorArchitecture != PROCESSOR_ARCHITECTURE_INTEL)
+	if(pSysInfo && pSysInfo->m_uProcessorArchitecture != PROCESSOR_ARCHITECTURE_INTEL && pSysInfo->m_uProcessorArchitecture != PROCESSOR_ARCHITECTURE_AMD64)
 	{
 		m_pLog->write(0, "Not supported CPU architecture of crash report file!\n");
         m_sErrorMsg = "Unsupported CPU architecture";
