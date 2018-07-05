@@ -361,4 +361,12 @@ class MiscHelpers
 		
 		return 'Unknown';
 	}
+        public static function getUserImagePath($exeImage, $cpuArchitecture)
+        {
+            if (!empty($cpuArchitecture))
+            {
+                $architecture = strpos($cpuArchitecture, 'x86') ? '32' : '64';
+                return basename($exeImage) . " (".$architecture.")";
+            }
+        }
 }
