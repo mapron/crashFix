@@ -60,7 +60,7 @@ class CStackWalker
 public:
 
     //! Constructor
-    CStackWalker();
+    CStackWalker(const std::wstring & sPeSearchDir);
 
 	//! Destructor
     virtual ~CStackWalker();
@@ -108,6 +108,7 @@ private:
     //! Undoes effects of prolog.
     BOOL UndoAMD64Prolog(CPeReader* pPeReader, DWORD dwUnwindInfoRVA, DWORD dwOffsInFunc);
         
+    const std::wstring & m_PeSearchDir;
     CMiniDumpReader* m_pMdmpReader; //!< Pointer to minidump reader
     LPBYTE m_pThreadContext;        //!< Thread context.
 	UINT m_uThreadContextSize;      //!< Thread context size.
