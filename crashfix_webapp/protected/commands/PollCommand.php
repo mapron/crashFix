@@ -2,6 +2,8 @@
 
 class PollCommand extends CConsoleCommand
 {
+    private $_affectedCrashGroups = [];
+    
 	public function run($args)
 	{
 		Yii::log("Entering the method run", "info");
@@ -32,6 +34,8 @@ class PollCommand extends CConsoleCommand
 		
 		// Process new crash report files uploaded recently.
 		$this->processNewCrashReportFiles();
+		
+		$this->cleanupCrashGroups();
 		
 		// Send pending mail messages.
 		MailQueue::sendMail();
@@ -426,6 +430,8 @@ class PollCommand extends CConsoleCommand
 				
 				// Commit transaction
 				$transaction->commit();
+				
+				$this->_affectedCrashGroups[] = $crashReport->groupid;
 			}
 			catch(Exception $e)
 			{
@@ -939,6 +945,8 @@ class PollCommand extends CConsoleCommand
 		}
 				
 		$crashReport->groupid = $crashGroup->id;
+		
+		$this->_affectedCrashGroups[] = $crashReport->groupid;
 						
 		// Update crash report
 		$saved = $crashReport->save();
@@ -1306,6 +1314,39 @@ class PollCommand extends CConsoleCommand
 		Yii::log(
 				"Finished checking for debug info files ready for deletion.", 
 				"info");
+    }
+    
+    private function cleanupCrashGroups()
+    {
+        $unsortedMD5 = '0d181b197467a385dad7027f806680c8'; //  	'Unsorted Reports'
+        
+        $groups = CrashGroup::model()->findAllByPk($this->_affectedCrashGroups); // fetch only affected crash groups for the sake of time.
+        foreach ($groups as $group)
+        {
+            if ($group->md5 == $unsortedMD5)
+                continue;
+            
+            $project = Project::model()->findByPk($group->project_id);
+            $groupQuota = $project->crash_reports_per_group_quota;
+            if ($group->crashReportCount > $groupQuota)
+            {
+                $deleteCount = $group->crashReportCount - $groupQuota;
+                // for debug:
+                //print $project->name . " quota=" . $groupQuota . " group=" . $group->title . " count=" . $group->crashReportCount . " delete=" . $deleteCount . "\r\n";
+                $criteria=new CDbCriteria;
+                $criteria->compare('groupid', $group->id);
+                $criteria->order = 'received ASC';
+                $criteria->limit = $deleteCount;
+                // find earliest records
+                $reports = CrashReport::model()->findAll($criteria);
+                $report_ids = array_map(function($report){ return $report->id; }, $reports);
+                
+                $criteria=new CDbCriteria;
+                $criteria->addInCondition('id', $report_ids);
+                
+                CrashReport::model()->deleteAll($criteria);                  
+            }            
+        }
     }
 };
 
