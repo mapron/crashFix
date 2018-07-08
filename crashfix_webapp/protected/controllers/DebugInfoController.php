@@ -273,6 +273,9 @@ class DebugInfoController extends Controller
 
 				}
 			}
+			
+			$project = Yii::app()->user->getCurProject();
+			$project->cleanupOldDebugInfo();
 		}
 
 		// Display the result

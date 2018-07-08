@@ -359,5 +359,39 @@ class Project extends CActiveRecord
 		// Return file count
 		return $count;
 	}
+	
+	public function cleanupOldDebugInfo()
+	{
+	    if($this->debug_info_files_disc_quota > 0)
+	    {	        
+	        // select all debug info for project. Most recent will be first.
+	        $criteria=new CDbCriteria;
+	        $criteria->compare('project_id', $this->id, false, 'AND');
+	        $criteria->order = 'dateuploaded DESC';
+	        $debugInfoFiles = DebugInfo::model()->findAll($criteria);
+	        
+	        $quotaBytes = $this->debug_info_files_disc_quota * 1024 * 1024;
+	        
+	        $totalFileSize = 0;
+	        $deleteIds = [];
+	        foreach($debugInfoFiles as $debugInfo)
+	        {
+	            if ($debugInfo->status == DebugInfo::STATUS_PENDING_DELETE || $debugInfo->status == DebugInfo::STATUS_DELETE_IN_PROGRESS)
+	                continue;
+	            
+	            $totalFileSize += $debugInfo->filesize;
+	            // if total size exceeds quota, mark file for deletion.
+	            if ($totalFileSize > $quotaBytes)	                
+	               $deleteIds[] = $debugInfo->id;
+	        }
+	      	        
+	        if(!empty($deleteIds))
+	        {
+	            $criteriaDel = new CDbCriteria;
+	            $criteriaDel->addInCondition('id', $deleteIds);
+	            DebugInfo::model()->updateAll(['status' => DebugInfo::STATUS_PENDING_DELETE], $criteriaDel);
+	        }
+	    }
+	}
 }
 

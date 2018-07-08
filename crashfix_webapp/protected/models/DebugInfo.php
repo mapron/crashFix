@@ -175,24 +175,6 @@ class DebugInfo extends CActiveRecord
 			return false; 
 		}
 		
-        // Check total debug info size disc quota for project.
-        if($project->debug_info_files_disc_quota>0)
-        {
-            $totalFileSize = 0;
-            $percentOfQuota = 0;
-            $project->getDebugInfoCount($totalFileSize, $percentOfQuota);
-            
-            if($project->debug_info_files_disc_quota*1024*1024 < 
-                    $totalFileSize+$this->filesize)
-            {
-                // Quota has exceeded
-                $this->addError(
-                        'fileAttachment', 
-                        'Debug info disc quota for this project has exceeded.');			
-                return false; 
-            }
-        }
-		
 		// Calc md5 hash and save it as model attribute
 		$this->md5 = md5_file($this->fileAttachment->getTempName());
 
