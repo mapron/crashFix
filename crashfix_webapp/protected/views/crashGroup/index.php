@@ -99,17 +99,12 @@ You have no projects assigned.
 			  'value'=>'CHtml::link(MiscHelpers::addEllipsis($data->title, 120), \'view/\'.$data->id)',			  
           ),
 		  'crashReportCount',
+          'deletedCount',
           array(                          			  
 			  'name'=>'distinctIPs',
 			  'header'=>'Distinct IPs',
 			  'type'=>'text',
 			  'value'=>'$data->getDistinctIPs()',			  
-          ),
-		  array(                          			  
-			  'name'=>'bugCount',
-			  'header'=>'Bug(s)',
-			  'type'=>'raw',
-			  'value'=>'$data->formatBugListStr()',			  
           ),
           array(            // display 'dateuploaded' using an expression
               'name'=>'created',
