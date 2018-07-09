@@ -364,6 +364,16 @@ class PollCommand extends CConsoleCommand
                 $command .= ' --relax-build-age';
             }
             
+            $version = $crashReport->appVersion->version;
+            $projectName = $crashReport->project->name;
+            
+            $command .= ' --pe-search-dir "' . Yii::app()->getBasePath() 
+                . DIRECTORY_SEPARATOR . "data" 
+                . DIRECTORY_SEPARATOR . "peFiles" 
+                . DIRECTORY_SEPARATOR . $projectName
+                . DIRECTORY_SEPARATOR . $version
+                . '"';
+            
 			// Execute the command
 			$responce = "";
 			$retCode = Yii::app()->daemon->execCommand($command, $responce);

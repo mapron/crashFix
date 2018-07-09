@@ -69,9 +69,10 @@ public:
 	//! @param[out] psErrorMsg On output, receives error message. Optional.
 	//! @param[in] bExactMatchBuildAge Optional. If to require the exact match of build age (default is true).
     bool FindPdb(
-		std::wstring sGUIDnAge, 
+		const std::wstring & sGUIDnAge, 
 		std::wstring sPdbFileName, 
 		std::wstring sImageFileName, 
+        const std::wstring & sPeSearchDir,     
         CPdbReader** ppPdbReader, 
 		CPeReader** ppPeReader,
 		int* pnHandle,
@@ -145,12 +146,13 @@ private:
 	//! @param[out] ppPdbReader On output, receives a pointer to a newly created CPdbReader object.
 	//! @param[out] ppPeReader On output, receivew a pointer to a newly created PeReader object.
     bool SearchDirectory(
-		std::wstring sSearchDir,
+		const std::wstring & sSearchDir,
+        const std::wstring & sPeSearchDir,
 		ePdbDirSearchMode SearchMode,
 		bool bRecursive,
-        std::wstring sPdbName, 
-		std::wstring sPeName, 
-		std::wstring sGUID, 
+        const std::wstring & sPdbName, 
+		const std::wstring & sPeName, 
+		const std::wstring & sGUID, 
         CPdbReader** ppPdbReader, 
 		CPeReader** ppPeReader,
 		int* pnEntry, 
@@ -165,10 +167,11 @@ private:
 	//! @param[out] ppPdbReader On output, receives a pointer to a newly created CPdbReader object.
 	//! @param[out] ppPeReader On output, receivew a pointer to a newly created PeReader object.
     bool SearchSymStorageDir(
-		std::wstring sSearchDir, 		
-		std::wstring sPdbName, 
-        std::wstring sPeName, 
-		std::wstring sGUID, 
+		const std::wstring & sSearchDir,
+        const std::wstring & sPeSearchDir,
+		const std::wstring & sPdbName, 
+        const std::wstring & sPeName, 
+		const std::wstring & sGUID, 
         CPdbReader** ppPdbReader, 
 		CPeReader** ppPeReader,
 		int* pnEntry, 

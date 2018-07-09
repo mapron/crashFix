@@ -94,9 +94,10 @@ bool CPdbCache::AddPdbSearchDir(
 
 bool
 CPdbCache::FindPdb(
-	std::wstring sGUIDnAge,
+	const std::wstring & sGUIDnAge,
 	std::wstring sPdbFileName,
 	std::wstring sImageFileName,
+    const std::wstring & sPeSearchDir,
 	CPdbReader** ppPdbReader,
 	CPeReader** ppPeReader,
 	int* pnEntry,
@@ -186,7 +187,7 @@ CPdbCache::FindPdb(
     {
         _SearchDirInfo& sdi = it->second;
 
-		bStatus = SearchDirectory(sdi.m_sPath, sdi.m_SearchMode, sdi.m_bSearchRecursively,
+		bStatus = SearchDirectory(sdi.m_sPath, sPeSearchDir, sdi.m_SearchMode, sdi.m_bSearchRecursively,
             sPdbName, sPeName, sGUIDnAge, &pPdbReader, &pPeReader, &nEntry, sErrorMsg, bExactMatchBuildAge);
         if(bStatus)
             break;
@@ -310,8 +311,8 @@ cleanup:
     return res;
 }
 
-bool CPdbCache::SearchDirectory(std::wstring sSearchDir, ePdbDirSearchMode SearchMode, bool bRecursive,
-                          std::wstring sPdbName, std::wstring sPeName, std::wstring sGUIDnAge,
+bool CPdbCache::SearchDirectory(const std::wstring & sSearchDir, const std::wstring & sPeSearchDir, ePdbDirSearchMode SearchMode, bool bRecursive,
+                          const std::wstring & sPdbName, const std::wstring & sPeName, const std::wstring & sGUIDnAge,
                           CPdbReader** ppPdbReader, CPeReader** ppPeReader, int* pnEntry,
 							std::string& sErrorMsg, bool bExactMatchBuildAge)
 {
@@ -319,7 +320,7 @@ bool CPdbCache::SearchDirectory(std::wstring sSearchDir, ePdbDirSearchMode Searc
     if(SearchMode==PDB_SYMBOL_STORE || sSearchDir.rfind(L"debugInfo")!=sSearchDir.npos)
     {
         // The directory is a symbol storage
-        return SearchSymStorageDir(sSearchDir, sPdbName, sPeName,
+        return SearchSymStorageDir(sSearchDir, sPeSearchDir, sPdbName, sPeName,
 			sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, sErrorMsg, bExactMatchBuildAge);
     }
 
@@ -340,7 +341,7 @@ bool CPdbCache::SearchDirectory(std::wstring sSearchDir, ePdbDirSearchMode Searc
         std::wstring sPdbFileName = sSearchDir;
         sPdbFileName += L"\\" + std::wstring(ffd.cFileName);
 
-        std::wstring sPeFileName = sSearchDir;
+        std::wstring sPeFileName = sPeSearchDir.empty() ? sSearchDir : sPeSearchDir;
         sPeFileName += L"\\" + sPeName;
 
         if(TryPdbFile(sPdbFileName, sPeFileName, sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, false, sErrorMsg, bExactMatchBuildAge))
@@ -371,7 +372,7 @@ bool CPdbCache::SearchDirectory(std::wstring sSearchDir, ePdbDirSearchMode Searc
 				std::wstring sSubDirName = sSearchDir;
 				sSubDirName += L"\\";
 				sSubDirName += std::wstring(ffd.cFileName);
-				if(SearchDirectory(sSubDirName, SearchMode, bRecursive, sPdbName, sPeName,
+				if(SearchDirectory(sSubDirName, sPeSearchDir, SearchMode, bRecursive, sPdbName, sPeName,
 					sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, sErrorMsg, bExactMatchBuildAge))
 				{
 					FindClose(hFind);
@@ -426,7 +427,7 @@ bool CPdbCache::SearchDirectory(std::wstring sSearchDir, ePdbDirSearchMode Searc
                 }
                 else if(bRecursive && S_ISDIR(st.st_mode))
                 {
-                    if(SearchDirectory(strconv::a2w(sPdbFileName), SearchMode,
+                    if(SearchDirectory(strconv::a2w(sPdbFileName), sPeSearchDir, SearchMode,
 						bRecursive, sPdbName, sPeName, sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, sErrorMsg, bExactMatchBuildAge))
                        return true;
                 }
@@ -440,8 +441,8 @@ bool CPdbCache::SearchDirectory(std::wstring sSearchDir, ePdbDirSearchMode Searc
     return false;
 }
 
-bool CPdbCache::SearchSymStorageDir(std::wstring sSearchDir, std::wstring sPdbName,
-        std::wstring sPeName, std::wstring sGUIDnAge,
+bool CPdbCache::SearchSymStorageDir(const std::wstring & sSearchDir, const std::wstring & sPeSearchDir, const std::wstring & sPdbName,
+        const std::wstring & sPeName, const std::wstring & sGUIDnAge,
         CPdbReader** ppPdbReader, CPeReader** ppPeReader, int* pnEntry
 		,std::string& sErrorMsg, bool bExactMatchBuildAge)
 {
@@ -459,8 +460,7 @@ bool CPdbCache::SearchSymStorageDir(std::wstring sSearchDir, std::wstring sPdbNa
 	sPdbFileName += slash;
 	sPdbFileName += sPdbName;
 
-    std::wstring sPeFileName = sSearchDir;
-    sPeFileName += sPeName;
+    const std::wstring sPeFileName = (sPeSearchDir.empty() ? sSearchDir : sPeSearchDir) + L"\\" + sPeName;
 
 	// Try to find exact match of GUID+Age string
     if(TryPdbFile(sPdbFileName, sPeFileName, sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, true, sErrorMsg, bExactMatchBuildAge))
@@ -1177,8 +1177,9 @@ bool CPdbCache::DeleteCachedFile(std::wstring sPath, bool bDeleteFile)
 
 cleanup:
 
-	return bStatus;
+    return bStatus;
 }
+
 
 bool CPdbCache::EraseCacheEntry(int nEntry)
 {

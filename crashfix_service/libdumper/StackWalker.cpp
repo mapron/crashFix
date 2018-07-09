@@ -8,7 +8,8 @@
 #include "DumpStruct.h"
 #include "PeStruct.h"
 
-CStackWalker::CStackWalker()
+CStackWalker::CStackWalker(const std::wstring & sPeSearchDir)
+    : m_PeSearchDir(sPeSearchDir)
 {
     m_pMdmpReader = NULL;
     m_pThreadContext = NULL;
@@ -135,6 +136,7 @@ BOOL CStackWalker::FirstStackFrame()
 BOOL CStackWalker::NextStackFrame(BOOL bFirstFrame)
 {
     DWORD dwValue = 0;
+    DWORD64 dwRetAddr64 = 0;
     DWORD dwBytesRead = 0;
 
     if(!bFirstFrame)
@@ -160,7 +162,7 @@ BOOL CStackWalker::NextStackFrame(BOOL bFirstFrame)
         CPeReader* pPeReader = NULL;
 		int nEntry = -1;
 		bool bFind = m_pPdbCache->FindPdb(pModuleInfo->GUIDnAge(), pModuleInfo->m_sPdbFileName,
-            pModuleInfo->m_sModuleName, &pPdbReader, &pPeReader, &nEntry, NULL, m_bExactMatchBuildAge);
+            pModuleInfo->m_sModuleName, m_PeSearchDir, &pPdbReader, &pPeReader, &nEntry, NULL, m_bExactMatchBuildAge);
         if(bFind)
         {
             // Matching PDB/PE found
@@ -223,7 +225,7 @@ BOOL CStackWalker::NextStackFrame(BOOL bFirstFrame)
                     // by 8, and step 1 is repeated.
 
                     // Read return address
-                    DWORD64 dwRetAddr64 = 0;
+
                     DWORD dwBytesRead = 0;
                     BOOL bRead = m_pMdmpReader->ReadMemory(m_StackFrame.m_dwAddrStack, &dwRetAddr64, sizeof(DWORD64), &dwBytesRead);
                     if(!bRead || dwBytesRead!=sizeof(DWORD64))
@@ -232,7 +234,7 @@ BOOL CStackWalker::NextStackFrame(BOOL bFirstFrame)
                     // Get pointer to AMD64 thread context
                     PCONTEXT_x64 pThreadContextX64 = (PCONTEXT_x64)m_pThreadContext;
 
-                    pThreadContextX64->Rip = dwRetAddr64;
+                    pThreadContextX64->Rip = dwRetAddr64; 
                 }
                 else
                 {
@@ -286,11 +288,17 @@ BOOL CStackWalker::NextStackFrame(BOOL bFirstFrame)
         BOOL bRead = m_pMdmpReader->ReadMemory(m_StackFrame.m_dwAddrFrame+4, &dwValue, sizeof(DWORD), &dwBytesRead);
         if(!bRead || dwBytesRead!=sizeof(DWORD))
             return FALSE;
+        
+        m_StackFrame.m_dwAddrReturn = dwValue;
+    }
+    else 
+    {
+        m_StackFrame.m_dwAddrReturn = dwRetAddr64;
     }
 
     // Set stack frame fields
 
-    m_StackFrame.m_dwAddrReturn = dwValue;
+    
     m_StackFrame.m_pFuncTableEntry = FALSE;
     m_StackFrame.m_bFar = FALSE;
     m_StackFrame.m_bVirtual = FALSE;
@@ -806,7 +814,7 @@ bool CStackWalker::GetSymbolInfoForCurStackFrame()
         CPeReader* pPeReader = NULL;
 		int nEntry = -1;
 		bool bFind = m_pPdbCache->FindPdb(pModuleInfo->GUIDnAge(), pModuleInfo->m_sPdbFileName,
-            pModuleInfo->m_sModuleName, &pPdbReader, &pPeReader, &nEntry, NULL, m_bExactMatchBuildAge);
+            pModuleInfo->m_sModuleName, m_PeSearchDir,  &pPdbReader, &pPeReader, &nEntry, NULL, m_bExactMatchBuildAge);
         if(bFind)
         {
             m_StackFrame.m_sPdbFileName = pPdbReader->GetFileName();

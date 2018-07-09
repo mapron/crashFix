@@ -48,7 +48,13 @@ class MainMenuPortlet extends CPortlet
 					'url'=>array('debugInfo/index'), 
 					'active'=>$this->activeItem=='DebugInfo', 
 					'visible'=>Yii::app()->user->checkAccess('pperm_browse_some_debug_info')
-				),			        								
+				),	
+			    array(
+				    'label'=>'Binary files',
+				    'url'=>array('binaryFile/index'),
+				    'active'=>$this->activeItem=='BinaryFile',
+				    'visible'=>Yii::app()->user->checkAccess('pperm_browse_some_debug_info')
+				),	
 				array(
 					'label'=>'Administer', 
 					'url'=>array('site/admin'), 

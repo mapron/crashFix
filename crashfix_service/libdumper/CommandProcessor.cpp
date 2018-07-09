@@ -39,7 +39,7 @@ CCommandProcessor::~CCommandProcessor()
 
 
 int CCommandProcessor::Run(int argc, char* argv[])
-{
+{   
  	int cur_arg = 1;
 
 	if(cmp_arg("--read-minidump"))
@@ -107,22 +107,18 @@ int CCommandProcessor::Run(int argc, char* argv[])
 		LPCSTR szOutFile = get_arg();
 		skip_arg();
 		
-		LPCWSTR wszCrashRptFileName = NULL;
-		LPCWSTR wszOutFile = NULL;
-		LPCWSTR wszSymbolSearchDir = NULL;
 		std::wstring sCrashRptFileName;
 		std::wstring sOutFile;
 		std::wstring sSymbolSearchDir;
+        std::wstring sPeSearchDir;
 		bool bRelaxBuildAge = false;
 		if(szCrashRptFileName)
 		{
 			sCrashRptFileName = strconv::a2w(szCrashRptFileName);
-			wszCrashRptFileName = sCrashRptFileName.c_str();
 		}
 		if(szOutFile)
 		{
 			sOutFile = strconv::a2w(szOutFile);
-			wszOutFile = sOutFile.c_str();
 		}
 		
 		LPCSTR szRelaxBuildAge = get_arg();
@@ -132,6 +128,15 @@ int CCommandProcessor::Run(int argc, char* argv[])
 			bRelaxBuildAge = true;
 			skip_arg();
 		}
+        
+        LPCSTR peSearchKey = get_arg();
+        if (peSearchKey && std::string(peSearchKey) == "--pe-search-dir")
+        {
+            skip_arg();
+            LPCSTR szPeSearchDir = get_arg();
+            skip_arg();
+            sPeSearchDir = strconv::a2w(szPeSearchDir);            
+        }
 
 		LPCSTR szSymbolSearchDir = get_arg();
 		skip_arg();
@@ -139,11 +144,9 @@ int CCommandProcessor::Run(int argc, char* argv[])
 		if(szSymbolSearchDir)
 		{
 			sSymbolSearchDir = strconv::a2w(szSymbolSearchDir);
-			wszSymbolSearchDir = sSymbolSearchDir.c_str();
 		}
 
-
-		return DumpCrashReport(wszCrashRptFileName, wszOutFile, wszSymbolSearchDir, !bRelaxBuildAge);
+		return DumpCrashReport(sCrashRptFileName, sOutFile, sSymbolSearchDir, sPeSearchDir, !bRelaxBuildAge);
 	}
 	else if(cmp_arg("--extract-file"))
 	{
@@ -936,7 +939,7 @@ cleanup:
 	return nStatus;
 }
 
-int CCommandProcessor::DumpCrashReport(LPCWSTR szCrashRptFileName, LPCWSTR szOutFile, LPCWSTR szSymbolSearchDir, bool bExactMatchBuildAge)
+int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, const std::wstring & peSearchDir, bool bExactMatchBuildAge)
 {
     m_sErrorMsg = "Unspecified error";
 	int nStatus = 1;
@@ -960,24 +963,18 @@ int CCommandProcessor::DumpCrashReport(LPCWSTR szCrashRptFileName, LPCWSTR szOut
 		goto cleanup;
 	}
 
-	if(szCrashRptFileName==NULL)
+	if(szCrashRptFileName.empty())
 	{
 		m_pLog->write(0, "Invalid src file name specified!\n");
         m_sErrorMsg = "Invalid src file name specified";
 		goto cleanup;
 	}
 
-	if(szOutFile==NULL)
+	if(szOutFile.empty())
 	{
 		m_pLog->write(0, "Invalid output file name specified!\n");
         m_sErrorMsg = "Invalid output file name specified";
 		goto cleanup;
-	}
-
-	if(szSymbolSearchDir!=NULL)
-	{
-		std::wstring sSearchDir(szSymbolSearchDir);
-		m_pPdbCache->AddPdbSearchDir(sSearchDir, PDB_USUAL_DIR, true);
 	}
 
 	sUtf8OutFile = strconv::w2a(szOutFile);
@@ -990,6 +987,11 @@ int CCommandProcessor::DumpCrashReport(LPCWSTR szCrashRptFileName, LPCWSTR szOut
         m_sErrorMsg = "Debug info cache is not specified";
 		goto cleanup;
 	}
+    
+    if(!szSymbolSearchDir.empty())
+	{
+		m_pPdbCache->AddPdbSearchDir(szSymbolSearchDir, PDB_USUAL_DIR, true);
+	}  
 
 	bRead = CrashRptReader.Init(sCrashRptFileName);
 	if(!bRead)
@@ -1196,7 +1198,7 @@ int CCommandProcessor::DumpCrashReport(LPCWSTR szCrashRptFileName, LPCWSTR szOut
 
 			BOOL bUnwindNotAvail = FALSE;
 
-			CStackWalker StackWalker;
+			CStackWalker StackWalker(peSearchDir);
 			bool bInit = StackWalker.Init(pMiniDump, m_pPdbCache, pThread->m_uThreadId, bExactMatchBuildAge);
 			if(bInit)
 			{
@@ -1325,7 +1327,7 @@ int CCommandProcessor::DumpCrashReport(LPCWSTR szCrashRptFileName, LPCWSTR szOut
 			int hEntry = -1;
 
 			// Try to load PDB file for this module
-			bool bFind = m_pPdbCache->FindPdb(pmi->GUIDnAge(), pmi->m_sPdbFileName, pmi->m_sModuleName, 
+			bool bFind = m_pPdbCache->FindPdb(pmi->GUIDnAge(), pmi->m_sPdbFileName, pmi->m_sModuleName, peSearchDir, 
 				&pPdbReader, &pPeReader, &hEntry, NULL, bExactMatchBuildAge);
 
 			if(bFind && pPdbReader!=NULL)
@@ -1502,13 +1504,6 @@ int CCommandProcessor::ImportPdb(LPCWSTR szPdbFileName, LPCWSTR szSymDir, LPCWST
         m_sErrorMsg = "Error retrieving headers stream from PDB file.";
         goto exit;
     }
-
-	if(PdbReader.IsAMD64())
-	{
-		nStatus = 2;
-        m_sErrorMsg = "Unsupported architecture.";
-        goto exit;
-	}
 
     // Get GUID
     sGUID = pHeaders->GetGUID();
