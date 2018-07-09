@@ -1344,8 +1344,9 @@ class PollCommand extends CConsoleCommand
                 $criteria=new CDbCriteria;
                 $criteria->addInCondition('id', $report_ids);
                 
-                CrashReport::model()->deleteAll($criteria);                  
-            }            
+                foreach (CrashReport::model()->findAll($criteria) as $report)
+                    $report->delete(); // deleteAll does not trigger events!
+            }
         }
     }
 };

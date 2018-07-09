@@ -81,6 +81,7 @@ class CrashGroup extends CActiveRecord
 			'status' => 'Status',
 			'title' => 'Title',
 			'crashReportCount' => 'Reports',
+		    'deletedCount' => 'Deleted',
 		);
 	}
 

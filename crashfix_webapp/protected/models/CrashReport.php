@@ -515,6 +515,8 @@ class CrashReport extends CActiveRecord
 		if(!$this->deleteAssociatedRecords())
 			return false;
 		
+		CrashGroup::model()->updateCounters(['deletedCount' => 1], ['condition' => "id = " . $this->groupid]);
+		
 		// Get local file path to crash report file
 		$fileName = $this->getLocalFilePath();
 		
