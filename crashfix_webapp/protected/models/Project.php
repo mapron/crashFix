@@ -212,24 +212,18 @@ class Project extends CActiveRecord
 	 */
 	public function getCrashReportCount(&$totalFileSize, &$percentOfDiskQuota, $appver = Project::PROJ_VER_ALL)
 	{
-		// Find all crash reports belonging to this project and having
-		// $appver application version.
-		$criteria=new CDbCriteria;				
-		$criteria->compare('project_id', $this->id, false, 'AND');
-		if($appver!=Project::PROJ_VER_ALL)
-		{
-			$criteria->compare('appversion_id', $appver, false, 'AND');
-		}
-		
-		$crashReports = CrashReport::model()->findAll($criteria);
+        $params = ["project_id" => $this->id];
+        $sql = "SELECT COUNT(1) as cnt, SUM(filesize) as totalsize FROM {{crashreport}} WHERE project_id = :project_id";
+        if($appver!=Project::PROJ_VER_ALL)
+        {
+            $params["appversion_id"] = $appver;
+            $sql .= " AND appversion_id = :appversion_id"; 
+        }
+        $countSize= CrashReport::model()->getCommandBuilder()->createSqlCommand($sql, $params)->queryRow();
 		
 		// Calculate count of crash reports
-		$count = CrashReport::model()->count($criteria);
-		
-		// Calculate total file size
-		$totalFileSize = 0;
-		foreach($crashReports as $crashReport)
-			$totalFileSize += $crashReport->filesize;
+		$count = $countSize['cnt'];
+		$totalFileSize = $countSize['totalsize'];
 				
 		// Calc percent of disk quota
         if($this->crash_report_files_disc_quota<=0) // unlimited
