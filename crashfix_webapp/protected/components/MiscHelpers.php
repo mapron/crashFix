@@ -365,6 +365,8 @@ class MiscHelpers
         {
             if (!empty($cpuArchitecture))
             {
+                $exeImage = str_replace("\\", DIRECTORY_SEPARATOR, $exeImage);
+                
                 $architecture = strpos($cpuArchitecture, 'x86') ? '32' : '64';
                 return basename($exeImage) . " (".$architecture.")";
             }
