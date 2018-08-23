@@ -31,11 +31,11 @@ add_library(libdumper ${source_files})
 set_target_properties(libdumper PROPERTIES DEBUG_POSTFIX d)
 
 # Specify link dependencies for the target
-target_link_libraries(libdumper zlib minizip tinyxml)
+target_link_libraries(libdumper PRIVATE zlib minizip tinyxml)
 
 # In Linux, link to pthread library
 if(UNIX)	
-	target_link_libraries(libdumper pthread)
+	target_link_libraries(libdumper PRIVATE pthread)
 	set_target_properties(libdumper PROPERTIES COMPILE_FLAGS "-lrt")
 endif(UNIX)
 
