@@ -319,6 +319,49 @@ void FixSlashesInFilePath(std::wstring& sPath)
 #endif
 
 }
+#ifdef _WIN32
+void KillProcessById(DWORD pid) 
+{
+    HANDLE hnd;
+    hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
+    TerminateProcess(hnd, 0);
+}
+#endif
+
+int executeWithTimeout(const char *szCmdLine, int timeoutSeconds)
+{
+#ifdef _WIN32
+    STARTUPINFOA si;
+	memset(&si, 0, sizeof(STARTUPINFO));
+	si.cb = sizeof(STARTUPINFO);
+	PROCESS_INFORMATION pi;
+	BOOL bCreate = CreateProcessA(NULL, (LPSTR)szCmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+	if(!bCreate)
+		return -1;
+
+    if (timeoutSeconds == -1) {
+        WaitForSingleObject( pi.hProcess, INFINITE );
+    } else {
+        if (WAIT_OBJECT_0 != WaitForSingleObject(pi.hProcess, timeoutSeconds * 1000))
+        {
+            KillProcessById(pi.dwProcessId);
+            CloseHandle(pi.hProcess);
+            return -1;
+        }
+    }
+    	
+	DWORD dwExitCode = 0;
+	GetExitCodeProcess(pi.hProcess, &dwExitCode);
+	CloseHandle(pi.hProcess);
+
+	return (int)dwExitCode;
+#else
+    std::string cmd = szCmdLine;
+    if (timeoutSeconds > 0)
+        cmd = "timeout -s 9 " + std::to_string(timeoutSeconds) + " " + cmd;
+    return system(cmd.c_str());
+#endif
+}
 
 #ifdef _WIN32
 
@@ -439,5 +482,4 @@ void Sleep(int msec)
 }
 
 #endif //_WIN32
-
 

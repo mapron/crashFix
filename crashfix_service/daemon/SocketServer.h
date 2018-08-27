@@ -89,6 +89,8 @@ public:
 
     //! Returns the last error msg.
     std::string GetErrorMsg();
+    
+    std::string GetDefaultPdbCache();
 
     //! Sends a zero-terminated message to socket and waits for response for a given timeout.
     //! \return Zero on success.

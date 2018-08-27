@@ -392,12 +392,28 @@ int CServerThread::ProcessCommand(const char* szCmdLine, std::string& sErrorMsg)
 	}
 	else if(argc>0 && strcmp(argv[0], "dumper")==0)
     {
+#if 0 // inprocess execution - use for debug.
 		// A synchronous "dumper" command
         CCommandProcessor cp;
         cp.SubstituteLog(m_pLog, false);
 		cp.SubstitutePdbCache(&m_pServer->m_PdbCache, false);
         nErrorCode = cp.Run(argc, argv);
         sErrorMsg = cp.GetErrorMsg();
+#else
+        const std::string sPdbSearchDir = m_pServer->GetDefaultPdbCache();
+        const std::string cmd = "./" + std::string(sCmdLine) + " " + sPdbSearchDir;
+  
+        if (executeWithTimeout(cmd.c_str(), 6) == 0)
+        {
+            sErrorMsg = "";
+            nErrorCode = 0;
+        }
+        else
+        {
+            nErrorCode = 1;
+            sErrorMsg = "Failed to execute dumper command";
+        }
+#endif
     }
     else if(argc>0 && strcmp(argv[0], "daemon")==0)
     {

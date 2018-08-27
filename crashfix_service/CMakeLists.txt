@@ -45,6 +45,7 @@ MACRO (ADD_PCH_RULE  _header_filename _src_list)
 ENDMACRO(ADD_PCH_RULE _header_filename _src_list)
 
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_LIST_DIR}/thirdparty/wtl/")
+include_directories( ${CMAKE_SOURCE_DIR}/libdumper )
 
 add_subdirectory("libdumper")
 add_subdirectory("dumper")
@@ -58,6 +59,14 @@ add_subdirectory("libtest")
 add_subdirectory("thirdparty/zlib")
 add_subdirectory("thirdparty/minizip")
 add_subdirectory("thirdparty/tinyxml")
+
+add_executable(ExecuteTest libdumper_tests/ExecuteTest.cpp)
+add_executable(ExecuteHang libdumper_tests/ExecuteHang.cpp)
+add_dependencies(ExecuteTest ExecuteHang)
+target_link_libraries(ExecuteTest PRIVATE libdumper)
+if (WIN32)
+   target_link_libraries(ExecuteTest PRIVATE psapi.lib)
+endif()
 
 # Install
 if(UNIX)

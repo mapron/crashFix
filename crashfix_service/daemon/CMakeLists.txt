@@ -9,7 +9,7 @@ if(WIN32)
 add_definitions(-D_UNICODE -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS)
 endif(WIN32)
 
-include_directories( ${CMAKE_SOURCE_DIR}/libdumper )
+
 
 if(UNIX)
 	ADD_PCH_RULE("stdafx.cpp"  source_files)

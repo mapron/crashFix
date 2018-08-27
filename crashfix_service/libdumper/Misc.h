@@ -59,6 +59,8 @@ size_t GetMemoryUsage();
 //! Replaces slashes with backslashes (for Windows) and vise versa (for Linux).
 void FixSlashesInFilePath(std::wstring& sPath);
 
+int executeWithTimeout(const char* szCmdLine, int timeoutSeconds = -1);
+
 #ifdef _WIN32
 
 //! Spawns another process and, optionally, blocks until it extis
