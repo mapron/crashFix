@@ -403,7 +403,7 @@ int CServerThread::ProcessCommand(const char* szCmdLine, std::string& sErrorMsg)
         const std::string sPdbSearchDir = m_pServer->GetDefaultPdbCache();
         const std::string cmd = "./" + std::string(sCmdLine) + " " + sPdbSearchDir;
   
-        if (executeWithTimeout(cmd.c_str(), 6) == 0)
+        if (executeWithTimeout(cmd.c_str(), 30) == 0)
         {
             sErrorMsg = "";
             nErrorCode = 0;
