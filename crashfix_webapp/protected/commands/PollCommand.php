@@ -118,7 +118,7 @@ class PollCommand extends CConsoleCommand
 			// Check responce and get command ID from server responce
 			$matches = array();
 			$check = preg_match(
-					'#Assync command \{([0-9]{1,6}.[0-9]{1,9})\} has been added to the request queue.#', 
+					'#Assync command \{([0-9]{1,10}.[0-9]{1,9})\} has been added to the request queue.#', 
 					$responce, $matches);			
 			if(!$check || !isset($matches[1]))
 			{
@@ -391,7 +391,7 @@ class PollCommand extends CConsoleCommand
 			// Check response and get command ID from server responce
 			$matches = array();
 			$check = preg_match(
-					'#Assync command \{([0-9]{1,6}.[0-9]{1,9})\} has been added to the request queue.#', 
+					'#Assync command \{([0-9]{1,10}.[0-9]{1,9})\} has been added to the request queue.#', 
 					$responce, $matches);			
 			if(!$check || !isset($matches[1]))
 			{
@@ -1264,7 +1264,7 @@ class PollCommand extends CConsoleCommand
 			// Check responce and get command ID from server responce
 			$matches = array();
 			$check = preg_match(
-					'#Assync command \{([0-9]{1,6}.[0-9]{1,9})\} has been added to the request queue.#', 
+					'#Assync command \{([0-9]{1,10}.[0-9]{1,9})\} has been added to the request queue.#', 
 					$responce, $matches);			
 			if(!$check || !isset($matches[1]))
 			{
