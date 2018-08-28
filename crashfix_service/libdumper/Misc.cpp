@@ -362,6 +362,53 @@ int executeWithTimeout(const char *szCmdLine, int timeoutSeconds)
     return system(cmd.c_str());
 #endif
 }
+std::string GetDir(std::string path)
+{
+   return path.substr(0, path.rfind('/'));
+}
+
+std::string GetExecutablePath ()
+{
+	#ifdef __APPLE__
+	char path[4096], actualpath[4096];
+	uint32_t size = sizeof(path);
+	if (_NSGetExecutablePath(path, &size) != 0)
+		return path;
+	char * abspath = realpath(path, actualpath);
+	if (abspath)
+		return GetDir(abspath);
+	return "./";
+	#elif !defined(_WIN32)
+	int len;
+	char path[1024];
+
+	// Read symbolic link /proc/self/exe
+
+	len = readlink("/proc/self/exe", path, sizeof(path));
+	if(len == -1)
+		return std::string("./");
+
+	path[len] = '\0';
+	return GetDir(path);
+	#else
+
+	WCHAR szFileName[MAX_PATH];
+
+	GetModuleFileNameW( nullptr, szFileName, MAX_PATH );
+	std::wstring w (szFileName);
+	std::string s1(w.begin(), w.end() );
+	int pos = 0;
+	for (size_t i=s1.size()-1;i>0; i--) {
+	   if (s1[i] == '\\') {
+		  pos = i; break;
+	   }
+	}
+
+	return std::string(s1.begin(), s1.begin() + pos + 1);
+
+#endif
+}
+
 
 #ifdef _WIN32
 
@@ -482,4 +529,3 @@ void Sleep(int msec)
 }
 
 #endif //_WIN32
-

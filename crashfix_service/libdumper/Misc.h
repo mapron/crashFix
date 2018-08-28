@@ -61,6 +61,8 @@ void FixSlashesInFilePath(std::wstring& sPath);
 
 int executeWithTimeout(const char* szCmdLine, int timeoutSeconds = -1);
 
+std::string GetExecutablePath ();
+
 #ifdef _WIN32
 
 //! Spawns another process and, optionally, blocks until it extis
