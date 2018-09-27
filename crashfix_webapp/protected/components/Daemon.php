@@ -304,7 +304,7 @@ class Daemon extends CApplicationComponent
 		} 
 		
 		// Connect socket	
-		$result = @socket_connect($sock, '127.0.0.1', '50');
+		$result = @socket_connect($sock, '127.0.0.1', '1234');
 		if( FALSE === $result ) 
 		{
 			$responce = "Error connecting to daemon.";

@@ -26,7 +26,7 @@ return array(
 		'daemon'=>array(
 			'class'=>'Daemon',
 			'host'=>'127.0.0.1',
-			'servicePort'=>'50',
+			'servicePort'=>'1234',
 		),		
 		
 		'log'=>array(

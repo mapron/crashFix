@@ -346,7 +346,7 @@ void CDaemon::ReadConfig()
 	m_nMaxQueueSize = config.getProfileInt("MAX_QUEUE_SIZE", 100);
 
 	// Read server port number
-	m_nServerPort = config.getProfileInt("SERVER_PORT", 50);
+	m_nServerPort = config.getProfileInt("SERVER_PORT", 1234);
 
 	// Read pid file name
 	m_sPIDFile = config.getProfileString("PIDFILE", szBuff, 2048);

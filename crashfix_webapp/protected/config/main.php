@@ -65,7 +65,7 @@ return array(
         'daemon' => array(
             'class' => 'Daemon',
             'host' => '127.0.0.1',
-            'servicePort' => '50',
+            'servicePort' => '1234',
         ),
         'errorHandler' => array(
             // use 'site/error' action to display errors
