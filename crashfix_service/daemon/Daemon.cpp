@@ -49,6 +49,8 @@ CDaemon::CDaemon()
 #ifdef _WIN32
 	m_hEventStop = CreateEvent(NULL, TRUE, FALSE, L"Local\\04B8BCA1-BDAF-4686-82CE-A7DF707C5287");
 	m_bLogInitialized = false;
+
+	CreateDir(GetModulePath(nullptr) + L"\\logs");
 #endif
 }
 
