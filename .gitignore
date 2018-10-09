@@ -43,5 +43,6 @@
 /crashfix_webapp/protected/runtime
 /crashfix_webapp/protected/data/crashReports/*
 /crashfix_webapp/protected/data/debugInfo/*
+/crashfix_webapp/.idea/*
 /build*
 *.user
