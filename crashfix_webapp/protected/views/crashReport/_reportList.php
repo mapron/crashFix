@@ -36,7 +36,7 @@
 	<div class="row">
 	<?php echo CHtml::activeLabel($model,'status'); ?>	
 	<?php 
-		$statuses = Lookup::items('CrashReportStatus', $model->status);
+		$statuses = Lookup::items('CrashReportStatus');
 		$statuses = array(-1=>'<any>')+$statuses;
 		echo CHtml::dropDownList('CrashReport[status]', array('selected'=>$model->status), $statuses); 
 	?>
@@ -44,7 +44,7 @@
 	<div class="row">
 	<?php echo CHtml::activeLabel($model,'received'); ?>	
 	From:
-	<?php 
+	<?php
 		$this->widget('zii.widgets.jui.CJuiDatePicker', array(
 			'name'=>'CrashReport[receivedFrom]',
 			'value'=>$model->receivedFrom,

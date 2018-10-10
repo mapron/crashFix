@@ -53,7 +53,7 @@ class CrashReport extends CActiveRecord
 			array('crashrptver', 'numerical', 'integerOnly'=>true, 'min'=>1000, 'max'=>9999), // CrashRpt version should be in range [1000; 9999]
 			// The following rules is used on search
 			array('id, received, status, md5, crashguid, appversion, ipaddress, emailfrom, description', 'safe', 'on'=>'search'),
-			array('receivedTo', 'compareFromToDates', 'on'=>'search'),
+			array('receivedFrom, receivedTo', 'compareFromToDates', 'on'=>'search'),
 		);
 		
 		if($this->scenario!='search')
