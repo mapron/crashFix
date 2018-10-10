@@ -168,13 +168,14 @@
           array(            // display 'dateuploaded' using an expression
               'name'=>'received',
               'value'=>'date("d/m/y H:i", $data->received)',
-          ),          
+          ),
+          'username',
 		  'ipaddress',
 		  'emailfrom',
-		  array(            
+		  array(
               'name'=>'description',
               'value'=>'MiscHelpers::addEllipsis($data->description, 60)',
-          ),  
+          ),
           array(
               'name'=>'exe_image',
               'value'=>'MiscHelpers::getUserImagePath($data->exe_image, $data->cpu_architecture)',

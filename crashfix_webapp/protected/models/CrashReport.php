@@ -716,8 +716,9 @@ class CrashReport extends CActiveRecord
 			'geo_location'=>'Geographic Location',
 			'product_type'=>'Machine Type',
 			'cpu_architecture'=>'CPU Architecture',
+            'username'=>'Username',
 			'cpu_count'=>'CPU Count',
-			'gui_resource_count'=>'GUI Resource Count',			
+			'gui_resource_count'=>'GUI Resource Count',
 			'open_handle_count'=>'Open Handle Count',
 			'memory_usage_kbytes'=>'Memory Usage',
 		);
