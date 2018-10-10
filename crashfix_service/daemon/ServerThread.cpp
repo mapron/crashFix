@@ -400,9 +400,9 @@ int CServerThread::ProcessCommand(const char* szCmdLine, std::string& sErrorMsg)
         nErrorCode = cp.Run(argc, argv);
         sErrorMsg = cp.GetErrorMsg();
 #else
-        const std::string sPdbSearchDir = m_pServer->GetDefaultPdbCache();
-        const std::string cmd = GetExecutablePath() + "/" + std::string(sCmdLine) + " " + sPdbSearchDir;
-  
+		const std::string sPdbSearchDir = sCmdLine.find("--dump-crash-report") != std::string::npos ? m_pServer->GetDefaultPdbCache() : "";
+		const std::string cmd = GetExecutablePath() + "/" + std::string(sCmdLine) + " " + sPdbSearchDir;
+
         if (executeWithTimeout(cmd.c_str(), 30) == 0)
         {
             sErrorMsg = "";
