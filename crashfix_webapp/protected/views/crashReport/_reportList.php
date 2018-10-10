@@ -169,17 +169,14 @@
               'name'=>'received',
               'value'=>'date("d/m/y H:i", $data->received)',
           ),
+          'exe_image',
           'username',
 		  'ipaddress',
 		  'emailfrom',
 		  array(
               'name'=>'description',
               'value'=>'MiscHelpers::addEllipsis($data->description, 60)',
-          ),
-          array(
-              'name'=>'exe_image',
-              'value'=>'MiscHelpers::getUserImagePath($data->exe_image, $data->cpu_architecture)',
-          ),
+          )
       ),
  )); 
   

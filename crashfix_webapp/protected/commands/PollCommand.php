@@ -722,7 +722,7 @@ class PollCommand extends CConsoleCommand
             if(strlen($userName)!=0)
                 $crashReport->username = $userName;
 
-			$crashReport->exe_image = $exeImage;
+            $crashReport->exe_image =  MiscHelpers::getUserImagePath($exeImage, $cpuArchitecture);			
 
 			// Validate crash report fields
 			if(!$crashReport->validate())
