@@ -29,6 +29,7 @@ function dbParams($overrideTablePrefix=null)
 			'username'=>$userParams['db_username'],
 			'password'=>$userParams['db_password'],
 			'tablePrefix' => $overrideTablePrefix==null?$userParams['db_table_prefix']:$overrideTablePrefix,
+			'initSQLs' => ['SET NAMES utf8 ;']
 			//'emulatePrepare'=>true,  // needed by some MySQL installations
 			//'schemaCachingDuration'=>3600, // one hour
 		);
