@@ -225,7 +225,20 @@ bool CCrashDescReader::Init(std::wstring sFileName)
         }
     }
 
-    // Get ExceptionCode (for SEH exceptions only)
+	// Get UserName
+	TiXmlHandle hUserName = hRoot.ToElement()->FirstChild("UserName");
+	if(hUserName.ToElement())
+	{
+		TiXmlText* pTextElem = hUserName.FirstChild().Text();
+		if(pTextElem)
+		{
+			const char* text = pTextElem->Value();
+			if(text)
+				m_sUserName = strconv::a2w(text);
+		}
+	}
+
+	// Get ExceptionCode (for SEH exceptions only)
     if(m_dwExceptionType==CR_SEH_EXCEPTION)
     {
         TiXmlHandle hExceptionCode = hRoot.ToElement()->FirstChild("ExceptionCode");
@@ -573,7 +586,12 @@ std::wstring CCrashDescReader::GetUserEmail()
 
 std::wstring CCrashDescReader::GetProblemDescription()
 {
-    return m_sProblemDescription;
+	return m_sProblemDescription;
+}
+
+std::wstring CCrashDescReader::GetUsername()
+{
+	return m_sUserName;
 }
 
 int CCrashDescReader::GetFileItemCount()

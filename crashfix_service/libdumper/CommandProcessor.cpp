@@ -1125,6 +1125,8 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 
 	doc.PutRecord("ProblemDescription", "%s", strconv::w2a(pCrashDesc->GetProblemDescription()).c_str());
 
+	doc.PutRecord("UserName", "%s", strconv::w2a(pCrashDesc->GetUsername()).c_str());
+
 	doc.EndSection();
 
 	doc.BeginSection("ApplicationDefinedProperties");

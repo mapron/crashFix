@@ -1,37 +1,37 @@
 <?php
 
 class MiscHelpers
-{	
+{
 	/**
 	 * 	This helper function converts a file size number to human-readable string.
 	 */
 	public static function fileSizeToStr($fileSize, $fracLength = 1)
-	{	
+	{
 		// Convert file size to string, e.g. 100 KB, 100 MB etc.
-		if ($fileSize < 1024) 
+		if ($fileSize < 1024)
 		{
 			return round($fileSize, 0) .' byte(s)';
-		} 
-		elseif ($fileSize < 1048576) 
+		}
+		elseif ($fileSize < 1048576)
 		{
 			return round($fileSize / 1024, 0) .' KB';
-		} 
-		elseif ($fileSize < 1073741824) 
+		}
+		elseif ($fileSize < 1073741824)
 		{
 			return round($fileSize / 1048576, $fracLength) . ' MB';
-		} 
+		}
 		else
 		{
 			return round($fileSize / 1073741824, $fracLength) . ' GB';
-		} 		
+		}
 	}
-	
+
 	/**
 	 * Truncates a long string and adds an ellipsis (...) to the end of string.
 	 * @param type $string
 	 * @param type $length
 	 * @param type $end
-	 * @return type 
+	 * @return type
 	 */
 	public static function addEllipsis($string, $length, $end='...')
 	{
@@ -41,10 +41,10 @@ class MiscHelpers
 			$string  = substr($string, 0, $length);
 			$string .= $end;  //  $string =  $string . $end;
 		}
-		
+
 		return $string;
 	}
-	
+
 	/**
 	 * Splits a string containing space-separated numbers into an array.
 	 * @param string $listStr String containing numbers.
@@ -54,35 +54,35 @@ class MiscHelpers
 	{
 		// Convert string to array
 		$numbers = preg_split('/[\s,]+/', $listStr, 0, PREG_SPLIT_NO_EMPTY);
-		
+
 		// Remove duplicates
 		$numbers = array_unique($numbers);
-		
+
 		// Resulting array
 		$result = array();
-		
+
 		foreach($numbers as $number)
-		{	
+		{
 			if(trim($number)=="")
 				continue;
-			
+
 			if(!is_numeric($number))
-			{					
+			{
 				return false;
 			}
-			
+
 			// Add to resulting array.
 			$result[] = (int)$number;
 		}
-		
+
 		// Return resulting array
 		return $result;
 	}
-    
+
     /**
-     * The phunction PHP framework (http://sourceforge.net/projects/phunction/) 
+     * The phunction PHP framework (http://sourceforge.net/projects/phunction/)
      * uses the following function to generate valid version 4 UUIDs:
-     * @return string GUID 
+     * @return string GUID
      */
     public static function GUID()
     {
@@ -91,12 +91,12 @@ class MiscHelpers
             return trim(com_create_guid(), '{}');
         }
 
-        return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', 
-                mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), 
-                mt_rand(16384, 20479), mt_rand(32768, 49151), 
+        return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X',
+                mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535),
+                mt_rand(16384, 20479), mt_rand(32768, 49151),
                 mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
     }
-	
+
     /**
      * Converts a two-letter country code to a country name (e.g. US=>United States).
      * @param string $code Two-letter country code.
@@ -106,7 +106,7 @@ class MiscHelpers
 	{
 		// Convert to upper case
 		$code = strtoupper($code);
-		
+
 		$map = array(
 			'AF'=>'Afghanistan',
 			'AX'=>'Еland Islands',
@@ -353,22 +353,22 @@ class MiscHelpers
 			'ZM'=>'Zambia',
 			'ZW'=>'Zimbabwe',
 		);
-		
+
 		if(array_key_exists($code, $map))
 		{
 			return $map[$code];
 		}
-		
+
 		return 'Unknown';
 	}
-        public static function getUserImagePath($exeImage, $cpuArchitecture)
-        {
-            if (!empty($cpuArchitecture))
-            {
-                $exeImage = str_replace("\\", DIRECTORY_SEPARATOR, $exeImage);
-                
-                $architecture = strpos($cpuArchitecture, 'x86') ? '32' : '64';
-                return basename($exeImage) . " (".$architecture.")";
-            }
-        }
+		public static function getUserImagePath($exeImage, $cpuArchitecture)
+		{
+			if (!empty($cpuArchitecture))
+			{
+				$exeImage = str_replace("\\", DIRECTORY_SEPARATOR, $exeImage);
+
+				$architecture = strpos($cpuArchitecture, 'x86') ? '32' : '64';
+				return basename($exeImage) . " (".$architecture.")";
+			}
+		}
 }

@@ -89,6 +89,9 @@ public:
     //! Returns problem description string
     std::wstring GetProblemDescription();
 
+	//! Returns username
+	std::wstring GetUsername();
+
     //! Returns count of file items
     int GetFileItemCount();
 
@@ -131,6 +134,8 @@ private:
 
     std::wstring m_sUserEmail;    //!< User email
     std::wstring m_sProblemDescription; //!< User's problem description
+
+	std::wstring m_sUserName; //!< Username
 
     std::wstring m_sMemoryUsageKbytes; //!< Memory usage in KB
     std::wstring m_sGUIResourceCount;  //!< Count of GUI handles
