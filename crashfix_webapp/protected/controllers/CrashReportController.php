@@ -44,6 +44,7 @@ class CrashReportController extends Controller
 			array('allow', // allow athenticated users 
 				'actions'=>array(
 					'index', 
+				    'clearSearch',
 					'view', 
 					'extractFile', 
 					'download', 
@@ -399,7 +400,14 @@ class CrashReportController extends Controller
 			$model->isAdvancedSearch = true;			
 			
 			// Fill form with data
-			$model->attributes = $_POST['CrashReport'];			
+			$model->attributes = $_POST['CrashReport'];		
+
+			$_SESSION["CrashReport"]=$_POST['CrashReport'];
+		}
+		else if(isset($_SESSION['CrashReport']))
+		{
+		    $model->isAdvancedSearch = true;
+		    $model->attributes = $_SESSION['CrashReport'];			
 		}
 		
 		$dataProvider=$model->search();
@@ -408,6 +416,13 @@ class CrashReportController extends Controller
 			'dataProvider'=>$dataProvider,
 			'model'=>$model
 		));
+	}
+	
+	public function actionClearSearch()
+	{
+	    if(isset($_SESSION['CrashReport']))
+	       unset($_SESSION['CrashReport']);
+	    $this->redirect(array('crashReport/index'));
 	}
 
 	/**

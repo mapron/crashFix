@@ -52,7 +52,7 @@ class CrashReport extends CActiveRecord
 			array('description', 'length', 'max'=>256), // Problem description should not be longer than 256 characters 	
 			array('crashrptver', 'numerical', 'integerOnly'=>true, 'min'=>1000, 'max'=>9999), // CrashRpt version should be in range [1000; 9999]
 			// The following rules is used on search
-			array('id, received, status, md5, crashguid, appversion, ipaddress, emailfrom, description', 'safe', 'on'=>'search'),
+			array('id, received, status, md5, crashguid, appversion, ipaddress, exe_image, username, emailfrom, description', 'safe', 'on'=>'search'),
 			array('receivedFrom, receivedTo', 'compareFromToDates', 'on'=>'search'),
 		);
 		
@@ -763,6 +763,8 @@ class CrashReport extends CActiveRecord
 		{
             $criteria2 = new CDbCriteria;
 			$criteria2->compare('ipaddress', $this->filter, true, 'OR');
+			$criteria2->compare('exe_image', $this->filter, true, 'OR');
+			$criteria2->compare('username', $this->filter, true, 'OR');
 			$criteria2->compare('emailfrom', $this->filter, true, 'OR');
 			$criteria2->compare('description', $this->filter, true, 'OR');
             $criteria->mergeWith($criteria2);
@@ -772,6 +774,10 @@ class CrashReport extends CActiveRecord
 			// Fill search criteria
 			if(isset($this->ipaddress))
 				$criteria->compare('ipaddress', $this->ipaddress, true, 'AND');
+			if(isset($this->exe_image))
+			    $criteria->compare('exe_image', $this->exe_image, true, 'AND');			
+		    if(isset($this->username))
+		        $criteria->compare('username', $this->username, true, 'AND');
 			if(isset($this->emailfrom))
 				$criteria->compare('emailfrom', $this->emailfrom, true, 'AND');			
 			if($this->status!=-1)

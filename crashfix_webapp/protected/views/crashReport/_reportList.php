@@ -24,6 +24,16 @@
 				array('value'=>$model->ipaddress)); ?>		
 	</div>
 	<div class="row">
+		<?php echo CHtml::activeLabel($model, 'exe_image'); ?>
+		<?php echo CHtml::activeTextField($model, 'exe_image', 
+		    array('value'=>$model->exe_image)); ?>		
+	</div>
+	<div class="row">
+		<?php echo CHtml::activeLabel($model, 'username'); ?>
+		<?php echo CHtml::activeTextField($model, 'username', 
+		    array('value'=>$model->username)); ?>		
+	</div>
+	<div class="row">
 		<?php echo CHtml::activeLabel($model, 'emailfrom'); ?>
 		<?php echo CHtml::activeTextField($model, 'emailfrom', 
 				array('value'=>$model->emailfrom)); ?>		
@@ -77,6 +87,8 @@
 	</div>
 	
 	<?php echo CHtml::endForm(); ?>
+	<br> 
+	<?php echo CHtml::link('clear search', array('crashReport/clearSearch'));  ?>
 	</div>
 </div>
 
