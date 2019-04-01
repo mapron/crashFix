@@ -59,6 +59,7 @@ class CrashReportController extends Controller
 					'reprocessMultiple',
 					'reprocessAll',
 					'delete',
+				    'deleteAll',
 					'deleteMultiple',
 					'uploadFile'
 				),
@@ -291,6 +292,45 @@ class CrashReportController extends Controller
 
 		// Redirect to index
 		$this->redirect(array('crashReport/index'));
+	}
+	
+	public function actionDeleteAll()
+	{
+	    // Check if user is authorized to perform the action
+	    $this->checkAuthorization(null);
+	    
+	    // Get current project ID
+	    $projectId = Yii::app()->user->getCurProjectId();
+	    if($projectId==false)
+	        throw new CHttpException(400, 'Invalid request.');
+	        
+        $curProjVer = Yii::app()->user->getCurProjectVer();
+        
+        // Find all crash reports belonging to project.
+        $criteria = new CDbCriteria();
+        $criteria->compare('project_id', $projectId);
+        if($curProjVer!=Project::PROJ_VER_ALL)
+            $criteria->compare('appversion_id', $curProjVer);
+            
+        $groupid = 0;
+        if(isset($_GET['groupid']))
+        {
+            $groupid = (int)$_GET['groupid'];
+            $criteria->compare('groupid', $groupid);
+        }
+        
+        CrashReport::model()->updateAll(array('status' => CrashReport::STATUS_PENDING_DELETE), $criteria);        
+        
+        // If we were on a crash collection page
+        if($groupid)
+        {
+            // Redirect to collection view
+            $this->redirect(array('crashGroup/view', 'id'=>$groupid));
+            return;
+        }
+        
+        // Redirect to index
+        $this->redirect(array('crashReport/index'));
 	}
 
 	/**

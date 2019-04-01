@@ -112,31 +112,34 @@
 				<ul>
 					<?php
 						if(Yii::app()->user->checkAccess('pperm_manage_crash_reports', array('project_id'=>Yii::app()->user->getCurProjectId())))
+						{
+						    $text = isset($groupid)?'in this collection':'in the currently selected project version';	
+						    $GETparams =  isset($groupid) ? array('groupid'=>$groupid) : array();
 							echo '<li>'.CHtml::linkButton("Delete Selected Reports",
 									array(
-										'submit'=>$this->createUrl('crashReport/deleteMultiple', isset($groupid)?array('groupid'=>$groupid):array()),
+									    'submit'=>$this->createUrl('crashReport/deleteMultiple', $GETparams),
 										'form'=>'del_form',
 										'confirm'=>"Are you sure you want to permanently delete selected crash report(s)?"
 									)).'</li>';
-					?>
-
-					<?php
-						if(Yii::app()->user->checkAccess('pperm_manage_crash_reports', array('project_id'=>Yii::app()->user->getCurProjectId())))
+							
+							echo '<li>'.CHtml::linkButton("Delete All Reports",
+							    array(
+							        'submit'=>$this->createUrl('crashReport/deleteAll', $GETparams),
+							        'form'=>'del_form',
+							        'confirm'=>"WARNING! This action may take a long time. Are you sure you want to delete all crash reports ".$text."?"
+							    )).'</li>';
+											    
 							echo '<li>'.CHtml::linkButton("Reprocess Selected Reports",
 									array(
-										'submit'=>$this->createUrl('crashReport/reprocessMultiple', isset($groupid)?array('groupid'=>$groupid):array()),
+									    'submit'=>$this->createUrl('crashReport/reprocessMultiple', $GETparams),
 										'form'=>'del_form',
 										'confirm'=>"Are you sure you want to reprocess selected crash report(s)?"
 									)).'</li>';
-					?>
-
-					<?php
-						if(Yii::app()->user->checkAccess('pperm_manage_crash_reports', array('project_id'=>Yii::app()->user->getCurProjectId())))
-						{
-							$text = isset($groupid)?'in this collection':'in the currently selected project version';
+					
+													
 							echo '<li>'.CHtml::linkButton("Reprocess All Reports",
 									array(
-										'submit'=>$this->createUrl('crashReport/reprocessAll', isset($groupid)?array('groupid'=>$groupid):array()),
+									    'submit'=>$this->createUrl('crashReport/reprocessAll', $GETparams),
 										'form'=>'del_form',
 										'confirm'=>"WARNING! This action may take a long time. Are you sure you want to reprocess all crash reports ".$text."?"
 									)).'</li>';
