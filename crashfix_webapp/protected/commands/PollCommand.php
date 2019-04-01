@@ -36,6 +36,9 @@ class PollCommand extends CConsoleCommand
 		$this->processNewCrashReportFiles();
 
 		$this->cleanupCrashGroups();
+		
+		// Remove reports scheduled for deletion
+		$this->cleanupCrashReports();
 
 		// Send pending mail messages.
 		MailQueue::sendMail();
@@ -1352,6 +1355,16 @@ class PollCommand extends CConsoleCommand
 					$report->delete(); // deleteAll does not trigger events!
 			}
 		}
+	}
+	
+	private function cleanupCrashReports()
+	{
+	    $deleteCount = 1000; // We will delete maximum 1000 reports at once	    
+	    $criteria=new CDbCriteria;
+	    $criteria->compare('status', CrashReport::STATUS_PENDING_DELETE);
+	    $criteria->limit = $deleteCount;
+	    foreach (CrashReport::model()->findAll($criteria) as $report)
+	        $report->delete(); // deleteAll does not trigger events!
 	}
 };
 

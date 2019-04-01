@@ -10,6 +10,7 @@ class CrashReport extends CActiveRecord
 	const STATUS_PROCESSING_IN_PROGRESS = 2; // The debug info file is currently being processed by daemon.
 	const STATUS_PROCESSED              = 3; // The crash report was processed by daemon
 	const STATUS_INVALID                = 4; // The crash report file is marked by daemon as an invalid PDB file.
+	const STATUS_PENDING_DELETE         = 5; // The crash report awaiting deteion by daemon
 
 	public $appversion; // Non-db field that stores appversion string for this report.
 	public $fileAttachment; // File attachment CUploadedFile
