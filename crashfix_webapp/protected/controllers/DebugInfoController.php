@@ -45,6 +45,7 @@ class DebugInfoController extends Controller
 					'uploadStat',
 					'delete',
 					'deleteMultiple',
+				    'deleteAll',
 					'uploadFile'
 				),
 				'users'=>array('@'),
@@ -183,7 +184,24 @@ class DebugInfoController extends Controller
 		// Redirect to index
 		$this->redirect(array('debugInfo/index', ));
 	}
-
+	
+	public function actionDeleteAll()
+	{	    
+	    // Check if user is authorized to perform this action
+	    $this->checkAuthorization(null);
+	    
+	    $model = new DebugInfo('search');
+    
+	    $dataProvider = $model->search();
+	    
+	    $criteria = $dataProvider->getCriteria();
+	    
+	    DebugInfo::model()->updateAll(array('status' => DebugInfo::STATUS_PENDING_DELETE), $criteria);    
+	  	    
+	    // Redirect to index
+	    $this->redirect(array('debugInfo/index'));
+	}
+	
 	/**
 	 *  This action generates an image with debug info upload statistics
 	 *  for the current project.

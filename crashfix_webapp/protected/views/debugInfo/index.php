@@ -19,14 +19,14 @@ You have no projects assigned.
 		Current Project:
 		<?php 		
 			$models = Yii::app()->user->getMyProjects();
-			$projects = CHtml::listData($models, 'id', 'name');			
-			echo CHtml::dropDownList('proj', array('selected'=>Yii::app()->user->getCurProjectId()), $projects); 			
+			$projects = CHtml::listData($models, 'id', 'name');
+			echo CHtml::dropDownList('proj', array('selected'=>Yii::app()->user->getCurProjectId()), $projects);
 		?>					
 		Version:
 		<?php 		
 			$selVer = -1;
-			$versions = Yii::app()->user->getCurProjectVersions($selVer);			
-			echo CHtml::dropDownList('ver', array('selected'=>$selVer), $versions); 
+			$versions = Yii::app()->user->getCurProjectVersions($selVer);
+			echo CHtml::dropDownList('ver', array('selected'=>$selVer), $versions);
 		?>		
 		<input type="submit" value="Ok" />
 		<b>Warning</b>: for debug info, version is always ignored. All version data is displayed.
@@ -118,12 +118,19 @@ You have no projects assigned.
 		<?php echo CHtml::link('Upload New File', $this->createUrl('debugInfo/uploadFile')); ?>
 		
 		<?php 
+            echo CHtml::linkButton("Delete All Reports",
+                array(
+                    'submit'=>$this->createUrl('debugInfo/deleteAll'),
+                    'form'=>'del_form',
+                    'confirm'=>"WARNING! This action may take a long time. Are you sure you want to delete all debug info for current project?"
+                ));
+
 			echo CHtml::linkButton("Delete Selected", 
-					array(
-						'id'=>'delete_selected', 
-						'form'=>'del_form',
-						'confirm'=>"Are you sure you want to permanently delete selected debug info file(s)?"
-					)); 
+				array(
+					'id'=>'delete_selected', 
+					'form'=>'del_form',
+					'confirm'=>"Are you sure you want to permanently delete selected debug info file(s)?"
+				)); 		
 		?>		
 	</div>	
 </div>
