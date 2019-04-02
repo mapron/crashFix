@@ -61,6 +61,7 @@
 			// additional javascript options for the date picker plugin
 			'options'=>array(
 				'showAnim'=>'fold',
+			    'dateFormat' => 'dd/mm/y'
 			),
 			'htmlOptions'=>array(
 				//'style'=>'height:20px;'
@@ -75,6 +76,7 @@
 			// additional javascript options for the date picker plugin
 			'options'=>array(
 				'showAnim'=>'fold',
+			    'dateFormat' => 'dd/mm/y'
 			),
 			'htmlOptions'=>array(
 				//'style'=>'height:20px;'

@@ -166,7 +166,7 @@ class CrashReport extends CActiveRecord
 	 */
 	public function strToDate($date)
 	{
-		$timestamp=CDateTimeParser::parse($date,'MM/dd/yyyy');
+		$timestamp=CDateTimeParser::parse($date,'dd/MM/yy');
 		return $timestamp;
 	}
 
