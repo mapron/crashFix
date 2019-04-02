@@ -339,7 +339,7 @@ div.search-form
 
 #delete_selected
 {
-    visibility:hidden;
+    display:none;
 }
 
 /* 

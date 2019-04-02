@@ -146,7 +146,7 @@ else
 <?php echo CHtml::hiddenField('user_id', $model->id); ?>
 
 <!-- Grid view -->
-<div class="span-18 last">
+<div class="span-18 last" id="main_table">
 <?php $this->widget('zii.widgets.grid.CGridView', array(
       'dataProvider'=>$userProjectAccess->search(),
 	  'selectableRows'=>null,
@@ -179,16 +179,10 @@ else
 
 <?php 
  $script = <<<SCRIPT
-$(":checkbox").live('click', function(e)
-{		
-	var totalSelected = 0;
-	$("input[name='DeleteRows\[\]']").each(function() {if($(this).attr('checked')) totalSelected++;});
-	
-	if(totalSelected==0)
-		$("#delete_selected").css('visibility', 'hidden');
-	else
-		$("#delete_selected").css('visibility', 'visible');
-	
+$("#main_table").on('click', 'input:checkbox', function(e)
+{	
+	var totalSelected = $("#main_table input:checked").length;
+	$("#delete_selected").toggle(totalSelected > 0);
 });
 
 $("#delete_selected").bind('click', function(e)
