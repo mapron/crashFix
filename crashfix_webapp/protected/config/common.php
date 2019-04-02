@@ -35,3 +35,12 @@ function dbParams($overrideTablePrefix=null)
 		);
 }
 
+function daemonParams()
+{
+    $userParams = parse_ini_file(dirname(__FILE__).DIRECTORY_SEPARATOR.'user_params.ini');
+    return array(
+        'class'       => 'Daemon',
+        'host'        => isset($userParams['daemon_host']) ? $userParams['daemon_host'] : '127.0.0.1',
+        'servicePort' => isset($userParams['daemon_port']) ? $userParams['daemon_port'] : '1234',
+    );	
+}
