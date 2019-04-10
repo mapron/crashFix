@@ -18,6 +18,8 @@ class CrashGroup extends CActiveRecord
 	const FILTER_ALL          = 'all'; 
 	const FILTER_UNPROCESSED  = 'unprocessed';
 	const FILTER_PROCESSED    = 'processed';
+	const FILTER_OPEN         = 'open';
+	const FILTER_CLOSED       = 'closed';
 	
 	// Search related variables
 	public $filter; // Simple search filter.
@@ -179,9 +181,21 @@ class CrashGroup extends CActiveRecord
 		    $criteria->join .= ' LEFT JOIN {{bug_crashgroup}} bc ON bc.crashgroup_id = t.id';
 		    $criteria->addCondition('(bc.crashgroup_id IS NULL)', 'AND');
 		}
-		else if ($this->bugStatusFilter==self::FILTER_PROCESSED)
+		else if (in_array($this->bugStatusFilter, [self::FILTER_PROCESSED, self::FILTER_OPEN, self::FILTER_CLOSED]))
 		{
-		    $criteria->join .= ' INNER JOIN {{bug_crashgroup}} bc ON bc.crashgroup_id = t.id';		    
+		    $criteria->join .= ' INNER JOIN {{bug_crashgroup}} bc ON bc.crashgroup_id = t.id';
+		    if ($this->bugStatusFilter == self::FILTER_OPEN)
+		    {
+		        // There sould be at least one bug with status < STATUS_OPEN_MAX
+		        $criteria->join .= ' INNER JOIN {{bug}} bcb ON bc.bug_id = bcb.id AND bcb.status<' . Bug::STATUS_OPEN_MAX;
+		    }
+		    else if ($this->bugStatusFilter == self::FILTER_CLOSED)
+		    {
+		        // There should be no bugs with  status < STATUS_OPEN_MAX
+		        $criteria->select .= ', bcb.id AS bcb_id';		        
+		        $criteria->join   .= ' LEFT JOIN {{bug}} bcb ON bc.bug_id = bcb.id AND bcb.status<' . Bug::STATUS_OPEN_MAX;
+		        $criteria->having .= '(bcb.id IS NULL)';
+		    }
 		}
 		else if($this->bugStatusFilter != self::FILTER_ALL)
 			throw new CHttpException(403, 'Invalid request.');

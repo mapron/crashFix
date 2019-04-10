@@ -41,7 +41,9 @@ You have no projects assigned.
 			$statuses = array(												
 				CrashGroup::FILTER_ALL         =>'All collections', 
 			    CrashGroup::FILTER_UNPROCESSED =>'Unprocessed collections without bugs',	
-			    CrashGroup::FILTER_PROCESSED   =>'Collections with bug created',	
+			    CrashGroup::FILTER_PROCESSED   =>'Collections with bug created',
+			    CrashGroup::FILTER_OPEN        =>'Collections with at least one open bug',
+			    CrashGroup::FILTER_CLOSED      =>'Collections with closed bugs',
 			);			
 			echo CHtml::dropDownList('status', array('selected'=>isset($model->bugStatusFilter) ? CHtml::encode($model->bugStatusFilter) : CrashGroup::FILTER_UNPROCESSED), $statuses); 
 		?></div>
