@@ -14,6 +14,11 @@ class CrashGroup extends CActiveRecord
 	// Status constants
 	const STATUS_NEW = 1; // New group
 	
+	
+	const FILTER_ALL          = 'all'; 
+	const FILTER_UNPROCESSED  = 'unprocessed';
+	const FILTER_PROCESSED    = 'processed';
+	
 	// Search related variables
 	public $filter; // Simple search filter.
 	public $bugStatusFilter; // Bug status filter.
@@ -142,9 +147,10 @@ class CrashGroup extends CActiveRecord
 			return Null;
 
         if(!isset($this->bugStatusFilter))
-			$this->bugStatusFilter = 'open';
+            $this->bugStatusFilter = self::FILTER_UNPROCESSED;
 		        
 		$criteria=new CDbCriteria;
+		$criteria->with = array('bugs' => array('with' => 'bug'));
         
         $criteria->compare('t.project_id', $curProjectId, false, 'AND');
 		$curProjectVer = false;
@@ -159,25 +165,25 @@ class CrashGroup extends CActiveRecord
 		}
 				
 		$criteria->compare('id', $this->id);
-		$criteria->select = 't.*, COUNT({{crashreport}}.id) AS crashReportCount';
+		$criteria->select = 't.*, COUNT({{crashreport}}.id) + t.deletedCount AS crashReportCount';
 		$criteria->compare('created',$this->created, true);
 		$criteria->compare('t.status', $this->status);
 		$criteria->compare('title', $this->title, true);		
         
-        if($this->bugStatusFilter=='open')
-		    $criteria->join = 'INNER JOIN {{crashreport}} ON {{crashreport}}.groupid = t.id';
-        else
-            $criteria->join = 'LEFT JOIN {{crashreport}} ON {{crashreport}}.groupid = t.id';
+		$criteria->join = 'LEFT JOIN {{crashreport}} ON {{crashreport}}.groupid = t.id';
             
 		$criteria->group = 't.id';
 		
-		if($this->bugStatusFilter=='open')
-		{			
-			$criteria->select .= ', b.status AS bug_status';
-			$criteria->addCondition('(b.status IS NULL OR b.status<'.Bug::STATUS_OPEN_MAX.')', 'AND');			
-			$criteria->join .= ' LEFT JOIN {{bug_crashgroup}} bc ON bc.crashgroup_id = t.id LEFT JOIN {{bug}} b ON bc.bug_id = b.id';
+		if($this->bugStatusFilter==self::FILTER_UNPROCESSED)
+		{					
+		    $criteria->join .= ' LEFT JOIN {{bug_crashgroup}} bc ON bc.crashgroup_id = t.id';
+		    $criteria->addCondition('(bc.crashgroup_id IS NULL)', 'AND');
 		}
-		else if($this->bugStatusFilter!='all')
+		else if ($this->bugStatusFilter==self::FILTER_PROCESSED)
+		{
+		    $criteria->join .= ' INNER JOIN {{bug_crashgroup}} bc ON bc.crashgroup_id = t.id';		    
+		}
+		else if($this->bugStatusFilter != self::FILTER_ALL)
 			throw new CHttpException(403, 'Invalid request.');
 					
 		

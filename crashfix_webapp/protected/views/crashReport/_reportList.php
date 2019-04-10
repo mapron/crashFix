@@ -1,6 +1,6 @@
 <!-- Simple Search Form -->
 <div class="span-27 last" id="div_simple_search" style="display:<?php echo !$model->isAdvancedSearch?'inherit':'none'?>">
-	<?php echo CHtml::beginForm($route, 'get', array('id'=>'proj_form')); ?>
+	<?php echo CHtml::beginForm($route, 'get', array('id'=>'report_form')); ?>
 	<div class="span-27 last"><p id="stat_filter">Search by IP Address/E-mail/Description or use <a href="#" id="link_advanced_search">advanced search</a>:</p></div>
 	<div class="span-25">
 		<?php echo CHtml::textField('q', isset($model->filter)?CHtml::encode($model->filter):"", array('id'=>'text_filter')); ?>
@@ -89,7 +89,7 @@
 	</div>
 
 	<?php echo CHtml::endForm(); ?>
-	<br>
+	<br/>
 	<?php echo CHtml::link('clear search', array('crashReport/clearSearch'));  ?>
 	</div>
 </div>
@@ -198,10 +198,10 @@
  ));
 
  ?>
-
+ </div>
  <?php echo CHtml::endForm(); ?>
  </div>
-</div>
+
 
 
 <?php

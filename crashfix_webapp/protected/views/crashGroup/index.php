@@ -34,15 +34,16 @@ You have no projects assigned.
 
 <!-- Simple Search Form -->
 <div class="span-27 last" id="div_simple_search">	
-	<?php echo CHtml::beginForm(array('crashGroup/index'), 'get', array('id'=>'proj_form')); ?>
+	<?php echo CHtml::beginForm(array('crashGroup/index'), 'get', array('id'=>'group_form')); ?>
 	<div class="span-27 last"><p id="stat_filter">Search collections by title:</p></div>
 	<div class="span-7"><div id="dropdown_search">
 		<?php 
 			$statuses = array(												
-				'all'=>'All collections', 
-				'open'=>'Nonempty c. with bug(s) unassigned or open',								
+				CrashGroup::FILTER_ALL         =>'All collections', 
+			    CrashGroup::FILTER_UNPROCESSED =>'Unprocessed collections without bugs',	
+			    CrashGroup::FILTER_PROCESSED   =>'Collections with bug created',	
 			);			
-			echo CHtml::dropDownList('status', array('selected'=>isset($model->bugStatusFilter)?CHtml::encode($model->bugStatusFilter):"open"), $statuses); 
+			echo CHtml::dropDownList('status', array('selected'=>isset($model->bugStatusFilter) ? CHtml::encode($model->bugStatusFilter) : CrashGroup::FILTER_UNPROCESSED), $statuses); 
 		?></div>
 	</div>
 	<div class="span-18">
@@ -78,7 +79,8 @@ You have no projects assigned.
 
 <!-- Grid view -->
 <div class="span-27 last" id="main_table">
-<?php $this->widget('zii.widgets.grid.CGridView', array(
+<?php 
+$this->widget('zii.widgets.grid.CGridView', array(
       'dataProvider'=>$dataProvider,
 	  'selectableRows'=>null,
       'columns'=>array(		  
@@ -96,7 +98,7 @@ You have no projects assigned.
 		  array(                          			  
 			  'name'=>'title',
 			  'type' => 'raw',
-			  'value'=>'CHtml::link(MiscHelpers::addEllipsis($data->title, 120), \'view/\'.$data->id)',			  
+			  'value'=>'CHtml::link(MiscHelpers::addEllipsis(htmlspecialchars($data->title), 150), \'view/\'.$data->id)',			  
           ),
 		  'crashReportCount',
           'deletedCount',
@@ -109,12 +111,27 @@ You have no projects assigned.
           array(            // display 'dateuploaded' using an expression
               'name'=>'created',
               'value'=>'date("d/m/y H:i", $data->created)',
-          ),          		  
+          ),  
+          array(
+              'name' =>'bug_id',
+              'header'=>'Bugs',
+              'type' => 'raw',
+              'value'=> function($data) {
+                  $parts = [];
+                  foreach ($data->bugs as $bug)
+                  {
+                      $isDone = $bug->bug->status > Bug::STATUS_OPEN_MAX;
+                      // fixme: it's hard to get CController from GridColumn. Find a solution without Yii::app.
+                      $parts[] = CHtml::link(($isDone ? '<strike>' : '') . '#' . $bug->bug_id . ($isDone ? '</strike>' : '') ,  Yii::app()->createUrl('bug/view/' . $bug->bug_id) );
+                  }
+                  return implode(' ', $parts);
+              }
+          ),
       ),
  )); 
   
  ?>
-
+</div>
 <?php echo CHtml::endForm(); ?>
 </div>
 
