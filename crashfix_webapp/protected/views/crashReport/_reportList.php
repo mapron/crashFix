@@ -115,7 +115,7 @@
 					<?php
 						if(Yii::app()->user->checkAccess('pperm_manage_crash_reports', array('project_id'=>Yii::app()->user->getCurProjectId())))
 						{
-						    $text = isset($groupid)?'in this collection':'in the currently selected project version';	
+						    $text = isset($groupid)?'in this collection':'in the currently selected project version';
 						    $GETparams =  isset($groupid) ? array('groupid'=>$groupid) : array();
 							echo '<li>'.CHtml::linkButton("Delete Selected Reports",
 									array(
@@ -123,22 +123,22 @@
 										'form'=>'del_form',
 										'confirm'=>"Are you sure you want to permanently delete selected crash report(s)?"
 									)).'</li>';
-							
+
 							echo '<li>'.CHtml::linkButton("Delete All Reports",
 							    array(
 							        'submit'=>$this->createUrl('crashReport/deleteAll', $GETparams),
 							        'form'=>'del_form',
 							        'confirm'=>"WARNING! This action may take a long time. Are you sure you want to delete all crash reports ".$text."?"
 							    )).'</li>';
-											    
+
 							echo '<li>'.CHtml::linkButton("Reprocess Selected Reports",
 									array(
 									    'submit'=>$this->createUrl('crashReport/reprocessMultiple', $GETparams),
 										'form'=>'del_form',
 										'confirm'=>"Are you sure you want to reprocess selected crash report(s)?"
 									)).'</li>';
-					
-													
+
+
 							echo '<li>'.CHtml::linkButton("Reprocess All Reports",
 									array(
 									    'submit'=>$this->createUrl('crashReport/reprocessAll', $GETparams),
@@ -202,20 +202,18 @@
  <?php echo CHtml::endForm(); ?>
  </div>
 
-
-
 <?php
  $script = <<<SCRIPT
 
 $("#proj, #ver").bind('change', function(e)
-{	
+{
 	$("#proj_form").submit();
 });
 
 $("#link_advanced_search").bind('click', function(e)
-{	
-	$("#div_simple_search").fadeToggle("fast");			
-	$("#div_advanced_search").fadeToggle("fast");		
+{
+	$("#div_simple_search").fadeToggle("fast");
+	$("#div_advanced_search").fadeToggle("fast");
 });
 SCRIPT;
 
