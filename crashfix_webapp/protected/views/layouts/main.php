@@ -23,14 +23,15 @@
 
 	<div id="daemon-check">		
 	</div>
-	
-	<div class="span-32" id="header">
-		<div class="span-3">
+	<table>
+	<tr><td>
+	<div id="header">
+			<div class="span-3">
 			<div id="logo_image">
 				<a href="<?php echo Yii::app()->baseUrl.'/index.php'?>"><?php echo CHtml::image(Yii::app()->baseUrl.'/images/logo.png'); ?></a>
 			</div>
 		</div>				
-		<div class="span-27">
+		<div class="span-24">
 			<div id="user_name" style="visibility: <?php echo Yii::app()->user->isGuest?'hidden':'visible'; ?>">
 				<?php if(!Yii::app()->user->isGuest){ echo 'Logged in as '.CHtml::link(Yii::app()->user->getName(), array('user/view', 'id'=>Yii::app()->user->getId())); } ?>&nbsp;
 			</div>
@@ -42,17 +43,21 @@
 					echo CHtml::link('Log out', $this->createUrl('site/logout'));
 				}					
 			?>
-		</div>		
-	</div><!-- header -->
-
+		</div>	
+	</div>
+	</td></tr>
+	<tr><td>
 	<?php echo $content; ?>
-
+	</td></tr>
+	<tr><td>
 	<div class="span-32">
 		<div id="footer">
 			CrashFix v.<?php echo Yii::app()->params['version']; ?>. Copyright &copy; <?php echo date('Y'); ?> by Oleg Krivtsov.	All Rights Reserved.
 		</div>
 	</div><!-- footer -->
-
+	</td></tr>
+	</table>
+		
 </div><!-- page -->
 
 </body>

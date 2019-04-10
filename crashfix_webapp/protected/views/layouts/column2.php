@@ -1,16 +1,18 @@
 <?php $this->beginContent('//layouts/main'); ?>
-<div class="span-32">
-	
-	<div class="span-4 colborder">		
+<table><tr><td style="vertical-align: top;">
+
+<div class="span-4 colborder">		
 		<div id="sidebar">						
 			<?php 	$this->widget('MainMenuPortlet', 
 					array('activeItem'=>isset($this->sidebarActiveItem)?$this->sidebarActiveItem:''));  
 			?>
 		</div>
     </div>
-	
-	<div class="span-18 last">
-		<div id="adminmenu">
+
+</td><td>
+
+<div class="span-18 last">
+	<div id="adminmenu">
 			<?php 
 				if(isset($this->adminMenuItem)) 
 				{
@@ -29,11 +31,10 @@
 	<?php endif?>
 	</div>
 	
-    <div class="span-26 last">
-		<div id="content">
-			<?php echo $content; ?>
-		</div><!-- content -->
-    </div>
+    <div id="content">
+		<?php echo $content; ?>
+	</div><!-- content -->
+ 
+</td></tr></table>
 
-</div>	
 <?php $this->endContent(); ?>

@@ -117,8 +117,9 @@ caption {background:#eee;}
 
 /* A container should group all your columns. */
 .container {
-  width: 1270px;
   margin: 0 auto;
+  margin-left:20px;
+  margin-right:20px;
 }
 
 /* Use this class on any div.span / container to see the grid. */
@@ -168,7 +169,7 @@ div.last { margin-right: 0; }
 .span-24 { width: 950px;}
 .span-25 { width: 990px;}
 .span-26 { width: 1030px;}
-.span-27 { width: 1070px;}
+.span-27 { width: 100%;}   /*hack: make most of layouts stretchable. */
 .span-28 { width: 1110px;}
 .span-29 { width: 1150px;}
 .span-30 { width: 1190px;}
