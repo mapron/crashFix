@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "CommandProcessor.h"
 #include "MiniDumpReader.h"
-#include "MiniDumpWriter.h"
-#include "DbgHelpDumpWriter.h"
 #include "MsfFile.h"
 #include "PdbReader.h"
 #include "CrashReportReader.h"
@@ -50,20 +48,6 @@ int CCommandProcessor::Run(int argc, char* argv[])
 		LPCSTR szOutFile = get_arg();
 		return ReadDump(szFileName, szOutFile);
 	}
-#ifdef _WIN32
-	else if(cmp_arg("--write-minidump"))
-	{
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-		return WriteDump(szOutFile);
-	}
-	else if(cmp_arg("--write-minidump-dbghelp"))
-	{
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-		return WriteDumpDbgHelp(szOutFile);
-	}
-#endif
 	else if(cmp_arg("--read-pdb"))
 	{
 		skip_arg();
@@ -492,81 +476,6 @@ int CCommandProcessor::ReadDump(LPCSTR szFileName, LPCSTR szOutFile)
 	return 0;
 }
 
-#ifdef _WIN32
-
-int CCommandProcessor::WriteDump(LPCSTR szOutFile)
-{
-    m_sErrorMsg = "Unspecified error";
-
-	DWORD dwProcessId = 0;
-	DWORD dwThreadId = 0;
-	EXCEPTION_POINTERS* pExcPtrs = NULL;
-	std::wstring sFileName = GetModulePath(NULL)+_T("\\crash.ini");
-	const int BUFF_SIZE=1024;
-	TCHAR szBuff[BUFF_SIZE] = _T("");
-
-	GetPrivateProfileString(_T("Crash"), _T("ProcessId"), _T("0"), szBuff, BUFF_SIZE, sFileName.c_str());
-	_stscanf_s(szBuff, _T("%lu"), &dwProcessId );
-
-	GetPrivateProfileString(_T("Crash"), _T("ThreadId"), _T("0"), szBuff, BUFF_SIZE, sFileName.c_str());
-	_stscanf_s(szBuff, _T("%lu"), &dwThreadId );
-
-	GetPrivateProfileString(_T("Crash"), _T("ExcPtrs"), _T("0"), szBuff, BUFF_SIZE, sFileName.c_str());
-	_stscanf_s(szBuff, _T("%p"), &pExcPtrs );
-
-	IMiniDumpWriter* pDmpWriter = NULL;
-	CMiniDumpWriterFactory::CreateInstance(&pDmpWriter);
-	std::wstring sOutFile = strconv::a2w(szOutFile);
-	pDmpWriter->Write(dwProcessId, dwThreadId, pExcPtrs, sOutFile.c_str());
-	delete pDmpWriter;
-
-    m_sErrorMsg = "Success";
-
-	return 0;
-}
-
-int CCommandProcessor::WriteDumpDbgHelp(LPCSTR szOutFile)
-{
-    m_sErrorMsg = "Unspecified error";
-	m_pLog->write(0, "Reading config information from crash.ini file...\n");
-
-	DWORD dwProcessId = 0;
-	DWORD dwThreadId = 0;
-	EXCEPTION_POINTERS* pExcPtrs = NULL;
-	std::wstring sFileName = GetModulePath(NULL)+_T("\\crash.ini");
-	const int BUFF_SIZE=1024;
-	TCHAR szBuff[BUFF_SIZE] = _T("");
-
-	GetPrivateProfileString(_T("Crash"), _T("ProcessId"), _T("0"), szBuff, BUFF_SIZE, sFileName.c_str());
-	_stscanf_s(szBuff, _T("%lu"), &dwProcessId );
-
-	GetPrivateProfileString(_T("Crash"), _T("ThreadId"), _T("0"), szBuff, BUFF_SIZE, sFileName.c_str());
-	_stscanf_s(szBuff, _T("%lu"), &dwThreadId );
-
-	GetPrivateProfileString(_T("Crash"), _T("ExcPtrs"), _T("0"), szBuff, BUFF_SIZE, sFileName.c_str());
-	_stscanf_s(szBuff, _T("%p"), &pExcPtrs );
-
-	_tprintf(_T("Writing minidump file '%s' using dbghelp MiniDumpWriteDump API...\n"), szOutFile);
-
-	CDbgHelpDumpWriter dmp;
-	std::wstring sOutFile = strconv::a2w(szOutFile);
-	BOOL bWrite = dmp.Write(dwProcessId, dwThreadId, pExcPtrs, sOutFile.c_str());
-	if(bWrite)
-	{
-		_tprintf(_T("Finished writing minidump file... OK.\n"));
-	}
-	else
-	{
-		_tprintf(_T("Finished writing minidump file... Failed.\n"));
-		_tprintf(_T("Error message: %s\n"), dmp.GetErrorMsg());
-	}
-
-    m_sErrorMsg = "Success";
-	return 0;
-}
-
-#endif
-
 int CCommandProcessor::ReadPdb(LPCSTR szFileName, LPCSTR szOutFile)
 {
     m_sErrorMsg = "Unspecified error";
@@ -791,7 +700,7 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 	std::wstring sOutFile = strconv::a2w(szOutFile);
 	int nSymCount = -1;
 	CPdbSymbolStream* pSymStream = NULL;
-	CPdbPSGSIStream* pPSI = NULL;
+//CPdbPSGSIStream* pPSI = NULL;
 	int nModuleCount = -1;
 	CPdbDebugInfoStream* pDBI = NULL;
 
@@ -846,49 +755,6 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 
 		std::wstring sModuleName = strconv::a2w(pModuleInfo->m_sSrcModuleName);
 		fprintf(f, "%03X  %04u  %08x  %s\n", i+1, pModuleInfo->m_Info.ifileMac, pModuleInfo->m_Info.mpifileichFile, strconv::w2a(sModuleName).c_str());
-	}
-
-	/* PUBLICS */
-
-	fprintf(f, "\n\n*** PUBLICS\n\n");
-
-	pPSI = PdbReader.GetPSIStream();
-
-	pSymStream = PdbReader.GetSymbolStream();
-	nSymCount = pPSI->GetAddrEntryCount();
-	for(i=0; i<nSymCount; i++)
-	{
-		DWORD dwOffs = 0;
-		if(!pPSI->GetAddrEntry(i, &dwOffs))
-		{
-			assert(0);
-			continue;
-		}
-
-		int nSymIndex = pSymStream->GetSymbolIndexByOffsInStream(dwOffs);
-		if(nSymIndex<0)
-		{
-			assert(nSymIndex>=0);
-			continue;
-		}
-		CPdbSymbol* pSym = pSymStream->GetSymbol(i);
-
-		std::string sType = pSym->GetTypeStr();
-		std::string sName = pSym->GetName();
-
-		CPdbSectionMapStream* pSectionStream = PdbReader.GetSectionMapStream();
-
-		DWORD64 dwRVA = 0;
-
-		int nSection = (int)pSym->GetSegment()-1;
-		if(nSection>=0)
-		{
-			IMAGE_SECTION_HEADER* pSection = pSectionStream->GetSection(nSection);
-			dwRVA = pSection->VirtualAddress+pSym->GetOffset();
-		}
-
-		fprintf(f, "%s: [%" PRIx64 "][%" PRIx64 "][%04x:%08x] %s\n", sType.c_str(), dwRVA,
-			dwRVA, pSym->GetSegment(), pSym->GetOffset(), sName.c_str());
 	}
 
 	fprintf(f, "\n\n*** COMPILANDS\n\n");

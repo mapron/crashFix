@@ -61,16 +61,6 @@ public:
 
 	int DeleteDebugInfo(LPCWSTR szPdbFileName);
 
-#ifdef _WIN32
-
-    //! Creates a minidump file
-    int WriteDump(LPCSTR szOutFile);
-
-    //! Creates a minidump file with dbghelp
-    int WriteDumpDbgHelp(LPCSTR szOutFile);
-
-#endif
-
     //! Opens log file
     bool InitLog(std::wstring sFileName, int nLoggingLevel);
     

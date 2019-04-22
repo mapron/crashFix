@@ -7,12 +7,7 @@
 #include "stdafx.h"
 #include "MsfFile.h"
 #include "PdbHeadersStream.h"
-#include "PdbTypeInfoStream.h"
 #include "PdbDebugInfoStream.h"
-#include "PdbLinkInfoStream.h"
-#include "PdbFPOStream.h"
-#include "PdbGSIStream.h"
-#include "PdbPSGSIStream.h"
 #include "PdbSymbolStream.h"
 #include "PdbCompilandStream.h"
 #include "PdbSectionMapStream.h"
@@ -59,26 +54,8 @@ public:
     //! Returns PDB headers stream.
     CPdbHeadersStream* GetHeadersStream();
 
-    //! Returns type info stream
-    CPdbTypeInfoStream* GetTypeInfoStream();
-
     //! Returns debug info stream
     CPdbDebugInfoStream* GetDebugInfoStream();
-
-    //! Returns link info stream
-    CPdbLinkInfoStream* GetLinkInfoStream();
-
-    //! Returns FPO stream.
-    CPdbFPOStream* GetFPOStream();
-
-    //! Returns new FPO stream.
-    CPdbFPOStream* GetNewFPOStream();
-
-    //! Returns GSI stream.
-    CPdbGSIStream* GetGSIStream();
-
-    //! Returns PSI stream.
-    CPdbPSGSIStream* GetPSIStream();
 
     //! Returns symbol records stream and initializes it if required.	
     CPdbSymbolStream* GetSymbolStream();
@@ -100,13 +77,7 @@ private:
     BOOL m_bAMD64;                         //!< Is this PDB file for x64?
     CMsfFile m_MsfFile;                    //!< MSF format file parser.
     CPdbHeadersStream* m_pHeadersStream;   //!< PDB headers stream.
-    CPdbTypeInfoStream* m_pTypeInfoStream; //!< PDB type info stream.
     CPdbDebugInfoStream* m_pDebugInfoStream; //!< PDB debug info stream.
-    CPdbLinkInfoStream* m_pLinkInfoStream; //!< PDB link info stream.
-    CPdbFPOStream* m_pFPOStream;           //!< PDB stream containing frame pointer omission (FPO) records.
-    CPdbFPOStream* m_pNewFPOStream;        //!< PDB stream containing frame pointer omission (FPO) records (new format).
-    CPdbGSIStream* m_pGSIStream;           //!< PDB stream containing references to global symbols.
-    CPdbPSGSIStream* m_pPSIStream;           //!< PDB stream containing references to public symbols.
     CPdbSymbolStream* m_pSymbolStream;     //!< PDB stream containing symbol records.
     CPdbSectionMapStream* m_pSectionMapStream; //!< PDB section map stream.
     std::map<int, CPdbCompilandStream*> m_apCompilandStreams; //!< Referenced PDB compiland streams.

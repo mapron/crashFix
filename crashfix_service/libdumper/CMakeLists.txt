@@ -9,13 +9,6 @@ if(WIN32)
 add_definitions(-D_UNICODE -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS)
 endif(WIN32)
 
-# In Linux, exclude WIN32-specific sources from build
-if(UNIX)
-	list(REMOVE_ITEM source_files ./DbgHelpDumpWriter.cpp ./MiniDumpWriterImpl.cpp
-                           ./RegProfile.cpp ./HttpRequestSender.cpp ./AssyncNotification.cpp 
-                           ./Uploader.cpp)
-endif(UNIX)
-
 # Enable precompiled headers to improve compilation speed
 if(UNIX)
 	ADD_PCH_RULE("stdafx.cpp"  source_files)
