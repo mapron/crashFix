@@ -10,12 +10,12 @@
 double microtime()
 {
 #ifdef _WIN32
-    return GetTickCount();
+	return GetTickCount();
 #else
-    struct timeval tv;
-    struct timezone tz;
-    gettimeofday(&tv, &tz);
-    return (double)(tv.tv_sec)*1000+(double)(tv.tv_usec)/1000;
+	struct timeval tv;
+	struct timezone tz;
+	gettimeofday(&tv, &tz);
+	return (double)(tv.tv_sec)*1000+(double)(tv.tv_usec)/1000;
 #endif
 }
 
@@ -26,23 +26,23 @@ size_t GetMemoryUsage()
 	PROCESS_MEMORY_COUNTERS_EX pmc;
 	memset(&pmc, 0, sizeof(PROCESS_MEMORY_COUNTERS_EX));
 	pmc.cb = sizeof(PROCESS_MEMORY_COUNTERS_EX);
-    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
-    uVirtualMem = pmc.PrivateUsage/1024;
+	GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+	uVirtualMem = pmc.PrivateUsage/1024;
 #else
 	int tSize = 0, resident = 0, share = 0;
-    std::ifstream buffer("/proc/self/statm");
-    buffer >> tSize >> resident >> share;
-    buffer.close();
+	std::ifstream buffer("/proc/self/statm");
+	buffer >> tSize >> resident >> share;
+	buffer.close();
 
-    long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
-    double rss = resident * page_size_kb;
-    //cout << "RSS - " << rss << " kB\n";
+	long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // in case x86-64 is configured to use 2MB pages
+	double rss = resident * page_size_kb;
+	//cout << "RSS - " << rss << " kB\n";
 
-    double shared_mem = share * page_size_kb;
-    //cout << "Shared Memory - " << shared_mem << " kB\n";
+	double shared_mem = share * page_size_kb;
+	//cout << "Shared Memory - " << shared_mem << " kB\n";
 
-    //cout << "Private Memory - " << rss - shared_mem << "kB\n";
-    uVirtualMem = rss-shared_mem;
+	//cout << "Private Memory - " << rss - shared_mem << "kB\n";
+	uVirtualMem = rss-shared_mem;
 #endif
 
 	return uVirtualMem;
@@ -66,43 +66,43 @@ int _getch( )
 #endif
 
 void SplitFileName(std::wstring sPath, std::wstring& sDirectory,
-                   std::wstring& sFileName, std::wstring& sBaseName, std::wstring& sExtension)
+				   std::wstring& sFileName, std::wstring& sBaseName, std::wstring& sExtension)
 {
-    sFileName = sPath;
+	sFileName = sPath;
 #ifdef _WIN32
-    std::replace(sFileName.begin(), sFileName.end(), '/', '\\');
+	std::replace(sFileName.begin(), sFileName.end(), '/', '\\');
 #else
-    std::replace(sFileName.begin(), sFileName.end(), '\\', '/');
+	std::replace(sFileName.begin(), sFileName.end(), '\\', '/');
 #endif
-    sBaseName = sFileName;
+	sBaseName = sFileName;
 #ifdef _WIN32
-    size_t slash_pos = sFileName.rfind('\\');
+	size_t slash_pos = sFileName.rfind('\\');
 #else
-    size_t slash_pos = sFileName.rfind('/');
+	size_t slash_pos = sFileName.rfind('/');
 #endif
-    if(slash_pos!=sFileName.npos)
-    {
-        sDirectory = sFileName.substr(0, slash_pos);
-        sFileName = sFileName.substr(slash_pos+1);
-        sBaseName = sFileName;
-    }
+	if(slash_pos!=sFileName.npos)
+	{
+		sDirectory = sFileName.substr(0, slash_pos);
+		sFileName = sFileName.substr(slash_pos+1);
+		sBaseName = sFileName;
+	}
 
-    size_t dot_pos = sFileName.rfind('.');
-    if(dot_pos!=sFileName.npos)
-    {
-        sExtension = sFileName.substr(dot_pos+1);
-        sBaseName = sFileName.substr(0, dot_pos);
-    }
+	size_t dot_pos = sFileName.rfind('.');
+	if(dot_pos!=sFileName.npos)
+	{
+		sExtension = sFileName.substr(dot_pos+1);
+		sBaseName = sFileName.substr(0, dot_pos);
+	}
 }
 
 int CreateDir(std::wstring sPath)
 {
 #ifdef _WIN32
-    return _wmkdir(sPath.c_str());
+	return _wmkdir(sPath.c_str());
 #else
 	int nRes = mkdir(strconv::w2a(sPath).c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if(nRes==0 || errno==EEXIST)
-        return 0; // OK
+		return 0; // OK
 	return 1; // Error
 #endif
 }
@@ -115,7 +115,7 @@ int RmDir(std::wstring sPath, bool bFailIfNonEmpty)
 		BOOL bRemove = RemoveDirectory(sPath.c_str());
 		return bRemove?0:1;
 	}
-	else	
+	else
 	{
 		SHFILEOPSTRUCT fop;
 		memset(&fop, 0, sizeof(SHFILEOPSTRUCT));
@@ -154,8 +154,8 @@ int RemoveFile(std::wstring sFilePath)
 bool copy_file(std::wstring& sExistingFileName, std::wstring& sNewFileName, bool bFailIfExists)
 {
 #ifdef _WIN32
-    BOOL bCopy = CopyFileW(sExistingFileName.c_str(), sNewFileName.c_str(), bFailIfExists);
-    return bCopy!=FALSE;
+	BOOL bCopy = CopyFileW(sExistingFileName.c_str(), sNewFileName.c_str(), bFailIfExists);
+	return bCopy!=FALSE;
 #else
 	std::stringstream stream;
 	stream << "cp \"";
@@ -172,11 +172,11 @@ void Time2String(time_t t, std::string& sTime)
 {
 	sTime.empty();
 
-    char szDateTime[64];
-    struct tm* timeinfo = gmtime(&t);
-    strftime(szDateTime, 64,  "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+	char szDateTime[64];
+	struct tm* timeinfo = gmtime(&t);
+	strftime(szDateTime, 64,  "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 
-    sTime = szDateTime;
+	sTime = szDateTime;
 }
 
 void String2Time(std::string sUTC, time_t& t)
@@ -189,8 +189,8 @@ void String2Time(std::string sUTC, time_t& t)
 	std::string sSec = sUTC.substr(17, 2);
 
 	struct tm st;
-    memset(&st, 0, sizeof(struct tm));
-    st.tm_year = atoi(sYear.c_str()) - 1900; // year since 1900
+	memset(&st, 0, sizeof(struct tm));
+	st.tm_year = atoi(sYear.c_str()) - 1900; // year since 1900
 	st.tm_mon = atoi(sMonth.c_str()) - 1; // month 0-11
 	st.tm_mday = atoi(sDay.c_str());
 	st.tm_hour = atoi(sHour.c_str());
@@ -208,108 +208,108 @@ void String2Time(std::string sUTC, time_t& t)
 // Helper function that removes spaces from the beginning and end of the string
 void trim3(std::string& str, const char* szTrim)
 {
-    std::string::size_type pos = str.find_last_not_of(szTrim);
-    if(pos != std::string::npos) {
-        str.erase(pos + 1);
-        pos = str.find_first_not_of(szTrim);
-        if(pos != std::string::npos) str.erase(0, pos);
-    }
-    else str.erase(str.begin(), str.end());
+	std::string::size_type pos = str.find_last_not_of(szTrim);
+	if(pos != std::string::npos) {
+		str.erase(pos + 1);
+		pos = str.find_first_not_of(szTrim);
+		if(pos != std::string::npos) str.erase(0, pos);
+	}
+	else str.erase(str.begin(), str.end());
 }
 
 void wtrim(std::wstring& str, const wchar_t* szTrim)
 {
-    std::string::size_type pos = str.find_last_not_of(szTrim);
-    if(pos != std::string::npos) {
-        str.erase(pos + 1);
-        pos = str.find_first_not_of(szTrim);
-        if(pos != std::string::npos) str.erase(0, pos);
-    }
-    else str.erase(str.begin(), str.end());
+	std::string::size_type pos = str.find_last_not_of(szTrim);
+	if(pos != std::string::npos) {
+		str.erase(pos + 1);
+		pos = str.find_first_not_of(szTrim);
+		if(pos != std::string::npos) str.erase(0, pos);
+	}
+	else str.erase(str.begin(), str.end());
 }
 
 std::string & replace(std::string & subj, std::string old, std::string neu)
 {
-    size_t uiui = subj.find(old);
-    if (uiui != std::string::npos)
-    {
-        subj.erase(uiui, old.size());
-        subj.insert(uiui, neu);
-    }
-    return subj;
+	size_t uiui = subj.find(old);
+	if (uiui != std::string::npos)
+	{
+		subj.erase(uiui, old.size());
+		subj.insert(uiui, neu);
+	}
+	return subj;
 }
 
 int CalcFileMD5Hash(std::wstring sFileName, std::wstring& sMD5Hash)
 {
-    BYTE buff[512];
-    MD5 md5;
-    MD5_CTX md5_ctx;
-    unsigned char md5_hash[16];
-    FILE* f = NULL;
+	BYTE buff[512];
+	MD5 md5;
+	MD5_CTX md5_ctx;
+	unsigned char md5_hash[16];
+	FILE* f = NULL;
 
 #ifdef _WIN32
-    _wfopen_s(&f, sFileName.c_str(), L"rb");
+	_wfopen_s(&f, sFileName.c_str(), L"rb");
 #else
-    std::string sUtf8FileName = strconv::w2a(sFileName);
-    f = fopen(sUtf8FileName.c_str(), "rb");
+	std::string sUtf8FileName = strconv::w2a(sFileName);
+	f = fopen(sUtf8FileName.c_str(), "rb");
 #endif
 
-    if(f==NULL)
-    {
-        return -1; // Couldn't open file
-    }
+	if(f==NULL)
+	{
+		return -1; // Couldn't open file
+	}
 
-    md5.MD5Init(&md5_ctx);
+	md5.MD5Init(&md5_ctx);
 
-    while(!feof(f))
-    {
-        size_t count = fread(buff, 1, 512, f);
-        if(count>0)
-        {
-            md5.MD5Update(&md5_ctx, buff, (unsigned int)count);
-        }
-    }
+	while(!feof(f))
+	{
+		size_t count = fread(buff, 1, 512, f);
+		if(count>0)
+		{
+			md5.MD5Update(&md5_ctx, buff, (unsigned int)count);
+		}
+	}
 
-    fclose(f);
-    md5.MD5Final(md5_hash, &md5_ctx);
+	fclose(f);
+	md5.MD5Final(md5_hash, &md5_ctx);
 
-    int i;
-    for(i=0; i<16; i++)
-    {
-        wchar_t number[10];
+	int i;
+	for(i=0; i<16; i++)
+	{
+		wchar_t number[10];
 #ifdef _WIN32
-        swprintf(number, 10, L"%02x", md5_hash[i]);
+		swprintf(number, 10, L"%02x", md5_hash[i]);
 #else
-        swprintf(number, 10, L"%02x", md5_hash[i]);
+		swprintf(number, 10, L"%02x", md5_hash[i]);
 #endif
-        sMD5Hash += number;
-    }
+		sMD5Hash += number;
+	}
 
    return 0;
 }
 
 std::wstring CalcStringMD5(std::string str)
-{	
+{
 	std::wstring sMD5Hash;
-    MD5 md5;
-    MD5_CTX md5_ctx;
-    unsigned char md5_hash[16];
-    
+	MD5 md5;
+	MD5_CTX md5_ctx;
+	unsigned char md5_hash[16];
+
 	md5.MD5Init(&md5_ctx);
 	md5.MD5Update(&md5_ctx, (unsigned char*)str.c_str(), str.length());
-    md5.MD5Final(md5_hash, &md5_ctx);
+	md5.MD5Final(md5_hash, &md5_ctx);
 
-    int i;
-    for(i=0; i<16; i++)
-    {
-        wchar_t number[10];
+	int i;
+	for(i=0; i<16; i++)
+	{
+		wchar_t number[10];
 #ifdef _WIN32
-        swprintf(number, 10, L"%02x", md5_hash[i]);
+		swprintf(number, 10, L"%02x", md5_hash[i]);
 #else
-        swprintf(number, 10, L"%02x", md5_hash[i]);
+		swprintf(number, 10, L"%02x", md5_hash[i]);
 #endif
-        sMD5Hash += number;
-    }
+		sMD5Hash += number;
+	}
 
    return sMD5Hash;
 }
@@ -324,18 +324,18 @@ void FixSlashesInFilePath(std::wstring& sPath)
 
 }
 #ifdef _WIN32
-void KillProcessById(DWORD pid) 
+void KillProcessById(DWORD pid)
 {
-    HANDLE hnd;
-    hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
-    TerminateProcess(hnd, 0);
+	HANDLE hnd;
+	hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
+	TerminateProcess(hnd, 0);
 }
 #endif
 
 int executeWithTimeout(const char *szCmdLine, int timeoutSeconds)
 {
 #ifdef _WIN32
-    STARTUPINFOA si;
+	STARTUPINFOA si;
 	memset(&si, 0, sizeof(STARTUPINFO));
 	si.cb = sizeof(STARTUPINFO);
 	PROCESS_INFORMATION pi;
@@ -343,27 +343,27 @@ int executeWithTimeout(const char *szCmdLine, int timeoutSeconds)
 	if(!bCreate)
 		return -1;
 
-    if (timeoutSeconds == -1) {
-        WaitForSingleObject( pi.hProcess, INFINITE );
-    } else {
-        if (WAIT_OBJECT_0 != WaitForSingleObject(pi.hProcess, timeoutSeconds * 1000))
-        {
-            KillProcessById(pi.dwProcessId);
-            CloseHandle(pi.hProcess);
-            return -1;
-        }
-    }
-    	
+	if (timeoutSeconds == -1) {
+		WaitForSingleObject( pi.hProcess, INFINITE );
+	} else {
+		if (WAIT_OBJECT_0 != WaitForSingleObject(pi.hProcess, timeoutSeconds * 1000))
+		{
+			KillProcessById(pi.dwProcessId);
+			CloseHandle(pi.hProcess);
+			return -1;
+		}
+	}
+
 	DWORD dwExitCode = 0;
 	GetExitCodeProcess(pi.hProcess, &dwExitCode);
 	CloseHandle(pi.hProcess);
 
 	return (int)dwExitCode;
 #else
-    std::string cmd = szCmdLine;
-    if (timeoutSeconds > 0)
-        cmd = "timeout -s 9 " + std::to_string(timeoutSeconds) + " " + cmd;
-    return system(cmd.c_str());
+	std::string cmd = szCmdLine;
+	if (timeoutSeconds > 0)
+		cmd = "timeout -s 9 " + std::to_string(timeoutSeconds) + " " + cmd;
+	return system(cmd.c_str());
 #endif
 }
 std::string GetDir(std::string path)
@@ -445,19 +445,19 @@ int execute(const char* szCmdLine, bool bWait, int* pnPid)
 
 char *strtok_r(char *str, const char *delim, char **nextp)
 {
-    char *ret;
+	char *ret;
 
-    if (str == NULL)
-        str = *nextp;
-    str += strspn(str, delim);
-    if (*str == '\0')
-        return NULL;
-    ret = str;
-    str += strcspn(str, delim);
-    if (*str)
-        *str++ = '\0';
-    *nextp = str;
-    return ret;
+	if (str == NULL)
+		str = *nextp;
+	str += strspn(str, delim);
+	if (*str == '\0')
+		return NULL;
+	ret = str;
+	str += strcspn(str, delim);
+	if (*str)
+		*str++ = '\0';
+	*nextp = str;
+	return ret;
 }
 
 std::wstring GetModuleName(HMODULE hModule)
@@ -492,7 +492,7 @@ void Sleep(int msec)
 	struct timespec ts;
 	ts.tv_sec = msec/1000;
 	ts.tv_nsec = (msec%1000)*1000000L;
-    nanosleep(&ts, NULL);
+	nanosleep(&ts, NULL);
 }
 
 #endif //_WIN32

@@ -17,39 +17,39 @@ class CPdbSymLexicalScope
 {
 public:
 
-    // Construction/destruction.
-    CPdbSymLexicalScope(DWORD dwScopeId, CPdbSymLexicalScope* pParentScope);
-    virtual ~CPdbSymLexicalScope();
+	// Construction/destruction.
+	CPdbSymLexicalScope(DWORD dwScopeId, CPdbSymLexicalScope* pParentScope);
+	virtual ~CPdbSymLexicalScope();
 
-    //! Returns unique Id of this lexical scope.
-    DWORD GetLexicalScopeId();
+	//! Returns unique Id of this lexical scope.
+	DWORD GetLexicalScopeId();
 
-    //! Returns Id of the parent scope. Module scope has zero Id.
-    CPdbSymLexicalScope* GetParentLexicalScope();
+	//! Returns Id of the parent scope. Module scope has zero Id.
+	CPdbSymLexicalScope* GetParentLexicalScope();
 
-    //! Returns count of child lexical scopes.
-    UINT GetChildScopeCount();
+	//! Returns count of child lexical scopes.
+	UINT GetChildScopeCount();
 
-    //! Returns child scope by its zero-based index in the list
-    CPdbSymLexicalScope* GetChildScope(int nIndex);
+	//! Returns child scope by its zero-based index in the list
+	CPdbSymLexicalScope* GetChildScope(int nIndex);
 
-    //! Adds child lexical scope
-    void AddChildScope(CPdbSymLexicalScope* pChild);
+	//! Adds child lexical scope
+	void AddChildScope(CPdbSymLexicalScope* pChild);
 
-    //! Returns count of symbols in this scope.
-    UINT GetSymbolCount();
+	//! Returns count of symbols in this scope.
+	UINT GetSymbolCount();
 
-    //! Returns symbol in this scope by symbol's index.
-    CPdbSymbol* GetSymbol(int nIndex);
+	//! Returns symbol in this scope by symbol's index.
+	CPdbSymbol* GetSymbol(int nIndex);
 
-    //! Adds symbol to this scope
-    void AddSymbol(CPdbSymbol* pSymbol);
+	//! Adds symbol to this scope
+	void AddSymbol(CPdbSymbol* pSymbol);
 
 private:
 
-    DWORD m_dwScopeId;  //!< Unque ID of this lexical scope.
-    CPdbSymLexicalScope* m_pParentScope; //!< Parent lexical scope.  
-    std::map<DWORD, CPdbSymLexicalScope*> m_apChildScopes; //!< Child scopes.
-    std::vector<CPdbSymbol*> m_apSymbols; //!< Owned symbols.
+	DWORD m_dwScopeId;  //!< Unque ID of this lexical scope.
+	CPdbSymLexicalScope* m_pParentScope; //!< Parent lexical scope.
+	std::map<DWORD, CPdbSymLexicalScope*> m_apChildScopes; //!< Child scopes.
+	std::vector<CPdbSymbol*> m_apSymbols; //!< Owned symbols.
 };
 

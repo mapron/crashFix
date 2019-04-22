@@ -13,41 +13,41 @@ class CFileMemoryMapping
 {
 public:
 
-    // Construction/destruction
-    CFileMemoryMapping();
-    virtual ~CFileMemoryMapping();
+	// Construction/destruction
+	CFileMemoryMapping();
+	virtual ~CFileMemoryMapping();
 
-    //! Initializes the file mapping.
-    //! @param[in] szFileName File name.
-    BOOL Init(std::wstring sFileName);
+	//! Initializes the file mapping.
+	//! @param[in] szFileName File name.
+	BOOL Init(std::wstring sFileName);
 
-    //! Destroys the file mapping.
-    void Destroy();
+	//! Destroys the file mapping.
+	void Destroy();
 
-    //! Gets size of the file.
-    ULONG64 GetSize();
+	//! Gets size of the file.
+	ULONG64 GetSize();
 
-    //! Creates view of a portion of file.
-    //! @param[in] dwOffset Offset of the view from the file beginning.
-    //! @param[in] dwLength Length in bytes of the view.
-    LPBYTE CreateView(DWORD dwOffset, DWORD dwLength);
+	//! Creates view of a portion of file.
+	//! @param[in] dwOffset Offset of the view from the file beginning.
+	//! @param[in] dwLength Length in bytes of the view.
+	LPBYTE CreateView(DWORD dwOffset, DWORD dwLength);
 
 private:
 
-    struct ViewInfo
-    {
-        void* m_pStartPtr; //!< View start pointer
-        size_t m_Size;     //!< View size
-    };
+	struct ViewInfo
+	{
+		void* m_pStartPtr; //!< View start pointer
+		size_t m_Size;     //!< View size
+	};
 
 #ifdef _WIN32
-    HANDLE m_hFile;		          //!< Handle to current file
-    HANDLE m_hFileMapping;		  //!< Memory mapped object
+	HANDLE m_hFile;		          //!< Handle to current file
+	HANDLE m_hFileMapping;		  //!< Memory mapped object
 #else
-    int m_fd;   //!< File descriptor
+	int m_fd;   //!< File descriptor
 #endif
-    DWORD m_dwAllocGranularity; //!< System allocation granularity
-    ULONG64 m_uFileLength;		  //!< Size of the file.
-    CCritSec m_csLock;          //!< Sync object.
-    std::map<DWORD, ViewInfo> m_aViewStartPtrs; //!< The list of mapped portions of file.
+	DWORD m_dwAllocGranularity; //!< System allocation granularity
+	ULONG64 m_uFileLength;		  //!< Size of the file.
+	CCritSec m_csLock;          //!< Sync object.
+	std::map<DWORD, ViewInfo> m_aViewStartPtrs; //!< The list of mapped portions of file.
 };

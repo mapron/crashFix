@@ -19,24 +19,24 @@ class CBasePdbStream
 	friend class CPdbSymbol;
 public:
 
-    //! Constructor.
-    CBasePdbStream();
+	//! Constructor.
+	CBasePdbStream();
 
-    //! Destructor.
-    virtual ~CBasePdbStream();
+	//! Destructor.
+	virtual ~CBasePdbStream();
 
-    //! Initializes internal variables
-    //! @param[in] pPdbReader Pointer to PDB reader object this stream belongs to.
-    //! @param[in] pRawStream Pointer to raw MSF stream object.
-    BOOL Init(CPdbReader* pPdbReader, CMsfStream* pRawStream);
+	//! Initializes internal variables
+	//! @param[in] pPdbReader Pointer to PDB reader object this stream belongs to.
+	//! @param[in] pRawStream Pointer to raw MSF stream object.
+	BOOL Init(CPdbReader* pPdbReader, CMsfStream* pRawStream);
 
-    //! Checks if stream is initialized.
-    BOOL IsInitialized();
+	//! Checks if stream is initialized.
+	BOOL IsInitialized();
 
 protected:
 
-    BOOL m_bInitialized;      //!< Initialized or not?
-    CPdbReader* m_pPdbReader; //!< Owner PDB reader.
-    CMsfStream* m_pRawStream; //!< Pointer to raw MSF stream.
+	BOOL m_bInitialized;      //!< Initialized or not?
+	CPdbReader* m_pPdbReader; //!< Owner PDB reader.
+	CMsfStream* m_pRawStream; //!< Pointer to raw MSF stream.
 };
 

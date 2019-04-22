@@ -14,22 +14,22 @@ class CPdbSectionMapStream : public CBasePdbStream
 {
 public:
 
-    // Construction/destruction
-    CPdbSectionMapStream(CPdbReader* pPdbReader, CMsfStream* pStream, BOOL* pbResult);
-    virtual ~CPdbSectionMapStream();
+	// Construction/destruction
+	CPdbSectionMapStream(CPdbReader* pPdbReader, CMsfStream* pStream, BOOL* pbResult);
+	virtual ~CPdbSectionMapStream();
 
-    //! Initializes the stream
-    //! @param[in] pPdbReader  PDB reader this stream belongs to.    
-    //! @param[in] pStream     Stream to read from.    
-    BOOL Init(CPdbReader* pPdbReader, CMsfStream* pStream);
+	//! Initializes the stream
+	//! @param[in] pPdbReader  PDB reader this stream belongs to.
+	//! @param[in] pStream     Stream to read from.
+	BOOL Init(CPdbReader* pPdbReader, CMsfStream* pStream);
 
-    //! Returns count of sections.
-    int GetSectionCount();
+	//! Returns count of sections.
+	int GetSectionCount();
 
-    //! Returns n-th section.
-    IMAGE_SECTION_HEADER* GetSection(int nIndex);
+	//! Returns n-th section.
+	IMAGE_SECTION_HEADER* GetSection(int nIndex);
 
 private:
 
-    std::vector<IMAGE_SECTION_HEADER> m_aSections;
+	std::vector<IMAGE_SECTION_HEADER> m_aSections;
 };

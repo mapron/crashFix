@@ -45,7 +45,7 @@ private:
 	HANDLE m_hFind;
 	WIN32_FIND_DATAW m_ffd;
 #else
-    DIR* m_dirp;
+	DIR* m_dirp;
 #endif
 
 };

@@ -13,52 +13,52 @@
 //! \brief Manages a PDB file streams.
 class CMsfFile
 {
-    friend class CMsfStream;
+	friend class CMsfStream;
 public:
 
-    // Construction/destruction
-    CMsfFile();
-    virtual ~CMsfFile();
+	// Construction/destruction
+	CMsfFile();
+	virtual ~CMsfFile();
 
-    //! Initializes the reader.
-    //! @param[in] szFileName File name.
-    bool Init(std::wstring sFileName);  
+	//! Initializes the reader.
+	//! @param[in] szFileName File name.
+	bool Init(std::wstring sFileName);
 
-    //! Returns true if initialized.
-    bool IsInitialized();
+	//! Returns true if initialized.
+	bool IsInitialized();
 
-    //! Closes the file.
-    void Destroy();
+	//! Closes the file.
+	void Destroy();
 
-    //! Returns file name, if initialized; otherwise empty string.
-    std::wstring GetFileName();
+	//! Returns file name, if initialized; otherwise empty string.
+	std::wstring GetFileName();
 
-    //! Returns root stream.
-    CMsfStream* GetRootStream();
+	//! Returns root stream.
+	CMsfStream* GetRootStream();
 
-    //! Gets index dir stream.
-    CMsfStream* GetIndexDirStream();
+	//! Gets index dir stream.
+	CMsfStream* GetIndexDirStream();
 
-    //! Gets stream count in the PDB file.
-    int GetStreamCount();
+	//! Gets stream count in the PDB file.
+	int GetStreamCount();
 
-    //! Returns stream by index, or NULL if there is no stream with such index.
-    //! @param[in] nIndex Zero-based stream index.
-    CMsfStream* GetStream(int nIndex);
+	//! Returns stream by index, or NULL if there is no stream with such index.
+	//! @param[in] nIndex Zero-based stream index.
+	CMsfStream* GetStream(int nIndex);
 
 private:
 
-    //! Reads PDB file header.
-    bool ReadHeader();
+	//! Reads PDB file header.
+	bool ReadHeader();
 
-    bool m_bInitialized;                  //!< TRUE if initialized
-    CFileMemoryMapping m_fm;              //!< File mapping
-    std::wstring m_sFileName;             //!< PDB file name  
-    DWORD m_dwPdbVersion;                 //!< PDB file version
-    DWORD m_dwPageCount;                  //!< Page count
-    DWORD m_dwPageSize;                   //!< Page size in bytes
-    CMsfStream* m_pRootStream;            //!< Root stream
-    CMsfStream* m_pIndexDirStream;        //!< Index directory stream
-    std::vector<CMsfStream*> m_apStreams; //!< The list of PDB streams
+	bool m_bInitialized;                  //!< TRUE if initialized
+	CFileMemoryMapping m_fm;              //!< File mapping
+	std::wstring m_sFileName;             //!< PDB file name
+	DWORD m_dwPdbVersion;                 //!< PDB file version
+	DWORD m_dwPageCount;                  //!< Page count
+	DWORD m_dwPageSize;                   //!< Page size in bytes
+	CMsfStream* m_pRootStream;            //!< Root stream
+	CMsfStream* m_pIndexDirStream;        //!< Index directory stream
+	std::vector<CMsfStream*> m_apStreams; //!< The list of PDB streams
 };
 

@@ -18,66 +18,66 @@ class CCommandProcessor
 public:
 
 	//! Constructor.
-    CCommandProcessor();
+	CCommandProcessor();
 
 	//! Destructor.
-    virtual ~CCommandProcessor();
-    
-    //! Prints usage to log
-    void PrintUsage();
+	virtual ~CCommandProcessor();
 
-    //! Runs a command
-    int Run(int argc, char* argv[]);
+	//! Prints usage to log
+	void PrintUsage();
 
-    //! Reads a minidump file and writes output to file
-    int ReadDump(LPCSTR szFileName, LPCSTR szOutFile);
+	//! Runs a command
+	int Run(int argc, char* argv[]);
 
-    //! Reads a PDB file and writes results to file
-    int ReadPdb(LPCSTR szFileName, LPCSTR szOutFile);
+	//! Reads a minidump file and writes output to file
+	int ReadDump(LPCSTR szFileName, LPCSTR szOutFile);
 
-    //! Extracts a stream from PDB file
-    int ExtractPdbStream(LPCSTR szPdbFileName, int nStream, LPCSTR szOutFile);
+	//! Reads a PDB file and writes results to file
+	int ReadPdb(LPCSTR szFileName, LPCSTR szOutFile);
 
-    //! Extracts all PDB streams
-    int ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir);
+	//! Extracts a stream from PDB file
+	int ExtractPdbStream(LPCSTR szPdbFileName, int nStream, LPCSTR szOutFile);
 
-    //! Dumps PDB file content
-    int Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile);
+	//! Extracts all PDB streams
+	int ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir);
 
-    //! Dumps crash report contents.
+	//! Dumps PDB file content
+	int Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile);
+
+	//! Dumps crash report contents.
 	//! @param[in] szCrashRptFileName Crash report ZIP archive.
 	//! @param[in] szOutFile Output XML file that will receive the resulting information.
 	//! @param[in] szSymbolSearchDir Directory name where to search symbols. Optional.
 	//! @param[in] bExactMatchBuildAge Wether to require exact match of PDB build age or not require.
-    int DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, const std::wstring & peSearchDir, bool bExactMatchBuildAge);
+	int DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, const std::wstring & peSearchDir, bool bExactMatchBuildAge);
 
 	//! Extracts a file from crash report ZIP archive.
 	int ExtractFile(LPCWSTR szCrashRptFileName, LPCWSTR szFileItemName, LPCWSTR szOutFile);
 
-    //! Imports PDB file into symbol store.
-    //! @param[in] PDB file name to import.
-    //! @param[in] Name of the symbol store directory
-    int ImportPdb(LPCWSTR szPdbFileName, LPCWSTR szSymDir, LPCWSTR szOutFile);
+	//! Imports PDB file into symbol store.
+	//! @param[in] PDB file name to import.
+	//! @param[in] Name of the symbol store directory
+	int ImportPdb(LPCWSTR szPdbFileName, LPCWSTR szSymDir, LPCWSTR szOutFile);
 
 	int DeleteDebugInfo(LPCWSTR szPdbFileName);
 
-    //! Opens log file
-    bool InitLog(std::wstring sFileName, int nLoggingLevel);
-    
-    //! Replaces our log with another one
-    CLog* SubstituteLog(CLog* pLog, bool bOwn = true);
-    
-    //! Returns last error message
-    std::string GetErrorMsg();
+	//! Opens log file
+	bool InitLog(std::wstring sFileName, int nLoggingLevel);
 
-    //! Replaces
-    CPdbCache* SubstitutePdbCache(CPdbCache* pPdbCache, bool bOwn = true);
+	//! Replaces our log with another one
+	CLog* SubstituteLog(CLog* pLog, bool bOwn = true);
+
+	//! Returns last error message
+	std::string GetErrorMsg();
+
+	//! Replaces
+	CPdbCache* SubstitutePdbCache(CPdbCache* pPdbCache, bool bOwn = true);
 
 private:
 
-    std::string m_sErrorMsg; //!< Last error message
-    CLog* m_pLog;            //!< Pointer to log 
-    bool m_bLogIsOwned;      //!< Log is owned and should be deleted when we exit
-    CPdbCache* m_pPdbCache;  //!< PDB cache.
-    bool m_bPdbCacheIsOwned; //!< PDB cache is owned and should be deleted when we exit
+	std::string m_sErrorMsg; //!< Last error message
+	CLog* m_pLog;            //!< Pointer to log
+	bool m_bLogIsOwned;      //!< Log is owned and should be deleted when we exit
+	CPdbCache* m_pPdbCache;  //!< PDB cache.
+	bool m_bPdbCacheIsOwned; //!< PDB cache is owned and should be deleted when we exit
 };

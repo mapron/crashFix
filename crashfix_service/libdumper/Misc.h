@@ -20,7 +20,7 @@ double microtime();
 
 //! Splits file path into directory name, base file name and extension
 void SplitFileName(std::wstring sPath, std::wstring& sDirectory, std::wstring& sFileName,
-                   std::wstring& sBaseFileName, std::wstring& sExtension);
+				   std::wstring& sBaseFileName, std::wstring& sExtension);
 
 //! Creates a directory
 int CreateDir(std::wstring sPath);

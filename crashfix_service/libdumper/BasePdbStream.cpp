@@ -12,9 +12,9 @@
 
 CBasePdbStream::CBasePdbStream()
 {
-    m_pPdbReader = NULL;
-    m_pRawStream = NULL;
-    m_bInitialized = FALSE;
+	m_pPdbReader = NULL;
+	m_pRawStream = NULL;
+	m_bInitialized = FALSE;
 }
 
 CBasePdbStream::~CBasePdbStream()
@@ -24,18 +24,18 @@ CBasePdbStream::~CBasePdbStream()
 
 BOOL CBasePdbStream::Init(CPdbReader* pPdbReader, CMsfStream* pRawStream)
 {
-    if(pPdbReader==NULL ||
-       pRawStream==NULL)
-       return FALSE;
+	if(pPdbReader==NULL ||
+	   pRawStream==NULL)
+	   return FALSE;
 
-    m_pPdbReader = pPdbReader;
-    m_pRawStream = pRawStream;
-    m_bInitialized = TRUE;
+	m_pPdbReader = pPdbReader;
+	m_pRawStream = pRawStream;
+	m_bInitialized = TRUE;
 
-    return TRUE;
+	return TRUE;
 }
 
 BOOL CBasePdbStream::IsInitialized()
 {
-    return m_bInitialized;
+	return m_bInitialized;
 }

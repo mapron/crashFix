@@ -14,31 +14,31 @@
 
 CCommandProcessor::CCommandProcessor()
 {
-    m_pLog = NULL;
-    m_bLogIsOwned = true;
+	m_pLog = NULL;
+	m_bLogIsOwned = true;
 
-    m_pPdbCache = NULL;
-    m_bPdbCacheIsOwned = true;
+	m_pPdbCache = NULL;
+	m_bPdbCacheIsOwned = true;
 }
 
 CCommandProcessor::~CCommandProcessor()
 {
-    if(m_pLog != NULL && m_bLogIsOwned)
-    {
-        m_pLog->term();
-        delete m_pLog;
-    }
+	if(m_pLog != NULL && m_bLogIsOwned)
+	{
+		m_pLog->term();
+		delete m_pLog;
+	}
 
-    if(m_pPdbCache != NULL && m_bPdbCacheIsOwned)
-    {
-        delete m_pPdbCache;
-    }
+	if(m_pPdbCache != NULL && m_bPdbCacheIsOwned)
+	{
+		delete m_pPdbCache;
+	}
 }
 
 
 int CCommandProcessor::Run(int argc, char* argv[])
-{   
- 	int cur_arg = 1;
+{
+	int cur_arg = 1;
 
 	if(cmp_arg("--read-minidump"))
 	{
@@ -90,11 +90,11 @@ int CCommandProcessor::Run(int argc, char* argv[])
 		skip_arg();
 		LPCSTR szOutFile = get_arg();
 		skip_arg();
-		
+
 		std::wstring sCrashRptFileName;
 		std::wstring sOutFile;
 		std::wstring sSymbolSearchDir;
-        std::wstring sPeSearchDir;
+		std::wstring sPeSearchDir;
 		bool bRelaxBuildAge = false;
 		if(szCrashRptFileName)
 		{
@@ -104,27 +104,27 @@ int CCommandProcessor::Run(int argc, char* argv[])
 		{
 			sOutFile = strconv::a2w(szOutFile);
 		}
-		
+
 		LPCSTR szRelaxBuildAge = get_arg();
-				
+
 		if(szRelaxBuildAge!=NULL && strcmp(szRelaxBuildAge, "--relax-build-age")==0)
 		{
 			bRelaxBuildAge = true;
 			skip_arg();
 		}
-        
-        LPCSTR peSearchKey = get_arg();
-        if (peSearchKey && std::string(peSearchKey) == "--pe-search-dir")
-        {
-            skip_arg();
-            LPCSTR szPeSearchDir = get_arg();
-            skip_arg();
-            sPeSearchDir = strconv::a2w(szPeSearchDir);            
-        }
+
+		LPCSTR peSearchKey = get_arg();
+		if (peSearchKey && std::string(peSearchKey) == "--pe-search-dir")
+		{
+			skip_arg();
+			LPCSTR szPeSearchDir = get_arg();
+			skip_arg();
+			sPeSearchDir = strconv::a2w(szPeSearchDir);
+		}
 
 		LPCSTR szSymbolSearchDir = get_arg();
 		skip_arg();
-		
+
 		if(szSymbolSearchDir)
 		{
 			sSymbolSearchDir = strconv::a2w(szSymbolSearchDir);
@@ -169,7 +169,7 @@ int CCommandProcessor::Run(int argc, char* argv[])
 
 		return ExtractFile(wszCrashRptFileName, wszFileItemName, wszOutFile);
 	}
-    else if(cmp_arg("--import-pdb"))
+	else if(cmp_arg("--import-pdb"))
 	{
 		skip_arg();
 		LPCSTR szPdbFileName = get_arg();
@@ -198,7 +198,7 @@ int CCommandProcessor::Run(int argc, char* argv[])
 			wszPdbFileName = sPdbFileName.c_str();
 		}
 
-        if(szSymDir)
+		if(szSymDir)
 		{
 			sSymDir = strconv::a2w(szSymDir);
 			wszSymDir = sSymDir.c_str();
@@ -210,93 +210,93 @@ int CCommandProcessor::Run(int argc, char* argv[])
 			wszOutFile = sOutFile.c_str();
 		}
 
-        return ImportPdb(wszPdbFileName, wszSymDir, wszOutFile);
-    }
+		return ImportPdb(wszPdbFileName, wszSymDir, wszOutFile);
+	}
 	else if(cmp_arg("--delete-debug-info"))
 	{
 		skip_arg();
 		LPCSTR szPdbFileName = get_arg();
-				
+
 		return DeleteDebugInfo(strconv::a2w(szPdbFileName).c_str());
 	}
 	else
-    {
-        m_sErrorMsg = "CommandProcessor has encountered an unexpected argument '";
-        LPCSTR szArg = get_arg();
-        if(szArg!=NULL)
-        {
-            m_sErrorMsg += std::string(szArg);
-        }
-        m_sErrorMsg +="'.";
-        return -1;
-    }
+	{
+		m_sErrorMsg = "CommandProcessor has encountered an unexpected argument '";
+		LPCSTR szArg = get_arg();
+		if(szArg!=NULL)
+		{
+			m_sErrorMsg += std::string(szArg);
+		}
+		m_sErrorMsg +="'.";
+		return -1;
+	}
 }
 
 std::string CCommandProcessor::GetErrorMsg()
 {
-    return m_sErrorMsg;
+	return m_sErrorMsg;
 }
 
 bool CCommandProcessor::InitLog(std::wstring sFileName, int nLoggingLevel)
 {
-    m_pLog = new CLog();
-    BOOL bInit = m_pLog->init(sFileName, false);
-    m_pLog->set_level(nLoggingLevel);
-    return bInit?true:false;
+	m_pLog = new CLog();
+	BOOL bInit = m_pLog->init(sFileName, false);
+	m_pLog->set_level(nLoggingLevel);
+	return bInit?true:false;
 }
 
 CLog* CCommandProcessor::SubstituteLog(CLog* pLog, bool bOwn)
 {
-    CLog* pOldLog = m_pLog;
+	CLog* pOldLog = m_pLog;
 
-    m_pLog = pLog;
-    m_bLogIsOwned = bOwn;
+	m_pLog = pLog;
+	m_bLogIsOwned = bOwn;
 
-    return pOldLog;
+	return pOldLog;
 }
 
 CPdbCache* CCommandProcessor::SubstitutePdbCache(CPdbCache* pPdbCache, bool bOwn)
 {
-    CPdbCache* pOldCache = m_pPdbCache;
+	CPdbCache* pOldCache = m_pPdbCache;
 
-    m_pPdbCache = pPdbCache;
-    m_bPdbCacheIsOwned = bOwn;
+	m_pPdbCache = pPdbCache;
+	m_bPdbCacheIsOwned = bOwn;
 
-    return pOldCache;
+	return pOldCache;
 }
 
 void CCommandProcessor::PrintUsage()
 {
-    int nLevel = 0;
+	int nLevel = 0;
 
 	m_pLog->write(nLevel, "Usage help:\n");
 	m_pLog->write(nLevel, "dumper <command>, where the command is one of the following:\n");
 	m_pLog->write(nLevel, "  --read-minidump <file_name> [out_file]    Read the dump file_name\n");
-    m_pLog->write(nLevel, "                       and output results to out_file.\n");
-    m_pLog->write(nLevel, "\n");
+	m_pLog->write(nLevel, "                       and output results to out_file.\n");
+	m_pLog->write(nLevel, "\n");
 #ifdef _WIN32
 	m_pLog->write(nLevel, "  --write-minidump <file_name>    Writes the minidump to file.\n");
-    m_pLog->write(nLevel, "\n");
+	m_pLog->write(nLevel, "\n");
 	m_pLog->write(nLevel, "  --write-minidump-dbghelp <file_name>    Writes the minidump\n");
-    m_pLog->write(nLevel, "                       using dbghelp.dll.\n");
-    m_pLog->write(nLevel, "\n");
+	m_pLog->write(nLevel, "                       using dbghelp.dll.\n");
+	m_pLog->write(nLevel, "\n");
 #endif
 	m_pLog->write(nLevel, "  --dump-pdb-stream <src_pdb_file> <stream_num> <out_file> Extract\n");
-    m_pLog->write(nLevel, "                       a stream from a PDB file.\n");
-    m_pLog->write(nLevel, "\n");
+	m_pLog->write(nLevel, "                       a stream from a PDB file.\n");
+	m_pLog->write(nLevel, "\n");
 	m_pLog->write(nLevel, "  --dump-pdb-streams <src_pdb_file> <out_dir> Extract all streams\n");
-    m_pLog->write(nLevel, "                       from a PDB file to destination directory.\n");
-    m_pLog->write(nLevel, "\n");
+	m_pLog->write(nLevel, "                       from a PDB file to destination directory.\n");
+	m_pLog->write(nLevel, "\n");
 	m_pLog->write(nLevel, "  --dia2dump <src_file> <out_file> Dumps symbols from a PDB\n");
-    m_pLog->write(nLevel, "                       file to a text file.\n");
-    m_pLog->write(nLevel, "\n");
+	m_pLog->write(nLevel, "                       file to a text file.\n");
+	m_pLog->write(nLevel, "\n");
 	m_pLog->write(nLevel, "  --dump-crash-report <src_file> <out_file> Dumps contents of a\n");
-    m_pLog->write(nLevel, "                       crash report file to a text file.\n");
-    m_pLog->write(nLevel, "\n");
-    m_pLog->write(nLevel, "  --import-pdb <pdb_file> <sym_dir> [out_file] Imports a PDB file named\n");
-    m_pLog->write(nLevel, "                       <pdb_file> into symbol storage directory named <sym_dir>.\n");
+	m_pLog->write(nLevel, "                       crash report file to a text file.\n");
+	m_pLog->write(nLevel, "\n");
+	m_pLog->write(nLevel, "  --import-pdb <pdb_file> <sym_dir> [out_file] Imports a PDB file named\n");
+	m_pLog->write(nLevel, "                       <pdb_file> into symbol storage directory named <sym_dir>.\n");
 	m_pLog->write(nLevel, "                       Optionally writes general PDB info to [out_file].\n");
-    m_pLog->write(nLevel, "\n");
+	m_pLog->write(nLevel, "\n");
 	m_pLog->write(nLevel, "  --extract-file <crash_report_file> <file_item_name> <out_file> Extracts\n");
 	m_pLog->write(nLevel, "                       <file_item_name> from <crash_report_file> ZIP archive\n");
 	m_pLog->write(nLevel, "                       and saves the file as <out_file> file.\n");
@@ -306,7 +306,7 @@ void CCommandProcessor::PrintUsage()
 
 int CCommandProcessor::ReadDump(LPCSTR szFileName, LPCSTR szOutFile)
 {
-    m_sErrorMsg = "Unspecified error";
+	m_sErrorMsg = "Unspecified error";
 	FILE* f = NULL;
 
 	if(szOutFile==NULL)
@@ -470,15 +470,15 @@ int CCommandProcessor::ReadDump(LPCSTR szFileName, LPCSTR szOutFile)
 			i+1, pmr->m_uStart, pmr->m_uSize);
 	}
 
-    fprintf(f, "\n= END =\n");
-    m_sErrorMsg = "Success";
+	fprintf(f, "\n= END =\n");
+	m_sErrorMsg = "Success";
 
 	return 0;
 }
 
 int CCommandProcessor::ReadPdb(LPCSTR szFileName, LPCSTR szOutFile)
 {
-    m_sErrorMsg = "Unspecified error";
+	m_sErrorMsg = "Unspecified error";
 	FILE* f = NULL;
 
 	if(szOutFile==NULL)
@@ -501,17 +501,17 @@ int CCommandProcessor::ReadPdb(LPCSTR szFileName, LPCSTR szOutFile)
 	if(!bRead)
 	{
 		m_sErrorMsg = "Couldn't read PDB file.";
-        m_pLog->write(0, "Couldn't read PDB file!\n");
+		m_pLog->write(0, "Couldn't read PDB file!\n");
 		return 1;
 	}
 
-    m_sErrorMsg = "Success";
+	m_sErrorMsg = "Success";
 	return 0;
 }
 
 int CCommandProcessor::ExtractPdbStream(LPCSTR szPdbFileName, int nStreamId, LPCSTR szOutFile)
 {
-    m_sErrorMsg = "Unspecified error";
+	m_sErrorMsg = "Unspecified error";
 	int nStatus = 1;
 	FILE* f = NULL;
 	BYTE buf[1024];
@@ -529,7 +529,7 @@ int CCommandProcessor::ExtractPdbStream(LPCSTR szPdbFileName, int nStreamId, LPC
 	if(!bRead)
 	{
 		m_pLog->write(0, "Couldn't read PDB file!\n");
-        m_sErrorMsg = "Couldn't read PDB file";
+		m_sErrorMsg = "Couldn't read PDB file";
 		goto cleanup;
 	}
 
@@ -537,7 +537,7 @@ int CCommandProcessor::ExtractPdbStream(LPCSTR szPdbFileName, int nStreamId, LPC
 	if(pStream==NULL)
 	{
 		m_pLog->write(0, "Couldn't get PDB stream %d!\n", nStreamId);
-        m_sErrorMsg = "Couldn't get PDB stream";
+		m_sErrorMsg = "Couldn't get PDB stream";
 		goto cleanup;
 	}
 
@@ -563,7 +563,7 @@ int CCommandProcessor::ExtractPdbStream(LPCSTR szPdbFileName, int nStreamId, LPC
 	}
 
 	m_pLog->write(0, "%d bytes copied.\n", pStream->GetStreamLen());
-    m_sErrorMsg = "Success";
+	m_sErrorMsg = "Success";
 	nStatus = 0;
 
 cleanup:
@@ -574,13 +574,13 @@ cleanup:
 		f=NULL;
 	}
 
-    m_sErrorMsg = "Success";
+	m_sErrorMsg = "Success";
 	return nStatus;
 }
 
 int CCommandProcessor::ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir)
 {
-    m_sErrorMsg = "Unspecified error";
+	m_sErrorMsg = "Unspecified error";
 	int nStatus = 1;
 	FILE* f = NULL;
 	BYTE buf[1024];
@@ -595,7 +595,7 @@ int CCommandProcessor::ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir)
 	if(szOutDir==NULL)
 	{
 		m_pLog->write(0, "Invalid output directory name specified!\n");
-        m_sErrorMsg = "Invalid output directory name specified";
+		m_sErrorMsg = "Invalid output directory name specified";
 		goto cleanup;
 	}
 
@@ -604,10 +604,10 @@ int CCommandProcessor::ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir)
 #else
 	if(0!=mkdir(szOutDir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) && errno!=EEXIST)
 	{
-	    m_pLog->write(0, "Error creating output directory '%s'\n", szOutDir);
-        m_sErrorMsg = "Error creating output directory";
-	    perror(NULL);
-        goto cleanup;
+		m_pLog->write(0, "Error creating output directory '%s'\n", szOutDir);
+		m_sErrorMsg = "Error creating output directory";
+		perror(NULL);
+		goto cleanup;
 	}
 #endif
 
@@ -615,7 +615,7 @@ int CCommandProcessor::ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir)
 	if(!bRead)
 	{
 		m_pLog->write(0, "Couldn't read PDB file!\n");
-        m_sErrorMsg = "Couldn't read PDB file";
+		m_sErrorMsg = "Couldn't read PDB file";
 		goto cleanup;
 	}
 
@@ -627,7 +627,7 @@ int CCommandProcessor::ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir)
 		if(pStream==NULL)
 		{
 			m_pLog->write(0, "Couldn't get PDB stream %d!\n", i);
-            m_sErrorMsg = "Couldn't get PDB stream";
+			m_sErrorMsg = "Couldn't get PDB stream";
 			goto cleanup;
 		}
 
@@ -647,7 +647,7 @@ int CCommandProcessor::ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir)
 		if(f==NULL)
 		{
 			m_pLog->write(0, "Error opening file for writing: %s!\n", sOutFile.c_str());
-            m_sErrorMsg = "Error opening file for writing";
+			m_sErrorMsg = "Error opening file for writing";
 			goto cleanup; // Out file opening error
 		}
 
@@ -661,20 +661,20 @@ int CCommandProcessor::ExtractPdbStreams(LPCSTR szPdbFileName, LPCSTR szOutDir)
 			if(!fwrite(buf, dwBytesRead, 1, f)==1)
 			{
 				m_pLog->write(0, "Error writing to file: %s!\n", sOutFile.c_str());
-                m_sErrorMsg = "Error writing to file";
+				m_sErrorMsg = "Error writing to file";
 				goto cleanup;
 			}
 		}
 
 		m_pLog->write(0, "%d bytes copied to file %s.\n", pStream->GetStreamLen(), sOutFile.c_str());
-        m_sErrorMsg = "Success";
+		m_sErrorMsg = "Success";
 
 		fclose(f);
 		f=NULL;
 
 	}
 
-    m_sErrorMsg = "Success";
+	m_sErrorMsg = "Success";
 	nStatus = 0;
 
 cleanup:
@@ -690,7 +690,7 @@ cleanup:
 
 int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 {
-    m_sErrorMsg = "Unspecified error";
+	m_sErrorMsg = "Unspecified error";
 	int nStatus = 1;
 	FILE* f = NULL;
 	CPdbReader PdbReader;
@@ -707,7 +707,7 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 	if(szOutFile==NULL)
 	{
 		m_pLog->write(0, "Invalid output file name specified!\n");
-        m_sErrorMsg = "Invalid output file name specified";
+		m_sErrorMsg = "Invalid output file name specified";
 		goto cleanup;
 	}
 
@@ -715,7 +715,7 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 	if(!bRead)
 	{
 		m_pLog->write(0, "Couldn't read PDB file!\n");
-        m_sErrorMsg = "Couldn't read PDB file";
+		m_sErrorMsg = "Couldn't read PDB file";
 		goto cleanup;
 	}
 
@@ -727,7 +727,7 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 	if(f==NULL)
 	{
 		m_pLog->write(0, "Couldn't open output file for writing!\n");
-        m_sErrorMsg = "Couldn't open output file for writing";
+		m_sErrorMsg = "Couldn't open output file for writing";
 		goto cleanup;
 	}
 
@@ -739,7 +739,7 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 	if(!pDBI)
 	{
 		m_pLog->write(0, "Couldn't read DBI stream!\n");
-        m_sErrorMsg = "Couldn't read DBI stream";
+		m_sErrorMsg = "Couldn't read DBI stream";
 		goto cleanup;
 	}
 
@@ -750,7 +750,7 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 		if(!pModuleInfo)
 		{
 			m_pLog->write(0, "Couldn't read module info!\n");
-            m_sErrorMsg = "Couldn't read module info";
+			m_sErrorMsg = "Couldn't read module info";
 		}
 
 		std::wstring sModuleName = strconv::a2w(pModuleInfo->m_sSrcModuleName);
@@ -791,7 +791,7 @@ int CCommandProcessor::Dia2Dump(LPCSTR szPdbFileName, LPCSTR szOutFile)
 	fclose(f);
 	f=NULL;
 
-    m_sErrorMsg = "Success";
+	m_sErrorMsg = "Success";
 	nStatus = 0;
 
 cleanup:
@@ -807,7 +807,7 @@ cleanup:
 
 int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, const std::wstring & peSearchDir, bool bExactMatchBuildAge)
 {
-    m_sErrorMsg = "Unspecified error";
+	m_sErrorMsg = "Unspecified error";
 	int nStatus = 1;
 	FILE* f = NULL;
 	CCrashReportReader CrashRptReader;
@@ -819,27 +819,27 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	char szBuffer[1024]="";
 	COutputter doc;
 	std::string sUtf8OutFile;
-    MiniDumpExceptionInfo* pExcInfo = NULL;
-    MiniDumpSystemInfo* pSysInfo = NULL;
+	MiniDumpExceptionInfo* pExcInfo = NULL;
+	MiniDumpSystemInfo* pSysInfo = NULL;
 	std::wstring sStackTrace;
 
 	if(m_pLog==NULL)
-	{		
-        m_sErrorMsg = "Log is not specified";
+	{
+		m_sErrorMsg = "Log is not specified";
 		goto cleanup;
 	}
 
 	if(szCrashRptFileName.empty())
 	{
 		m_pLog->write(0, "Invalid src file name specified!\n");
-        m_sErrorMsg = "Invalid src file name specified";
+		m_sErrorMsg = "Invalid src file name specified";
 		goto cleanup;
 	}
 
 	if(szOutFile.empty())
 	{
 		m_pLog->write(0, "Invalid output file name specified!\n");
-        m_sErrorMsg = "Invalid output file name specified";
+		m_sErrorMsg = "Invalid output file name specified";
 		goto cleanup;
 	}
 
@@ -850,20 +850,20 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	if(m_pPdbCache==NULL)
 	{
 		m_pLog->write(0, "Debug info cache is not specified!\n");
-        m_sErrorMsg = "Debug info cache is not specified";
+		m_sErrorMsg = "Debug info cache is not specified";
 		goto cleanup;
 	}
-    
-    if(!szSymbolSearchDir.empty())
+
+	if(!szSymbolSearchDir.empty())
 	{
 		m_pPdbCache->AddPdbSearchDir(szSymbolSearchDir, PDB_USUAL_DIR, true);
-	}  
+	}
 
 	bRead = CrashRptReader.Init(sCrashRptFileName);
 	if(!bRead)
 	{
 		m_pLog->write(0, "Couldn't read crash report file!\n");
-        m_sErrorMsg = "Couldn't read crash report file: ";
+		m_sErrorMsg = "Couldn't read crash report file: ";
 		m_sErrorMsg += strconv::w2a(CrashRptReader.GetErrorMsg());
 		goto cleanup;
 	}
@@ -879,7 +879,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	if(pSysInfo && pSysInfo->m_uProcessorArchitecture != PROCESSOR_ARCHITECTURE_INTEL && pSysInfo->m_uProcessorArchitecture != PROCESSOR_ARCHITECTURE_AMD64)
 	{
 		m_pLog->write(0, "Not supported CPU architecture of crash report file!\n");
-        m_sErrorMsg = "Unsupported CPU architecture";
+		m_sErrorMsg = "Unsupported CPU architecture";
 		goto cleanup;
 	}
 
@@ -891,7 +891,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	if(f==NULL)
 	{
 		m_pLog->write(0, "Couldn't open output file for writing!\n");
-        m_sErrorMsg = "Couldn't open output file for writing";
+		m_sErrorMsg = "Couldn't open output file for writing";
 		goto cleanup;
 	}
 
@@ -900,12 +900,12 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	doc.BeginDocument("ErrorReport");
 
 	doc. BeginSection("Summary");
-	
+
 	// Print CrashRpt version
 #ifdef _WIN32
 	sprintf_s(szBuffer, 1024, "%d", pCrashDesc->GetGeneratorVersion());
 #else
-    sprintf(szBuffer, "%d", pCrashDesc->GetGeneratorVersion());
+	sprintf(szBuffer, "%d", pCrashDesc->GetGeneratorVersion());
 #endif
 	doc.PutRecord("GeneratorVersion", "%s", szBuffer);
 
@@ -959,7 +959,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 		doc.PutRecord("CPUCount", "%d", pSysInfo->m_uchNumberOfProcessors);
 
 	}
-	
+
 	doc.PutRecord("GUIResourceCount", "%s", strconv::w2a(pCrashDesc->GetGUIResourceCount()).c_str());
 
 	doc.PutRecord("OpenHandleCount", "%s", strconv::w2a(pCrashDesc->GetOpenHandleCount()).c_str());
@@ -1195,14 +1195,14 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 			int hEntry = -1;
 
 			// Try to load PDB file for this module
-			bool bFind = m_pPdbCache->FindPdb(pmi->GUIDnAge(), pmi->m_sPdbFileName, pmi->m_sModuleName, peSearchDir, 
+			bool bFind = m_pPdbCache->FindPdb(pmi->GUIDnAge(), pmi->m_sPdbFileName, pmi->m_sModuleName, peSearchDir,
 				&pPdbReader, &pPeReader, &hEntry, NULL, bExactMatchBuildAge);
 
 			if(bFind && pPdbReader!=NULL)
 			{
 				// Get PDB headers stream
 				CPdbHeadersStream* pHeaders = pPdbReader->GetHeadersStream();
-				
+
 				// Read GUID+Age
 				if(pHeaders)
 					sPdbGUIDnAge = pHeaders->GetGUIDnAge();
@@ -1228,7 +1228,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 
 	doc.EndDocument();
 
-    m_sErrorMsg = "Success";
+	m_sErrorMsg = "Success";
 	nStatus = 0;
 
 cleanup:
@@ -1256,21 +1256,21 @@ int CCommandProcessor::ExtractFile(LPCWSTR szCrashRptFileName, LPCWSTR szFileIte
 	if(szCrashRptFileName==NULL)
 	{
 		m_pLog->write(0, "Invalid src file name specified!\n");
-        m_sErrorMsg = "Invalid src file name specified";
+		m_sErrorMsg = "Invalid src file name specified";
 		goto cleanup;
 	}
 
 	if(szFileItemName==NULL)
 	{
 		m_pLog->write(0, "Invalid file item name specified!\n");
-        m_sErrorMsg = "Invalid file item name specified";
+		m_sErrorMsg = "Invalid file item name specified";
 		goto cleanup;
 	}
 
 	if(szOutFile==NULL)
 	{
 		m_pLog->write(0, "Invalid output file name specified!\n");
-        m_sErrorMsg = "Invalid output file name specified";
+		m_sErrorMsg = "Invalid output file name specified";
 		goto cleanup;
 	}
 
@@ -1282,7 +1282,7 @@ int CCommandProcessor::ExtractFile(LPCWSTR szCrashRptFileName, LPCWSTR szFileIte
 	if(!bRead)
 	{
 		m_pLog->write(0, "Couldn't read crash report file!\n");
-        m_sErrorMsg = "Couldn't read crash report file";
+		m_sErrorMsg = "Couldn't read crash report file";
 		goto cleanup;
 	}
 
@@ -1305,7 +1305,7 @@ cleanup:
 int CCommandProcessor::ImportPdb(LPCWSTR szPdbFileName, LPCWSTR szSymDir, LPCWSTR szOutFile)
 {
 	int nStatus = 1;
-    m_sErrorMsg = "Unspecified error.";
+	m_sErrorMsg = "Unspecified error.";
 	std::wstring sDstFileName;
 	std::wstring sPdbFileName;
 	std::wstring sOutDir;
@@ -1318,93 +1318,93 @@ int CCommandProcessor::ImportPdb(LPCWSTR szPdbFileName, LPCWSTR szSymDir, LPCWST
 	DWORD dwAge = 0;
 	wchar_t szBuffer[256] = L"";
 	std::wstring sDir;
-    std::wstring sFile;
-    std::wstring sBaseFileName;
-    std::wstring sExtension;
+	std::wstring sFile;
+	std::wstring sBaseFileName;
+	std::wstring sExtension;
 	std::wstring sSubDirName;
 	int nRes = -1;
 
-    // Validate input
-    if(szPdbFileName==NULL)
-    {
+	// Validate input
+	if(szPdbFileName==NULL)
+	{
 		nStatus = 1;
-        m_sErrorMsg = "Input file name is missing.";
-        goto exit;
-    }
+		m_sErrorMsg = "Input file name is missing.";
+		goto exit;
+	}
 
-    sPdbFileName = szPdbFileName;
+	sPdbFileName = szPdbFileName;
 	sOutDir = szSymDir;
 
 #ifdef _WIN32
-    slash = '\\';
-    wslash = L'\\';
-    std::replace(sPdbFileName.begin(), sPdbFileName.end(), '/', '\\');
+	slash = '\\';
+	wslash = L'\\';
+	std::replace(sPdbFileName.begin(), sPdbFileName.end(), '/', '\\');
 	std::replace(sOutDir.begin(), sOutDir.end(), '/', '\\');
 #else
-    slash = '/';
-    wslash = L'/';
+	slash = '/';
+	wslash = L'/';
 #endif
 
-    if(!sOutDir.empty() && sOutDir[sOutDir.length()-1]!=slash)
-        sOutDir += slash;
+	if(!sOutDir.empty() && sOutDir[sOutDir.length()-1]!=slash)
+		sOutDir += slash;
 
-    // Check if PDB cache exists
-    if(m_pPdbCache==NULL)
-    {
-        m_sErrorMsg = "Symbol cache is not initialized.";
-        goto exit;
-    }
+	// Check if PDB cache exists
+	if(m_pPdbCache==NULL)
+	{
+		m_sErrorMsg = "Symbol cache is not initialized.";
+		goto exit;
+	}
 
-    // Read PDB file
+	// Read PDB file
 	bInit = PdbReader.Init(sPdbFileName.c_str());
-    if(!bInit)
-    {
+	if(!bInit)
+	{
 		nStatus = 2;
-        m_sErrorMsg = "Input file is not a valid PDB file.";
-        goto exit;
-    }
+		m_sErrorMsg = "Input file is not a valid PDB file.";
+		goto exit;
+	}
 
-    // Get headers stream
-    pHeaders = PdbReader.GetHeadersStream();
-    if(pHeaders==NULL)
-    {
+	// Get headers stream
+	pHeaders = PdbReader.GetHeadersStream();
+	if(pHeaders==NULL)
+	{
 		nStatus = 2;
-        m_sErrorMsg = "Error retrieving headers stream from PDB file.";
-        goto exit;
-    }
+		m_sErrorMsg = "Error retrieving headers stream from PDB file.";
+		goto exit;
+	}
 
-    // Get GUID
-    sGUID = pHeaders->GetGUID();
+	// Get GUID
+	sGUID = pHeaders->GetGUID();
 	// Get age
 	dwAge = pHeaders->GetAge();
 
-    SplitFileName(szPdbFileName, sDir, sFile, sBaseFileName, sExtension);
+	SplitFileName(szPdbFileName, sDir, sFile, sBaseFileName, sExtension);
 
-    // Format subdir name
-    sSubDirName += sOutDir;
-    sSubDirName += sBaseFileName;
-    sSubDirName += L".";
-    sSubDirName += sExtension;
-    sSubDirName += wslash;
+	// Format subdir name
+	sSubDirName += sOutDir;
+	sSubDirName += sBaseFileName;
+	sSubDirName += L".";
+	sSubDirName += sExtension;
+	sSubDirName += wslash;
 
 	// Create output directory
-    nRes = CreateDir(sOutDir);
+	nRes = CreateDir(sOutDir);
 	if(0!=nRes && errno!=EEXIST)
 	{
 		m_pLog->write(2, "Error creating directory '%s'\n", strconv::w2a(sOutDir).c_str());
 		m_pLog->log_last_error(2, "CreateDirectory error");
-        m_sErrorMsg = "Error creating directory";
+		m_sErrorMsg = "Error creating directory";
 		nStatus = 3;
 		goto exit;
 	}
 
 	// Create subdirectory
-    nRes = CreateDir(sSubDirName);
+	nRes = CreateDir(sSubDirName);
 	if(0!=nRes && errno!=EEXIST)
 	{
 		m_pLog->write(2, "Error creating directory '%s'\n", strconv::w2a(sSubDirName).c_str());
 		m_pLog->log_last_error(2, "CreateDirectory error");
-        m_sErrorMsg = "Error creating directory";
+		m_sErrorMsg = "Error creating directory";
 		nStatus = 3;
 		goto exit;
 	}
@@ -1413,32 +1413,32 @@ int CCommandProcessor::ImportPdb(LPCWSTR szPdbFileName, LPCWSTR szSymDir, LPCWST
 	sSubDirName += sGUID;
 	swprintf(szBuffer, 256, L"%u", dwAge);
 	sSubDirName += szBuffer;
-    sSubDirName += wslash;
+	sSubDirName += wslash;
 
-    // Create second-level subdirectory
-    nRes = CreateDir(sSubDirName);
+	// Create second-level subdirectory
+	nRes = CreateDir(sSubDirName);
 	if(0!=nRes && errno!=EEXIST)
 	{
 		m_pLog->write(2, "Error creating directory '%s'\n", strconv::w2utf8(sSubDirName).c_str());
 		m_pLog->log_last_error(2, "CreateDirectory error");
-        m_sErrorMsg = "Error creating directory";
+		m_sErrorMsg = "Error creating directory";
 		nStatus = 3;
 		goto exit;
 	}
 
-    // Copy file to its destination directory
-    sDstFileName = sSubDirName + sFile;
-    if(!copy_file(sPdbFileName, sDstFileName, true))
-    {
+	// Copy file to its destination directory
+	sDstFileName = sSubDirName + sFile;
+	if(!copy_file(sPdbFileName, sDstFileName, true))
+	{
 		m_pLog->write(0, "Error copying file '%s' to '%s'\n", strconv::w2a(sPdbFileName).c_str(), strconv::w2a(sDstFileName).c_str());
 		m_pLog->log_last_error(0, "CopyFile error");
-        m_sErrorMsg = "Error copying file";
+		m_sErrorMsg = "Error copying file";
 		nStatus = 4;
 		goto exit;
-    }
-		
-    // Done
-    m_sErrorMsg = "File imported successfully.";
+	}
+
+	// Done
+	m_sErrorMsg = "File imported successfully.";
 	nStatus = 0;
 
 exit:
@@ -1453,7 +1453,7 @@ exit:
 #ifdef _WIN32
 		fopen_s(&f, strconv::w2a(szOutFile).c_str(), "wt");
 #else
-        std::string sUtf8OutFile = strconv::w2utf8(szOutFile);
+		std::string sUtf8OutFile = strconv::w2utf8(szOutFile);
 		f = fopen(sUtf8OutFile.c_str(), "wt");
 #endif
 		if(f==NULL)
@@ -1496,30 +1496,30 @@ exit:
 		fclose(f);
 	}
 
-    return nStatus;
+	return nStatus;
 }
 
 int CCommandProcessor::DeleteDebugInfo(LPCWSTR szPdbFileName)
 {
 	int nStatus = 1;
-    m_sErrorMsg = "Unspecified error.";
+	m_sErrorMsg = "Unspecified error.";
 	std::wstring sPdbFileName = szPdbFileName;
 	bool bDelete = false;
 
-    // Validate input
-    if(szPdbFileName==NULL)
-    {
+	// Validate input
+	if(szPdbFileName==NULL)
+	{
 		nStatus = 1;
-        m_sErrorMsg = "Input file name is missing.";
-        goto exit;
-    }
+		m_sErrorMsg = "Input file name is missing.";
+		goto exit;
+	}
 
-    sPdbFileName = szPdbFileName;
+	sPdbFileName = szPdbFileName;
 
 	if(m_pPdbCache==NULL)
 	{
 		m_pLog->write(0, "Debug info cache is not specified!\n");
-        m_sErrorMsg = "Debug info cache is not specified";
+		m_sErrorMsg = "Debug info cache is not specified";
 		goto exit;
 	}
 

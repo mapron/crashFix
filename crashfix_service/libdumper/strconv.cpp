@@ -10,81 +10,81 @@ static bool bSetLocale = false;
 
 std::wstring strconv::a2w(std::string str)
 {
-    if(!bSetLocale)
-    {
-        setlocale (LC_ALL,"");
-        bSetLocale = true;
-    }
+	if(!bSetLocale)
+	{
+		setlocale (LC_ALL,"");
+		bSetLocale = true;
+	}
 
 	// Calculate output buffer size
-    size_t nmax = 0;
+	size_t nmax = 0;
 #ifdef _WIN32
-    mbstowcs_s(&nmax, NULL, 0, str.c_str(), 0);
+	mbstowcs_s(&nmax, NULL, 0, str.c_str(), 0);
 #else
-    nmax = mbstowcs(NULL, str.c_str(), 0);
+	nmax = mbstowcs(NULL, str.c_str(), 0);
 #endif
 
 	// Check if buffer size calculated
 	if(nmax==0 || nmax==(size_t)-1)
-		return std::wstring(); // error 
+		return std::wstring(); // error
 
 	// Allocate buffer
-    wchar_t* buf = new wchar_t[nmax+1];
+	wchar_t* buf = new wchar_t[nmax+1];
 	if(buf==NULL)
-		return std::wstring(); // error 
+		return std::wstring(); // error
 
 	// Convert string
-    size_t count = 0;
+	size_t count = 0;
 #ifdef _WIN32
-    mbstowcs_s(&count, buf, nmax, str.c_str(), nmax+1);
+	mbstowcs_s(&count, buf, nmax, str.c_str(), nmax+1);
 #else
-    mbstowcs(buf, str.c_str(), nmax+1);
+	mbstowcs(buf, str.c_str(), nmax+1);
 #endif
 
 	buf[nmax]=0; // ensure buffer is zero terminated
 
-    std::wstring wstr(buf);
+	std::wstring wstr(buf);
 
 	// Free buffer
-    delete [] buf;
+	delete [] buf;
 
-    return wstr;
+	return wstr;
 }
 
 std::string strconv::w2a(std::wstring str)
 {
-    if(!bSetLocale)
-    {
-        setlocale (LC_ALL,"");
-        bSetLocale = true;
-    }
+	if(!bSetLocale)
+	{
+		setlocale (LC_ALL,"");
+		bSetLocale = true;
+	}
 
-    size_t nmax = 0;
+	size_t nmax = 0;
 #ifdef _WIN32
-    wcstombs_s(&nmax, NULL, 0, str.c_str(), 0);
+	wcstombs_s(&nmax, NULL, 0, str.c_str(), 0);
 #else
-    nmax = wcstombs(NULL, str.c_str(), 0);    
+	nmax = wcstombs(NULL, str.c_str(), 0);
 #endif
 
 	if(nmax==0 || nmax==(size_t)(-1))
-        return "";
+		return "";
 
-    char* buf = new char[nmax+1];
+	char* buf = new char[nmax+1];
 	if(buf==NULL)
 		return "";
 
-    size_t count = 0;
+	size_t count = 0;
 #ifdef _WIN32
-    wcstombs_s(&count, buf, nmax, str.c_str(), nmax+1);
+	wcstombs_s(&count, buf, nmax, str.c_str(), nmax+1);
 #else
-    wcstombs(buf, str.c_str(), nmax+1);
+	wcstombs(buf, str.c_str(), nmax+1);
 #endif
-	
-	buf[nmax] = 0; // ensure buffer is zero terminated
-    std::string wstr(buf);
-    delete [] buf;
 
-    return wstr;
+	buf[nmax] = 0; // ensure buffer is zero terminated
+	std::string wstr(buf);
+	delete [] buf;
+
+	return wstr;
 }
 
 std::string strconv::w2utf8(std::wstring str)
@@ -93,19 +93,19 @@ std::string strconv::w2utf8(std::wstring str)
 
 	// Calculate required buffer size
 	int count = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, NULL, 0, NULL, NULL);
-    if(count==0)
-    {
-       return "";
-    }
+	if(count==0)
+	{
+	   return "";
+	}
 
-    // Convert UNICODE->UTF8
-    char* buf = new char[count];
+	// Convert UNICODE->UTF8
+	char* buf = new char[count];
 	int result = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, (LPSTR)buf, count, NULL, NULL);
-    if(result==0)
-    {
-        delete [] buf;
-        return "";
-    }
+	if(result==0)
+	{
+		delete [] buf;
+		return "";
+	}
 
 	std::string utf8(buf);
 	delete [] buf;

@@ -8,9 +8,9 @@
 #include "Buffer.h"
 #include "Log.h"
 
-CPdbLinkInfoStream::CPdbLinkInfoStream(CPdbReader* pPdbReader, CMsfStream* pStream, BOOL* pbResult)  
+CPdbLinkInfoStream::CPdbLinkInfoStream(CPdbReader* pPdbReader, CMsfStream* pStream, BOOL* pbResult)
 {
-    *pbResult = Init(pPdbReader, pStream);
+	*pbResult = Init(pPdbReader, pStream);
 }
 
 CPdbLinkInfoStream::~CPdbLinkInfoStream()
@@ -19,81 +19,81 @@ CPdbLinkInfoStream::~CPdbLinkInfoStream()
 
 BOOL CPdbLinkInfoStream::Init(CPdbReader* pPdbReader, CMsfStream* pStream)
 {
-    // Link info stream has number 4.
-    // Link info stream has the following structure:
-    // 1. Header (24 bytes).
-    // 2. Array of zero-terminated strings representing linker command line.
-    // 3. Some sequence of DWORD or WORD values (purpose unqnown).
+	// Link info stream has number 4.
+	// Link info stream has the following structure:
+	// 1. Header (24 bytes).
+	// 2. Array of zero-terminated strings representing linker command line.
+	// 3. Some sequence of DWORD or WORD values (purpose unqnown).
 
-    // Init base class
-    if(!CBasePdbStream::Init(pPdbReader, pStream))
-        return FALSE;
-    
-    // Get stream length
-    DWORD dwStreamLen = pStream->GetStreamLen();
-    // Allocate buffer for entire stream
-    CBuffer buf(dwStreamLen);
+	// Init base class
+	if(!CBasePdbStream::Init(pPdbReader, pStream))
+		return FALSE;
 
-    // Read entire stream
-    DWORD dwBytesRead = 0;    
-    BOOL bRead = pStream->ReadData(buf, dwStreamLen, &dwBytesRead, TRUE);
-    if(!bRead || dwBytesRead!=dwStreamLen)
-        return FALSE;
+	// Get stream length
+	DWORD dwStreamLen = pStream->GetStreamLen();
+	// Allocate buffer for entire stream
+	CBuffer buf(dwStreamLen);
 
-    // Read header
+	// Read entire stream
+	DWORD dwBytesRead = 0;
+	BOOL bRead = pStream->ReadData(buf, dwStreamLen, &dwBytesRead, TRUE);
+	if(!bRead || dwBytesRead!=dwStreamLen)
+		return FALSE;
 
-    PLINK_INFO_HEADER pHdr = (PLINK_INFO_HEADER)(LPBYTE)buf;
-    m_dwDataLength = pHdr->m_dwDataLength;
-    m_dwAge = pHdr->m_dwAge;
+	// Read header
 
-    // Read sequence of zero-separated strings following the header
+	PLINK_INFO_HEADER pHdr = (PLINK_INFO_HEADER)(LPBYTE)buf;
+	m_dwDataLength = pHdr->m_dwDataLength;
+	m_dwAge = pHdr->m_dwAge;
 
-    std::string str;  
-    UINT i;
-    for(i=0; i<m_dwDataLength; i++)
-    {
-        char c = (char)pHdr->m_chStrings[i];
+	// Read sequence of zero-separated strings following the header
 
-        if(c!=0) 
-        {
-            str += c;
-        }
-        else
-        {
-            // End of string
-            if(str.length()==0)
-                break;
+	std::string str;
+	UINT i;
+	for(i=0; i<m_dwDataLength; i++)
+	{
+		char c = (char)pHdr->m_chStrings[i];
 
-            // Add string to the list
-            m_aStrings.push_back(str);
-            str.clear();
-        }
-    }
+		if(c!=0)
+		{
+			str += c;
+		}
+		else
+		{
+			// End of string
+			if(str.length()==0)
+				break;
 
-    assert(m_aStrings.size()==3);
+			// Add string to the list
+			m_aStrings.push_back(str);
+			str.clear();
+		}
+	}
 
-    // Read the sequence of DWORDs??? following the strings
+	assert(m_aStrings.size()==3);
+
+	// Read the sequence of DWORDs??? following the strings
 
 
-    return TRUE;
+	return TRUE;
 }
 
 DWORD CPdbLinkInfoStream::GetDataLength()
 {
-    return m_dwDataLength;
+	return m_dwDataLength;
 }
 
 DWORD CPdbLinkInfoStream::GetAge()
 {
-    return m_dwAge;
+	return m_dwAge;
 }
 
 UINT CPdbLinkInfoStream::GetStringCount()
 {
-    return (UINT)m_aStrings.size();
+	return (UINT)m_aStrings.size();
 }
 
 std::string CPdbLinkInfoStream::GetString(UINT i)
 {
-    return m_aStrings[i];
+	return m_aStrings[i];
 }

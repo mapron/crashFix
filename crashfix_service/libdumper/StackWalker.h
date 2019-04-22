@@ -10,7 +10,7 @@
 
 //! \class CStackFrame
 //! \brief Stack frame.
-class CStackFrame 
+class CStackFrame
 {
 public:
 
@@ -31,25 +31,25 @@ public:
 		m_nSrcLineNumber = 0;
 		m_dwOffsInLine = 0;
 	}
-	
-    DWORD64  m_dwAddrPC;               //!< program counter
-    DWORD64  m_dwAddrReturn;           //!< return address
-    DWORD64  m_dwAddrFrame;            //!< frame pointer
-    DWORD64  m_dwAddrStack;            //!< stack pointer
-    DWORD64  m_dwAddrBStore;           //!< backing store pointer
-    PVOID    m_pFuncTableEntry;        //!< pointer to pdata/fpo or NULL
-    BOOL     m_bFar;                   //!< WOW far call
-    BOOL     m_bVirtual;               //!< is this a virtual frame?  
 
-    std::wstring m_sModuleName;      //!< Module name
+	DWORD64  m_dwAddrPC;               //!< program counter
+	DWORD64  m_dwAddrReturn;           //!< return address
+	DWORD64  m_dwAddrFrame;            //!< frame pointer
+	DWORD64  m_dwAddrStack;            //!< stack pointer
+	DWORD64  m_dwAddrBStore;           //!< backing store pointer
+	PVOID    m_pFuncTableEntry;        //!< pointer to pdata/fpo or NULL
+	BOOL     m_bFar;                   //!< WOW far call
+	BOOL     m_bVirtual;               //!< is this a virtual frame?
+
+	std::wstring m_sModuleName;      //!< Module name
 	DWORD m_dwOffsInModule;          //!< Offset from the beginning of the module.
-    std::wstring m_sPdbFileName;     //!< Matching PDB file name
-    std::string m_sSymbolName;       //!< Symbol name
+	std::wstring m_sPdbFileName;     //!< Matching PDB file name
+	std::string m_sSymbolName;       //!< Symbol name
 	std::string m_sUndecoratedSymbolName; //!< Undecorated symbol name
-    DWORD64 m_dwSymStartAddr;        //!< Symbol starting address
+	DWORD64 m_dwSymStartAddr;        //!< Symbol starting address
 	DWORD m_dwOffsInSymbol;          //!< Offset from the beginning of symbol.
-    std::wstring m_sSrcFileName;     //!< Source file name
-    int m_nSrcLineNumber;            //!< Source line number
+	std::wstring m_sSrcFileName;     //!< Source file name
+	int m_nSrcLineNumber;            //!< Source line number
 	DWORD m_dwOffsInLine;            //!< Offset from the beginning of source line.
 };
 
@@ -59,62 +59,62 @@ class CStackWalker
 {
 public:
 
-    //! Constructor
-    CStackWalker(const std::wstring & sPeSearchDir);
+	//! Constructor
+	CStackWalker(const std::wstring & sPeSearchDir);
 
 	//! Destructor
-    virtual ~CStackWalker();
+	virtual ~CStackWalker();
 
-    //! Initializes the stack walker for a specified thread.
-    //! @param[in] pMiniDump Pointer to minidump reader
-    //! @param[in] pPdbCache PDB symbol cache
-    //! @param[in] dwThreadId Thread ID
+	//! Initializes the stack walker for a specified thread.
+	//! @param[in] pMiniDump Pointer to minidump reader
+	//! @param[in] pPdbCache PDB symbol cache
+	//! @param[in] dwThreadId Thread ID
 	//! @param[in] bExactMatchBuildAge If to require build age match.
-    bool Init(CMiniDumpReader* pMiniDump, CPdbCache* pPdbCache, DWORD dwThreadId, bool bExactMatchBuildAge = TRUE);
+	bool Init(CMiniDumpReader* pMiniDump, CPdbCache* pPdbCache, DWORD dwThreadId, bool bExactMatchBuildAge = TRUE);
 
 	//! Frees all used resources.
 	void Destroy();
 
-    //! Returns current stack frame, or NULL if there is not current stack frame
-    CStackFrame* GetStackFrame();
+	//! Returns current stack frame, or NULL if there is not current stack frame
+	CStackFrame* GetStackFrame();
 
-    //! Loads first stack frame.
-    BOOL FirstStackFrame();    
+	//! Loads first stack frame.
+	BOOL FirstStackFrame();
 
-    //! Loads next stack frame.
-    BOOL NextStackFrame(BOOL bFirstFrame = FALSE);
+	//! Loads next stack frame.
+	BOOL NextStackFrame(BOOL bFirstFrame = FALSE);
 
-    //! Returns last error message
-    std::wstring GetErrorMsg();
+	//! Returns last error message
+	std::wstring GetErrorMsg();
 
 private:
 
 	//! Retrieves information for current stack frame
-    bool GetSymbolInfoForCurStackFrame();
-    
-    //! Retrieves x64 unwind info by instruction RVA.
-    BOOL GetAMD64UnwindInfo(CPeReader* pPeReader, DWORD64 dwAddr, DWORD& dwUnwindInfoRVA, DWORD& dwOffsInFunc);
+	bool GetSymbolInfoForCurStackFrame();
 
-    //! Checks if the provided program fragment can be an AMD64 epilog code
-    //! and continues the effects of epilog on the specified stack frame
-    BOOL CheckAMD64Epilog(LPBYTE uchProgram, UINT cbProgram, CStackFrame* pStackFrame);
+	//! Retrieves x64 unwind info by instruction RVA.
+	BOOL GetAMD64UnwindInfo(CPeReader* pPeReader, DWORD64 dwAddr, DWORD& dwUnwindInfoRVA, DWORD& dwOffsInFunc);
 
-    //! Returns pointer to a general purpose register in thread context by register's index.
-    PDWORD64 GetGPRegByIndex(UINT uRegIndex);
+	//! Checks if the provided program fragment can be an AMD64 epilog code
+	//! and continues the effects of epilog on the specified stack frame
+	BOOL CheckAMD64Epilog(LPBYTE uchProgram, UINT cbProgram, CStackFrame* pStackFrame);
 
-    //! Returns pointer to an XML register in thread context by register's index.
-    LPBYTE GetXMMRegByIndex(UINT uRegIndex);
+	//! Returns pointer to a general purpose register in thread context by register's index.
+	PDWORD64 GetGPRegByIndex(UINT uRegIndex);
 
-    //! Undoes effects of prolog.
-    BOOL UndoAMD64Prolog(CPeReader* pPeReader, DWORD dwUnwindInfoRVA, DWORD dwOffsInFunc);
-        
-    const std::wstring & m_PeSearchDir;
-    CMiniDumpReader* m_pMdmpReader; //!< Pointer to minidump reader
-    LPBYTE m_pThreadContext;        //!< Thread context.
+	//! Returns pointer to an XML register in thread context by register's index.
+	LPBYTE GetXMMRegByIndex(UINT uRegIndex);
+
+	//! Undoes effects of prolog.
+	BOOL UndoAMD64Prolog(CPeReader* pPeReader, DWORD dwUnwindInfoRVA, DWORD dwOffsInFunc);
+
+	const std::wstring & m_PeSearchDir;
+	CMiniDumpReader* m_pMdmpReader; //!< Pointer to minidump reader
+	LPBYTE m_pThreadContext;        //!< Thread context.
 	UINT m_uThreadContextSize;      //!< Thread context size.
-    CPdbCache* m_pPdbCache;         //!< PDB cache
+	CPdbCache* m_pPdbCache;         //!< PDB cache
 	bool m_bExactMatchBuildAge;       //!< If to require exact match of PDB build age.
-    CStackFrame m_StackFrame;       //!< Current stack frame
-    std::wstring m_sErrorMsg;       //!< Last error message
+	CStackFrame m_StackFrame;       //!< Current stack frame
+	std::wstring m_sErrorMsg;       //!< Last error message
 };
 

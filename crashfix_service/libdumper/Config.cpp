@@ -359,17 +359,17 @@ void CConfig::trim(char* s)
 	len = strlen(s);
 	if(len!=0)
 	{
-        for(i=(int)len-1; i>=0; i--)
-        {
-            if(s[i]!='\t'&&
-               s[i]!=' ' &&
-               s[i]!='\r' &&
-               s[i]!='\n')
-               break;
-        }
+		for(i=(int)len-1; i>=0; i--)
+		{
+			if(s[i]!='\t'&&
+			   s[i]!=' ' &&
+			   s[i]!='\r' &&
+			   s[i]!='\n')
+			   break;
+		}
 
-        if(i!=len-1)
-            s[i+1] = 0;
+		if(i!=len-1)
+			s[i+1] = 0;
 	}
 }
 

@@ -59,7 +59,7 @@ void COutputter::BeginSection(LPCSTR pszTitle, ...)
 #ifdef _WIN32
 		vsprintf_s(szBuffer, 1024, pszTitle, args);
 #else
-        vsprintf(szBuffer, pszTitle, args);
+		vsprintf(szBuffer, pszTitle, args);
 #endif
 		TiXmlHandle hRoot = m_doc.RootElement();
 		TiXmlHandle hElem = new TiXmlElement(szBuffer);
@@ -126,7 +126,7 @@ void COutputter::PutRecord(LPCSTR pszName, LPCSTR pszValue, ...)
 #ifdef _WIN32
 		vsprintf_s(szBuffer, 1024, pszValue, args);
 #else
-        vsprintf(szBuffer, pszValue, args);
+		vsprintf(szBuffer, pszValue, args);
 #endif
 
 		TiXmlHandle hElem = new TiXmlElement(pszName);
@@ -174,7 +174,7 @@ void COutputter::PutTableCell(int width, bool bLastInRow, LPCSTR szFormat, ...)
 #ifdef _WIN32
 		vsnprintf_s(szBuffer, BUFF_SIZE, szFormat, args);
 #else
-        vsnprintf(szBuffer, BUFF_SIZE, szFormat, args);
+		vsnprintf(szBuffer, BUFF_SIZE, szFormat, args);
 #endif
 		szBuffer[BUFF_SIZE]='\0'; // ensure zero-terminated
 

@@ -12,27 +12,27 @@
 CPdbCache::CPdbCache()
 {
 	m_nEntryIdSeed = 0;
-    m_nMaxEntryCount = 100;
+	m_nMaxEntryCount = 100;
 	m_uMaxMemUsageKB = 100*1024; // 100 MB
 }
 
 CPdbCache::~CPdbCache()
 {
-    Clear();
+	Clear();
 }
 
 bool CPdbCache::SetMaxEntryCount(int nMaxEntryCount)
 {
-    // Validate input param
-    if(nMaxEntryCount<=0 || nMaxEntryCount>1000)
-        return false;
+	// Validate input param
+	if(nMaxEntryCount<=0 || nMaxEntryCount>1000)
+		return false;
 
-    CAutoLock lock(&m_AccessLock);
-    m_nMaxEntryCount = nMaxEntryCount;
+	CAutoLock lock(&m_AccessLock);
+	m_nMaxEntryCount = nMaxEntryCount;
 
 	// Remove entries beyond the limit
 	CheckCacheOverflow();
-    return true;
+	return true;
 }
 
 int CPdbCache::GetMaxEntryCount()
@@ -66,30 +66,30 @@ bool CPdbCache::AddPdbSearchDir(
 	if(dwAttrs==INVALID_FILE_ATTRIBUTES || (dwAttrs&FILE_ATTRIBUTE_DIRECTORY)==0)
 		return false; // Directory does not exist.
 #else
-    struct stat st_buf;
-    int status = stat (strconv::w2a(sPathToSearchDir).c_str(), &st_buf);
-    if (status != 0)
-        return false;
+	struct stat st_buf;
+	int status = stat (strconv::w2a(sPathToSearchDir).c_str(), &st_buf);
+	if (status != 0)
+		return false;
 
-    if (!S_ISDIR (st_buf.st_mode))
-        return false;
+	if (!S_ISDIR (st_buf.st_mode))
+		return false;
 #endif
 
-    CAutoLock lock(&m_AccessLock);
+	CAutoLock lock(&m_AccessLock);
 
 	// Add directory to our list
-    _SearchDirInfo sdi;
-    sdi.m_sPath = sPathToSearchDir;
+	_SearchDirInfo sdi;
+	sdi.m_sPath = sPathToSearchDir;
 #ifdef _WIN32
 	std::replace(sdi.m_sPath.begin(), sdi.m_sPath.end(), '/', '\\');
 #else
 	std::replace(sdi.m_sPath.begin(), sdi.m_sPath.end(), '\\', '/');
 #endif
-    sdi.m_bSearchRecursively = bSearchRecursively;
+	sdi.m_bSearchRecursively = bSearchRecursively;
 	sdi.m_SearchMode = SearchMode;
-    m_aSearchDirs[sPathToSearchDir] = sdi;
+	m_aSearchDirs[sPathToSearchDir] = sdi;
 
-    return true;
+	return true;
 }
 
 bool
@@ -97,7 +97,7 @@ CPdbCache::FindPdb(
 	const std::wstring & sGUIDnAge,
 	std::wstring sPdbFileName,
 	std::wstring sImageFileName,
-    const std::wstring & sPeSearchDir,
+	const std::wstring & sPeSearchDir,
 	CPdbReader** ppPdbReader,
 	CPeReader** ppPeReader,
 	int* pnEntry,
@@ -105,11 +105,11 @@ CPdbCache::FindPdb(
 	bool bExactMatchBuildAge
 	)
 {
-    // Init output variables
-    if(ppPdbReader!=NULL)
-        *ppPdbReader = NULL;
+	// Init output variables
+	if(ppPdbReader!=NULL)
+		*ppPdbReader = NULL;
 
-    if(ppPeReader!=NULL)
+	if(ppPeReader!=NULL)
 		*ppPeReader = NULL;
 
 	if(pnEntry!=NULL)
@@ -118,14 +118,14 @@ CPdbCache::FindPdb(
 	if(psErrorMsg)
 		*psErrorMsg = "Unspecified error";
 
-    // Validate input
+	// Validate input
 
 	if(sGUIDnAge.empty() ||
-        sPdbFileName.empty())
+		sPdbFileName.empty())
 	{
 		if(psErrorMsg)
 			*psErrorMsg = "Either GUIDnAge or path should be specified";
-        return false; // Either GUIDnAge or path should be specified
+		return false; // Either GUIDnAge or path should be specified
 	}
 
 	if(ppPdbReader==NULL ||
@@ -137,16 +137,16 @@ CPdbCache::FindPdb(
 		return false; // Output variables should be set
 	}
 
-    bool bStatus = false;
-    CPdbReader* pPdbReader = NULL;
-    CPeReader* pPeReader = NULL;
-    std::wstring sDir;
-    std::wstring sFile;
-    std::wstring sBaseName;
-    std::wstring sExt;
-    std::wstring sPdbName;
-    std::wstring sPeName;
-    std::map<std::wstring, _SearchDirInfo>::iterator it;
+	bool bStatus = false;
+	CPdbReader* pPdbReader = NULL;
+	CPeReader* pPeReader = NULL;
+	std::wstring sDir;
+	std::wstring sFile;
+	std::wstring sBaseName;
+	std::wstring sExt;
+	std::wstring sPdbName;
+	std::wstring sPeName;
+	std::map<std::wstring, _SearchDirInfo>::iterator it;
 	int nEntry = -1;
 	std::string sErrorMsg;
 
@@ -154,9 +154,9 @@ CPdbCache::FindPdb(
 	FixSlashesInFilePath(sPdbFileName);
 	FixSlashesInFilePath(sImageFileName);
 
-    // If GUID+Age is specified, check if we have a PDB with such GUID+Age loaded
-    if(!sGUIDnAge.empty())
-    {
+	// If GUID+Age is specified, check if we have a PDB with such GUID+Age loaded
+	if(!sGUIDnAge.empty())
+	{
 		eFindExistingEntryResult res = FindExistingEntry(sGUIDnAge, sPdbFileName,
 			sImageFileName, &pPdbReader, &pPeReader, &nEntry, bExactMatchBuildAge);
 		if(res==FEE_FOUND)
@@ -172,50 +172,50 @@ CPdbCache::FindPdb(
 			bStatus = false;
 			goto cleanup;
 		}
-    }
+	}
 
-    // Try to find matching PDB file from search dirs
+	// Try to find matching PDB file from search dirs
 
-    // Get image file base name (without path and extension)
-    SplitFileName(sPdbFileName, sDir, sFile, sBaseName, sExt);
-    sPdbName = sBaseName + L".pdb";
-    SplitFileName(sImageFileName, sDir, sFile, sBaseName, sExt);
-    sPeName = sBaseName + L".";
-    sPeName += sExt;
+	// Get image file base name (without path and extension)
+	SplitFileName(sPdbFileName, sDir, sFile, sBaseName, sExt);
+	sPdbName = sBaseName + L".pdb";
+	SplitFileName(sImageFileName, sDir, sFile, sBaseName, sExt);
+	sPeName = sBaseName + L".";
+	sPeName += sExt;
 
-    for(it=m_aSearchDirs.begin(); it!=m_aSearchDirs.end(); it++)
-    {
-        _SearchDirInfo& sdi = it->second;
+	for(it=m_aSearchDirs.begin(); it!=m_aSearchDirs.end(); it++)
+	{
+		_SearchDirInfo& sdi = it->second;
 
 		bStatus = SearchDirectory(sdi.m_sPath, sPeSearchDir, sdi.m_SearchMode, sdi.m_bSearchRecursively,
-            sPdbName, sPeName, sGUIDnAge, &pPdbReader, &pPeReader, &nEntry, sErrorMsg, bExactMatchBuildAge);
-        if(bStatus)
-            break;
-    }
+			sPdbName, sPeName, sGUIDnAge, &pPdbReader, &pPeReader, &nEntry, sErrorMsg, bExactMatchBuildAge);
+		if(bStatus)
+			break;
+	}
 
 	sErrorMsg = "Exhausted search";
 
 cleanup:
 
-    if(bStatus)
-    {
+	if(bStatus)
+	{
 		// Return the results
-        *ppPdbReader = pPdbReader;
-        *ppPeReader = pPeReader;
+		*ppPdbReader = pPdbReader;
+		*ppPeReader = pPeReader;
 		*pnEntry = nEntry;
-    }
+	}
 
 	if(psErrorMsg)
 		*psErrorMsg = sErrorMsg;
 
-    return bStatus;
+	return bStatus;
 }
 
 CPdbCache::eFindExistingEntryResult CPdbCache::FindExistingEntry(
 		std::wstring sGUIDnAge,
 		std::wstring sPdbFileName,
 		std::wstring sImageFileName,
-        CPdbReader** ppPdbReader,
+		CPdbReader** ppPdbReader,
 		CPeReader** ppPeReader,
 		int* pnEntry,
 		bool bExactMatchBuildAge
@@ -228,8 +228,8 @@ CPdbCache::eFindExistingEntryResult CPdbCache::FindExistingEntry(
 	CPeReader* pPeReader = NULL;
 
 	// Try to find exact match of GUID+Age string
-    std::map<std::wstring, int>::iterator it = m_aGuidIndex.find(sGUIDnAge);
-    if(it==m_aGuidIndex.end())
+	std::map<std::wstring, int>::iterator it = m_aGuidIndex.find(sGUIDnAge);
+	if(it==m_aGuidIndex.end())
 	{
 		if(!bExactMatchBuildAge)
 		{
@@ -258,8 +258,8 @@ CPdbCache::eFindExistingEntryResult CPdbCache::FindExistingEntry(
 		}
 	}
 
-    // Such a GUID found
-    nEntry = it->second;
+	// Such a GUID found
+	nEntry = it->second;
 
 	// Check if this entry is maked for deletion...
 	if(m_aEntries[nEntry].m_bPendingDelete)
@@ -274,8 +274,8 @@ CPdbCache::eFindExistingEntryResult CPdbCache::FindExistingEntry(
 	m_aEntries[nEntry].m_nRefCount++;
 
 	// Get PDB reader and PE reader
-    pPdbReader = m_aEntries[nEntry].m_pPdbReader;
-    pPeReader = m_aEntries[nEntry].m_pPeReader;
+	pPdbReader = m_aEntries[nEntry].m_pPdbReader;
+	pPeReader = m_aEntries[nEntry].m_pPeReader;
 
 	// Check if entry was unreferenced
 	if(m_aEntries[nEntry].m_nRefCount==1)
@@ -291,77 +291,77 @@ CPdbCache::eFindExistingEntryResult CPdbCache::FindExistingEntry(
 	}
 
 	// Update access time of the entry
-    time_t CurTime;
-    time(&CurTime);
-    m_aEntries[nEntry].m_AccessTime = CurTime;
+	time_t CurTime;
+	time(&CurTime);
+	m_aEntries[nEntry].m_AccessTime = CurTime;
 
 	// Success
-    res = FEE_FOUND;
+	res = FEE_FOUND;
 
 cleanup:
 
 	if(res==FEE_FOUND)
-    {
+	{
 		// Return the results
-        *ppPdbReader = pPdbReader;
-        *ppPeReader = pPeReader;
+		*ppPdbReader = pPdbReader;
+		*ppPeReader = pPeReader;
 		*pnEntry = nEntry;
-    }
+	}
 
-    return res;
+	return res;
 }
 
 bool CPdbCache::SearchDirectory(const std::wstring & sSearchDir, const std::wstring & sPeSearchDir, ePdbDirSearchMode SearchMode, bool bRecursive,
-                          const std::wstring & sPdbName, const std::wstring & sPeName, const std::wstring & sGUIDnAge,
-                          CPdbReader** ppPdbReader, CPeReader** ppPeReader, int* pnEntry,
+						  const std::wstring & sPdbName, const std::wstring & sPeName, const std::wstring & sGUIDnAge,
+						  CPdbReader** ppPdbReader, CPeReader** ppPeReader, int* pnEntry,
 							std::string& sErrorMsg, bool bExactMatchBuildAge)
 {
-    // Check if directory name begins with "debugInfo" magic symbols
-    if(SearchMode==PDB_SYMBOL_STORE || sSearchDir.rfind(L"debugInfo")!=sSearchDir.npos)
-    {
-        // The directory is a symbol storage
-        return SearchSymStorageDir(sSearchDir, sPeSearchDir, sPdbName, sPeName,
+	// Check if directory name begins with "debugInfo" magic symbols
+	if(SearchMode==PDB_SYMBOL_STORE || sSearchDir.rfind(L"debugInfo")!=sSearchDir.npos)
+	{
+		// The directory is a symbol storage
+		return SearchSymStorageDir(sSearchDir, sPeSearchDir, sPdbName, sPeName,
 			sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, sErrorMsg, bExactMatchBuildAge);
-    }
+	}
 
 #ifdef _WIN32
-    HANDLE hFind = INVALID_HANDLE_VALUE;
-    WIN32_FIND_DATAW ffd;
-    std::wstring sSearchPath;
+	HANDLE hFind = INVALID_HANDLE_VALUE;
+	WIN32_FIND_DATAW ffd;
+	std::wstring sSearchPath;
 
-    sSearchPath = sSearchDir;
-    sSearchPath += L"\\";
-    sSearchPath += sPdbName;
+	sSearchPath = sSearchDir;
+	sSearchPath += L"\\";
+	sSearchPath += sPdbName;
 
-    // Search for PDB file in current folder
-    hFind = FindFirstFileW(sSearchPath.c_str(), &ffd);
-    BOOL bFind = TRUE;
-    while(hFind!=INVALID_HANDLE_VALUE && bFind)
-    {
-        std::wstring sPdbFileName = sSearchDir;
-        sPdbFileName += L"\\" + std::wstring(ffd.cFileName);
+	// Search for PDB file in current folder
+	hFind = FindFirstFileW(sSearchPath.c_str(), &ffd);
+	BOOL bFind = TRUE;
+	while(hFind!=INVALID_HANDLE_VALUE && bFind)
+	{
+		std::wstring sPdbFileName = sSearchDir;
+		sPdbFileName += L"\\" + std::wstring(ffd.cFileName);
 
-        std::wstring sPeFileName = sPeSearchDir.empty() ? sSearchDir : sPeSearchDir;
-        sPeFileName += L"\\" + sPeName;
+		std::wstring sPeFileName = sPeSearchDir.empty() ? sSearchDir : sPeSearchDir;
+		sPeFileName += L"\\" + sPeName;
 
-        if(TryPdbFile(sPdbFileName, sPeFileName, sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, false, sErrorMsg, bExactMatchBuildAge))
+		if(TryPdbFile(sPdbFileName, sPeFileName, sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, false, sErrorMsg, bExactMatchBuildAge))
 		{
 			FindClose(hFind);
-            return true;
+			return true;
 		}
 
-        bFind = FindNextFileW(hFind, &ffd);
-    }
+		bFind = FindNextFileW(hFind, &ffd);
+	}
 
 	FindClose(hFind);
 
-    // Search for PDB if subfolders
-    if(bRecursive)
-    {
+	// Search for PDB if subfolders
+	if(bRecursive)
+	{
 		sSearchPath = sSearchDir;
 		sSearchPath += L"\\*";
 
-	    hFind = FindFirstFileW(sSearchPath.c_str(), &ffd);
+		hFind = FindFirstFileW(sSearchPath.c_str(), &ffd);
 		BOOL bFind = TRUE;
 		while(hFind!=INVALID_HANDLE_VALUE && bFind)
 		{
@@ -382,90 +382,90 @@ bool CPdbCache::SearchDirectory(const std::wstring & sSearchDir, const std::wstr
 
 			bFind = FindNextFileW(hFind, &ffd);
 		}
-    }
+	}
 
 	FindClose(hFind);
 
 #else
 
-    std::string sUtf8SearchDir = strconv::w2a(sSearchDir);
-    DIR* dirp = opendir(sUtf8SearchDir.c_str());
+	std::string sUtf8SearchDir = strconv::w2a(sSearchDir);
+	DIR* dirp = opendir(sUtf8SearchDir.c_str());
 
-    while(dirp)
-    {
-        //int errno = 0;
-        struct dirent* pd = readdir(dirp);
-        if(pd==NULL)
-        {
-            closedir(dirp);
-            break;
-        }
+	while(dirp)
+	{
+		//int errno = 0;
+		struct dirent* pd = readdir(dirp);
+		if(pd==NULL)
+		{
+			closedir(dirp);
+			break;
+		}
 
-        if(strcmp(pd->d_name, ".")!=0 &&
-           strcmp(pd->d_name, "..")!=0)
-        {
-            std::string sPdbFileName = sUtf8SearchDir;
-            sPdbFileName += '/';
-            sPdbFileName += pd->d_name;
+		if(strcmp(pd->d_name, ".")!=0 &&
+		   strcmp(pd->d_name, "..")!=0)
+		{
+			std::string sPdbFileName = sUtf8SearchDir;
+			sPdbFileName += '/';
+			sPdbFileName += pd->d_name;
 
-            std::string sPeFileName = sUtf8SearchDir;
-            sPeFileName += "/";
-            sPeFileName += strconv::w2utf8(sPeName);
+			std::string sPeFileName = sUtf8SearchDir;
+			sPeFileName += "/";
+			sPeFileName += strconv::w2utf8(sPeName);
 
-            size_t pos = sPdbFileName.rfind('.');
-            std::string sExt = sPdbFileName.substr(pos);
-            std::transform(sExt.begin(), sExt.end(), sExt.begin(), tolower);
+			size_t pos = sPdbFileName.rfind('.');
+			std::string sExt = sPdbFileName.substr(pos);
+			std::transform(sExt.begin(), sExt.end(), sExt.begin(), tolower);
 
-            struct stat st;
-            if(0==stat(sPdbFileName.c_str(), &st))
-            {
-                if(sExt.compare(".pdb")==0 && S_ISREG(st.st_mode))
-                {
-                    if(TryPdbFile(strconv::a2w(sPdbFileName), strconv::a2w(sPeFileName),
+			struct stat st;
+			if(0==stat(sPdbFileName.c_str(), &st))
+			{
+				if(sExt.compare(".pdb")==0 && S_ISREG(st.st_mode))
+				{
+					if(TryPdbFile(strconv::a2w(sPdbFileName), strconv::a2w(sPeFileName),
 						sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, false, sErrorMsg, bExactMatchBuildAge))
-                       return true;
-                }
-                else if(bRecursive && S_ISDIR(st.st_mode))
-                {
-                    if(SearchDirectory(strconv::a2w(sPdbFileName), sPeSearchDir, SearchMode,
+					   return true;
+				}
+				else if(bRecursive && S_ISDIR(st.st_mode))
+				{
+					if(SearchDirectory(strconv::a2w(sPdbFileName), sPeSearchDir, SearchMode,
 						bRecursive, sPdbName, sPeName, sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, sErrorMsg, bExactMatchBuildAge))
-                       return true;
-                }
-            }
-        }
-    }
+					   return true;
+				}
+			}
+		}
+	}
 
 
 #endif
 
-    return false;
+	return false;
 }
 
 bool CPdbCache::SearchSymStorageDir(const std::wstring & sSearchDir, const std::wstring & sPeSearchDir, const std::wstring & sPdbName,
-        const std::wstring & sPeName, const std::wstring & sGUIDnAge,
-        CPdbReader** ppPdbReader, CPeReader** ppPeReader, int* pnEntry
+		const std::wstring & sPeName, const std::wstring & sGUIDnAge,
+		CPdbReader** ppPdbReader, CPeReader** ppPeReader, int* pnEntry
 		,std::string& sErrorMsg, bool bExactMatchBuildAge)
 {
 #ifdef _WIN32
-    char slash = '\\';
+	char slash = '\\';
 #else
-    char slash = '/';
+	char slash = '/';
 #endif
 
-    std::wstring sPdbFileName = sSearchDir;
-    sPdbFileName += slash;
-    sPdbFileName += sPdbName;
-    sPdbFileName += slash;
-    sPdbFileName += sGUIDnAge;
+	std::wstring sPdbFileName = sSearchDir;
+	sPdbFileName += slash;
+	sPdbFileName += sPdbName;
+	sPdbFileName += slash;
+	sPdbFileName += sGUIDnAge;
 	sPdbFileName += slash;
 	sPdbFileName += sPdbName;
 
-    const std::wstring sPeFileName = (sPeSearchDir.empty() ? sSearchDir : sPeSearchDir) + L"\\" + sPeName;
+	const std::wstring sPeFileName = (sPeSearchDir.empty() ? sSearchDir : sPeSearchDir) + L"\\" + sPeName;
 
 	// Try to find exact match of GUID+Age string
-    if(TryPdbFile(sPdbFileName, sPeFileName, sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, true, sErrorMsg, bExactMatchBuildAge))
+	if(TryPdbFile(sPdbFileName, sPeFileName, sGUIDnAge, ppPdbReader, ppPeReader, pnEntry, true, sErrorMsg, bExactMatchBuildAge))
 	{
-        return true;
+		return true;
 	}
 
 	if(!bExactMatchBuildAge)
@@ -526,11 +526,11 @@ bool CPdbCache::SearchSymStorageDir(const std::wstring & sSearchDir, const std::
 		}
 	}
 
-    return false;
+	return false;
 }
 
 bool CPdbCache::TryPdbFile(std::wstring sPdbFileName, std::wstring sPeFileName,
-                           std::wstring sGUIDnAge, CPdbReader** ppPdbReader,
+						   std::wstring sGUIDnAge, CPdbReader** ppPdbReader,
 						   CPeReader** ppPeReader, int* pnEntry, bool bSymStore,
 							std::string& sErrorMsg, bool bExactMatchBuildAge)
 {
@@ -560,11 +560,11 @@ bool CPdbCache::TryPdbFile(std::wstring sPdbFileName, std::wstring sPeFileName,
 	_PathEntry PathEntry;
 
 	// Init output
-    if(ppPdbReader!=NULL)
-        *ppPdbReader = NULL;
+	if(ppPdbReader!=NULL)
+		*ppPdbReader = NULL;
 
-    if(ppPeReader!=NULL)
-        *ppPeReader = NULL;
+	if(ppPeReader!=NULL)
+		*ppPeReader = NULL;
 
 	if(pnEntry!=NULL)
 		*pnEntry = -1;
@@ -740,40 +740,40 @@ bool CPdbCache::TryPdbFile(std::wstring sPdbFileName, std::wstring sPeFileName,
 	m_aPathIndex[sPdbFileName] = PathEntry;
 	m_AccessLock.Unlock();
 
-    // Create PDB reader
-    pPdbReader = new CPdbReader();
-    if(!pPdbReader->Init(sPdbFileName))
-    {
+	// Create PDB reader
+	pPdbReader = new CPdbReader();
+	if(!pPdbReader->Init(sPdbFileName))
+	{
 		//wprintf(L"Error, PDB is invalid %s %s\n", sGUIDnAge.c_str(), sPdbFileName.c_str());
-        // Couldn't init PDB reader
+		// Couldn't init PDB reader
 		sErrorMsg = "Error reading PDB file";
 		Status = TPS_ERROR_INVALID_PDB;
-        goto cleanup;
-    }
+		goto cleanup;
+	}
 
-    // Create PE reader
-    pPeReader = new CPeReader();
-    if(!pPeReader->Init(sPeFileName))
-    {
-        // Couldn't init PE reader
+	// Create PE reader
+	pPeReader = new CPeReader();
+	if(!pPeReader->Init(sPeFileName))
+	{
+		// Couldn't init PE reader
 		// This is not a critical problem
 		delete pPeReader;
 		pPeReader = NULL;
-    }
+	}
 
-    // Get GUID
-    pHeaders = pPdbReader->GetHeadersStream();
-    if(pHeaders==NULL)
-    {
+	// Get GUID
+	pHeaders = pPdbReader->GetHeadersStream();
+	if(pHeaders==NULL)
+	{
 		//wprintf(L"Error, PDB GUI get error %s %s\n", sGUIDnAge.c_str(), sPdbFileName.c_str());
-        // Couldn't get GUID from PDB reader
+		// Couldn't get GUID from PDB reader
 		sErrorMsg = "Couldn't get GUID from PDB reader";
 		Status = TPS_ERROR_INVALID_PDB;
-        goto cleanup;
-    }
+		goto cleanup;
+	}
 
 	// Get GUID+Age
-    sGUIDnAge2 = pHeaders->GetGUIDnAge();
+	sGUIDnAge2 = pHeaders->GetGUIDnAge();
 	if(sGUIDnAge2.compare(sGUIDnAge)==0)
 		bGUIDMatch = true;
 	else if(!bExactMatchBuildAge)
@@ -877,14 +877,14 @@ cleanup:
 		ReleaseCacheEntry(nEntry);
 
 #ifdef _DEBUG
-    CheckCacheIntegrity();
+	CheckCacheIntegrity();
 #endif
 
 	// Ensure cache size is below the limit
 	CheckCacheOverflow();
 
 #ifdef _DEBUG
-    CheckCacheIntegrity();
+	CheckCacheIntegrity();
 #endif
 
 	if(Status==TPS_SUCCESS)
@@ -917,7 +917,7 @@ cleanup:
 	}
 
 	// Return true to indicate success; otherwise false.
-    return Status==TPS_SUCCESS?true:false;
+	return Status==TPS_SUCCESS?true:false;
 }
 
 bool CPdbCache::ReleaseCacheEntry(int nEntry)
@@ -977,7 +977,7 @@ bool CPdbCache::ReleaseCacheEntry(int nEntry)
 		time_t CurTime;
 		time(&CurTime);
 		Entry.m_AccessTime = CurTime; // update access time of the entry
-	    std::pair<time_t, int> Pair(CurTime, nEntry);
+		std::pair<time_t, int> Pair(CurTime, nEntry);
 		m_aUnrefIndex.insert(Pair);
 	}
 
@@ -992,23 +992,23 @@ void CPdbCache::CheckCacheOverflow()
 {
 	// Removes cache entries beyound the allowed limit
 
-    CAutoLock lock(&m_AccessLock);
+	CAutoLock lock(&m_AccessLock);
 
 	if(m_nMaxEntryCount==0)
 		return; // No limit
 
-    // Check cache size
-    while(m_aUnrefIndex.size()!=0 &&
+	// Check cache size
+	while(m_aUnrefIndex.size()!=0 &&
 		  (int)m_aEntries.size()>=m_nMaxEntryCount)
-    {
-       // Remove the oldest unreferenced entry
+	{
+	   // Remove the oldest unreferenced entry
 
-        std::multimap<time_t, int>::iterator access_it = m_aUnrefIndex.begin();
-        int nEntry = access_it->second;
+		std::multimap<time_t, int>::iterator access_it = m_aUnrefIndex.begin();
+		int nEntry = access_it->second;
 
 		std::map<int, _CacheEntry>::iterator e_it = m_aEntries.find(nEntry);
 		_CacheEntry& Entry = e_it->second;
-        if(Entry.m_pPdbReader!=NULL)
+		if(Entry.m_pPdbReader!=NULL)
 		{
 			delete Entry.m_pPdbReader;
 			Entry.m_pPdbReader = NULL;
@@ -1023,10 +1023,10 @@ void CPdbCache::CheckCacheOverflow()
 		path_it->second.m_Type = ENTRY_UNLOADED;
 		path_it->second.m_nEntryId = -1;
 
-        m_aGuidIndex.erase(Entry.m_sGUIDnAge);
-        m_aUnrefIndex.erase(access_it);
-        m_aEntries.erase(e_it);
-    }
+		m_aGuidIndex.erase(Entry.m_sGUIDnAge);
+		m_aUnrefIndex.erase(access_it);
+		m_aEntries.erase(e_it);
+	}
 }
 
 void CPdbCache::CheckCacheIntegrity()
@@ -1036,9 +1036,9 @@ void CPdbCache::CheckCacheIntegrity()
 
 	CAutoLock lock(&m_AccessLock);
 
-    assert(m_nMaxEntryCount>=0);
-    assert(m_aEntries.size()==m_aGuidIndex.size());
-    assert(m_aEntries.size()<=m_aPathIndex.size());
+	assert(m_nMaxEntryCount>=0);
+	assert(m_aEntries.size()==m_aGuidIndex.size());
+	assert(m_aEntries.size()<=m_aPathIndex.size());
 
 	std::map<int, _CacheEntry>::iterator e_it;
 	for(e_it=m_aEntries.begin(); e_it!=m_aEntries.end(); e_it++)
@@ -1068,11 +1068,11 @@ void CPdbCache::Clear()
 	// Frees all cache entries.
 	// After that, all open handles to cache entries become invalid.
 
-    CAutoLock lock(&m_AccessLock);
+	CAutoLock lock(&m_AccessLock);
 
 	std::map<int, _CacheEntry>::iterator e_it;
 	for(e_it=m_aEntries.begin(); e_it!=m_aEntries.end(); e_it++)
-    {
+	{
 		_CacheEntry& Entry = e_it->second;
 
 		if(Entry.m_pPdbReader!=NULL)
@@ -1080,12 +1080,12 @@ void CPdbCache::Clear()
 
 		if(Entry.m_pPeReader!=NULL)
 			delete Entry.m_pPeReader;
-    }
+	}
 
-    m_aEntries.clear();
-    m_aGuidIndex.clear();
-    m_aPathIndex.clear();
-    m_aUnrefIndex.clear();
+	m_aEntries.clear();
+	m_aGuidIndex.clear();
+	m_aPathIndex.clear();
+	m_aUnrefIndex.clear();
 }
 
 int CPdbCache::GetUniqueEntryId()
@@ -1129,8 +1129,8 @@ bool CPdbCache::DeleteCachedFile(std::wstring sPath, bool bDeleteFile)
 	int nEntry = -1;
 	std::multimap<time_t, int>::iterator unref_it;
 
-    std::map<std::wstring, _PathEntry>::iterator path_it = m_aPathIndex.find(sPath);
-    if(path_it==m_aPathIndex.end())
+	std::map<std::wstring, _PathEntry>::iterator path_it = m_aPathIndex.find(sPath);
+	if(path_it==m_aPathIndex.end())
 	{
 		// Not found such a file in cache.
 
@@ -1143,7 +1143,7 @@ bool CPdbCache::DeleteCachedFile(std::wstring sPath, bool bDeleteFile)
 		goto cleanup;
 	}
 
-    // Such a PDB file found in cache
+	// Such a PDB file found in cache
 	nEntry = path_it->second.m_nEntryId;
 
 	// Mark entry as pending delete. It will be deleted when
@@ -1173,11 +1173,11 @@ bool CPdbCache::DeleteCachedFile(std::wstring sPath, bool bDeleteFile)
 	}
 
 	// Success
-    bStatus = true;
+	bStatus = true;
 
 cleanup:
 
-    return bStatus;
+	return bStatus;
 }
 
 
@@ -1220,10 +1220,10 @@ bool CPdbCache::EraseCacheEntry(int nEntry)
 		m_aUnrefIndex.erase(access_it);
 
 	// Delete entry from GUID index
-    m_aGuidIndex.erase(Entry.m_sGUIDnAge);
+	m_aGuidIndex.erase(Entry.m_sGUIDnAge);
 
 	// Erase entry from entry list
-    m_aEntries.erase(e_it);
+	m_aEntries.erase(e_it);
 
 	return true;
 }
@@ -1255,9 +1255,9 @@ bool CPdbCache::DeletePdbFile(std::wstring sPath)
 		return false; // Error deleting file
 
 	std::wstring sDir;
-    std::wstring sFile;
-    std::wstring sBaseFileName;
-    std::wstring sExtension;
+	std::wstring sFile;
+	std::wstring sBaseFileName;
+	std::wstring sExtension;
 	std::wstring sSubDirName;
 	SplitFileName(sPath, sDir, sFile, sBaseFileName, sExtension);
 	SplitFileName(sDir, sSubDirName, sFile, sBaseFileName, sExtension);

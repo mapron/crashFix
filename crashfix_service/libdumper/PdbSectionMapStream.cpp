@@ -10,45 +10,45 @@
 
 CPdbSectionMapStream::CPdbSectionMapStream(CPdbReader* pPdbReader, CMsfStream* pStream, BOOL* pbResult)
 {
-    *pbResult = Init(pPdbReader, pStream);
+	*pbResult = Init(pPdbReader, pStream);
 }
 
 BOOL CPdbSectionMapStream::Init(CPdbReader* pPdbReader, CMsfStream* pStream)
 {
-    // Section map stream usually has stream number #9
-    // Section map stream is a sequence of IMAGE_SECTION_HEADER records.
+	// Section map stream usually has stream number #9
+	// Section map stream is a sequence of IMAGE_SECTION_HEADER records.
 
-    // Init base class
-    if(!CBasePdbStream::Init(pPdbReader, pStream))
-        return FALSE;
+	// Init base class
+	if(!CBasePdbStream::Init(pPdbReader, pStream))
+		return FALSE;
 
-    // Allocate buffer for the entire stream
-    DWORD dwStreamLen = pStream->GetStreamLen();
-    if(dwStreamLen%sizeof(IMAGE_SECTION_HEADER)!=0)
-    {
-        // Invalid stream length
-        //assert(0); 
-        return FALSE;
-    }
+	// Allocate buffer for the entire stream
+	DWORD dwStreamLen = pStream->GetStreamLen();
+	if(dwStreamLen%sizeof(IMAGE_SECTION_HEADER)!=0)
+	{
+		// Invalid stream length
+		//assert(0);
+		return FALSE;
+	}
 
-    CBuffer buf(dwStreamLen);
-    DWORD dwBytesRead = 0;
-    BOOL bRead = pStream->ReadData(buf, dwStreamLen, &dwBytesRead, FALSE);
-    if(!bRead || dwBytesRead!=dwStreamLen)
-        return FALSE; 
+	CBuffer buf(dwStreamLen);
+	DWORD dwBytesRead = 0;
+	BOOL bRead = pStream->ReadData(buf, dwStreamLen, &dwBytesRead, FALSE);
+	if(!bRead || dwBytesRead!=dwStreamLen)
+		return FALSE;
 
-    int nSectionCount = dwStreamLen/sizeof(IMAGE_SECTION_HEADER);
-    int i;
-    bool hasTextSection = false;
-    for(i=0; i<nSectionCount; i++)
-    {
-        IMAGE_SECTION_HEADER* pSection = ((IMAGE_SECTION_HEADER*)buf.GetPtr())+i;
-        if (memcmp(".text", pSection->Name, 5) == 0)
-            hasTextSection = true;
-        m_aSections.push_back(*pSection);
-    }
+	int nSectionCount = dwStreamLen/sizeof(IMAGE_SECTION_HEADER);
+	int i;
+	bool hasTextSection = false;
+	for(i=0; i<nSectionCount; i++)
+	{
+		IMAGE_SECTION_HEADER* pSection = ((IMAGE_SECTION_HEADER*)buf.GetPtr())+i;
+		if (memcmp(".text", pSection->Name, 5) == 0)
+			hasTextSection = true;
+		m_aSections.push_back(*pSection);
+	}
 
-    return hasTextSection;  
+	return hasTextSection;
 }
 
 CPdbSectionMapStream::~CPdbSectionMapStream()
@@ -57,13 +57,13 @@ CPdbSectionMapStream::~CPdbSectionMapStream()
 
 int CPdbSectionMapStream::GetSectionCount()
 {
-    return (int)m_aSections.size();
+	return (int)m_aSections.size();
 }
 
 IMAGE_SECTION_HEADER* CPdbSectionMapStream::GetSection(int nIndex)
 {
-    if(nIndex<0 || nIndex>=(int)m_aSections.size())
-        return NULL; // Invalid index
+	if(nIndex<0 || nIndex>=(int)m_aSections.size())
+		return NULL; // Invalid index
 
-    return &m_aSections[nIndex];
+	return &m_aSections[nIndex];
 }

@@ -10,50 +10,50 @@ class CBuffer
 {
 public:
 
-    //! Default constructor.
-    CBuffer();
+	//! Default constructor.
+	CBuffer();
 
-    //! Copy constructor.
-    //! @param[in] anotherBuffer Source buffer.
-    CBuffer(const CBuffer& anotherBuffer);  
+	//! Copy constructor.
+	//! @param[in] anotherBuffer Source buffer.
+	CBuffer(const CBuffer& anotherBuffer);
 
-    //! Constructor.
-    //! @param[in] dwSize Buffer size in bytes.
-    CBuffer(DWORD dwSize);
+	//! Constructor.
+	//! @param[in] dwSize Buffer size in bytes.
+	CBuffer(DWORD dwSize);
 
-    //! Destructor.
-    virtual ~CBuffer();	
+	//! Destructor.
+	virtual ~CBuffer();
 
-    //! Allocates buffer. If buffer already contained data, they will be lost.
-    //! @param[in] dwSize Buffer size in bytes.
-    bool Allocate(DWORD dwSize);
+	//! Allocates buffer. If buffer already contained data, they will be lost.
+	//! @param[in] dwSize Buffer size in bytes.
+	bool Allocate(DWORD dwSize);
 
-    //! Reallocates buffer (modifies buffer size without loosing buffer contents).	
-    //! @param[in] dwSize New buffer size in bytes.
-    bool Reallocate(DWORD dwSize);
+	//! Reallocates buffer (modifies buffer size without loosing buffer contents).
+	//! @param[in] dwSize New buffer size in bytes.
+	bool Reallocate(DWORD dwSize);
 
-    //! Gets buffer size in bytes.
-    DWORD GetSize() const;
+	//! Gets buffer size in bytes.
+	DWORD GetSize() const;
 
-    //! Deallocates memory used by buffer.
-    void Free();	
+	//! Deallocates memory used by buffer.
+	void Free();
 
-    //! Copies itself to another buffer (equal or greater size).
-    //! @param[in] pAnotherBuffer Pointer to source buffer.
-    bool CopyTo(CBuffer* pAnotherBuffer) const;
+	//! Copies itself to another buffer (equal or greater size).
+	//! @param[in] pAnotherBuffer Pointer to source buffer.
+	bool CopyTo(CBuffer* pAnotherBuffer) const;
 
-    //! Returns pointer to buffer data.
-    LPBYTE GetPtr();
+	//! Returns pointer to buffer data.
+	LPBYTE GetPtr();
 
-    //! Operator returning pointer to buffer data.
-    operator LPBYTE() const;
+	//! Operator returning pointer to buffer data.
+	operator LPBYTE() const;
 
-    //! Determines if buffer is empty.
-    bool IsEmpty();	
+	//! Determines if buffer is empty.
+	bool IsEmpty();
 
 private:
 
-    LPBYTE m_pBuffer; //! Pointer to buffer data.
-    DWORD m_dwSize;   //! Buffer size.
+	LPBYTE m_pBuffer; //! Pointer to buffer data.
+	DWORD m_dwSize;   //! Buffer size.
 };
 

@@ -16,37 +16,37 @@ class COutputter
 {
 public:
 
-    //! Opens document for writing.
-    //! @param[in] f Handle to file opened for writing.
-    //! @param[in] fmt Output format.
+	//! Opens document for writing.
+	//! @param[in] f Handle to file opened for writing.
+	//! @param[in] fmt Output format.
 	void Init(FILE* f, OUTPUT_FORMAT fmt);
-	
-    //! Emits document header.
+
+	//! Emits document header.
 	//! @param[in] pszTitle Document title. In XML mode has is ignored.
 	void BeginDocument(LPCSTR pszTitle);
-	
-    //! Emits document footer.
+
+	//! Emits document footer.
 	void EndDocument();
-	
-    //! Emits section header.
+
+	//! Emits section header.
 	//! @param[in] pszTitle Section title. In XML mode, this should not contain spaces (otherwise XML will be invalid).
 	void BeginSection(LPCSTR pszTitle, ...);
-	
-    //! Emits section footer.
+
+	//! Emits section footer.
 	void EndSection();
-	
-    //! Emits a table row.
+
+	//! Emits a table row.
 	void BeginTableRow();
-	
-    //! Emits a table row footer.
+
+	//! Emits a table row footer.
 	void EndTableRow();
-	
-    //! Emits a record.
+
+	//! Emits a record.
 	//! @param[in] pszName Record name. In XML mode, this should not contain spaces (otherwise XML will be invalid).
 	void PutRecord(LPCSTR pszName, LPCSTR pszValue, ...);
-	
-    //! Emits a table cell.
-	void PutTableCell(int width, bool bLastInRow, LPCSTR szFormat, ...);	
+
+	//! Emits a table cell.
+	void PutTableCell(int width, bool bLastInRow, LPCSTR szFormat, ...);
 
 private:
 
