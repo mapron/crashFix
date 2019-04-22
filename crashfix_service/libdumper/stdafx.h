@@ -25,32 +25,11 @@
 #include <tchar.h>
 
 #include <errno.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <wininet.h>
-#include <shellapi.h>
-#include <Windns.h>
-#include <Wspiapi.h>
-#include <Psapi.h>
-
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+// Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN	
 #include <windows.h>
-#include <atlbase.h>
-#include <atlapp.h>
-extern CAppModule _Module;
-#define _WTL_NO_CSTRING
-#include <atlstr.h>
-#include <objbase.h>
-#include <comdef.h>
-#include <Tlhelp32.h>
 #include <direct.h>
-#include <share.h>
-#include <wincrypt.h>
-#include <Wbemidl.h>
-#include <intrin.h>
-#include <sddl.h>
-#include <AccCtrl.h>
-#include <Aclapi.h>
+
 #else // Linux
 #include "TypeDefs.h"
 #include <stdarg.h>

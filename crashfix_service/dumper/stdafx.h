@@ -11,19 +11,7 @@
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
 #endif
-#include <errno.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <wininet.h>
-#include <shellapi.h>
-#include <Windns.h>
-#include <Wspiapi.h>
-#include <Psapi.h>
-
-#include <tchar.h>
-#include <windows.h>
-#include <Tlhelp32.h>
-#include <direct.h>
+#include <errno.h> 
 #else
 #include "TypeDefs.h"
 #include <sys/stat.h>

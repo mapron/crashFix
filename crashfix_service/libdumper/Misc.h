@@ -80,9 +80,6 @@ std::wstring GetModuleName(HMODULE hModule);
 //! Returns parent directory name
 std::wstring GetParentDir(std::wstring sPath);
 
-//! Converts file size number to string
-CString FileSizeToStr(ULONG64 uFileSize);
-
 #else
 
 //! Grabs a character from console input

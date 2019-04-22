@@ -2,6 +2,10 @@
 #include "Misc.h"
 #include "strconv.h"
 #include "md5.h"
+#ifdef _WIN32
+#include <Psapi.h>
+#include <shellapi.h>
+#endif
 
 double microtime()
 {
@@ -481,43 +485,6 @@ std::wstring GetParentDir(std::wstring sPath)
 	return sPath;
 }
 
-CString FileSizeToStr(ULONG64 uFileSize)
-{
-    CString sFileSize;
-
-    if(uFileSize==0)
-    {
-        sFileSize = _T("0 KB");
-    }
-    else if(uFileSize<1024)
-    {
-        float fSizeKbytes = (float)uFileSize/(float)1024;
-        TCHAR szStr[64];
-#if _MSC_VER<1400
-        _stprintf(szStr, _T("%0.1f KB"), fSizeKbytes);
-#else
-        _stprintf_s(szStr, 64, _T("%0.1f KB"), fSizeKbytes);
-#endif
-        sFileSize = szStr;
-    }
-    else if(uFileSize<1024*1024)
-    {
-        sFileSize.Format(_T("%I64u KB"), uFileSize/1024);
-    }
-    else
-    {
-        float fSizeMbytes = (float)uFileSize/(float)(1024*1024);
-        TCHAR szStr[64];
-#if _MSC_VER<1400
-        _stprintf(szStr, _T("%0.1f MB"), fSizeMbytes);
-#else
-        _stprintf_s(szStr, 64, _T("%0.1f MB"), fSizeMbytes);
-#endif
-        sFileSize = szStr;
-    }
-
-    return sFileSize;
-}
 #else // Linux
 
 void Sleep(int msec)

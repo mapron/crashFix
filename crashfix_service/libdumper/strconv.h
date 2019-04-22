@@ -38,8 +38,6 @@ namespace strconv
 	//! Formats a string
 	std::string format(int nMaxChar, const char* szFormat, ...);
 
-	//! Formats a string
-	std::wstring formatW(int nMaxChar, const wchar_t* szFormat, ...);
 };
 
 #endif  //_STRCONV_H

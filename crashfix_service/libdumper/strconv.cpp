@@ -189,18 +189,3 @@ std::string strconv::format(int nMaxChar, const char* fmt, ...)
 	delete [] buf;
 	return sRes;
 }
-
-std::wstring strconv::formatW(int nMaxChar, const wchar_t* fmt, ...)
-{
-	wchar_t* buf = new wchar_t[nMaxChar];
-	va_list args;
-	va_start(args, fmt);
-#ifdef _WIN32
-	wvnsprintf(buf, nMaxChar, fmt, args);
-#else
-	vswprintf(buf, nMaxChar, fmt, args);
-#endif
-	std::wstring sRes = buf;
-	delete [] buf;
-	return sRes;
-}
