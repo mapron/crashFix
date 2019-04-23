@@ -12,6 +12,22 @@
 #include "Outputter.h"
 #include "md5.h"
 
+namespace
+{
+std::string FilterSubmodulePath(std::string filename)
+{
+	static const std::vector<std::string> submoduleFolders {"\\ext\\", "/ext/"};
+	for (const auto & folder : submoduleFolders)
+	{
+		const auto pos = filename.find(folder);
+		if (pos != std::string::npos)
+			filename = filename.substr( pos + folder.size());
+	}
+	return filename;
+}
+
+}
+
 CCommandProcessor::CCommandProcessor()
 {
 	m_pLog = NULL;
@@ -1049,6 +1065,9 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 			if(!pThread)
 				break;
 
+			if (pExcInfo && pExcInfo->m_uThreadId != pThread->m_uThreadId)
+				continue;
+
 			doc.BeginSection("StackTrace");
 			doc.PutRecord("ThreadID", "%d", pThread->m_uThreadId);
 			doc.BeginTableRow();
@@ -1093,14 +1112,27 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 						sFrameTitle += strconv::a2w(szBuffer);
 					}
 
-					if(!pStackFrame->m_sSymbolName.empty())
+					bool hasSymbol = false;
+					if(!pStackFrame->m_sUndecoratedSymbolName.empty())
+					{
+						sFrameTitle += strconv::a2w(pStackFrame->m_sUndecoratedSymbolName);
+						hasSymbol = true;
+					}
+					else if(!pStackFrame->m_sSymbolName.empty())
 					{
 						sFrameTitle += strconv::a2w(pStackFrame->m_sSymbolName);
+						hasSymbol = true;
+					}
+
+					if (hasSymbol)
+					{
+						sFrameTitle += L"+" + std::to_wstring(pStackFrame->m_dwOffsInSymbol) + L" ";
 					}
 
 					if(!pStackFrame->m_sSrcFileName.empty())
 					{
-						sprintf(szBuffer, "[%s %d]", strconv::w2a(pStackFrame->m_sSrcFileName).c_str(), pStackFrame->m_nSrcLineNumber);
+						const auto filename = FilterSubmodulePath(strconv::w2a(pStackFrame->m_sSrcFileName));
+						sprintf(szBuffer, "[%s: %d]", filename.c_str(), pStackFrame->m_nSrcLineNumber);
 						sFrameTitle += strconv::a2w(szBuffer);
 					}
 
@@ -1167,63 +1199,6 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 
 			doc.EndSection();
 		}
-
-		doc.BeginSection("ModuleList");
-
-		doc.BeginTableRow();
-		doc.PutTableCell(2, false, "%s", "No");
-		doc.PutTableCell(32, false, "%s",  "Name");
-		doc.PutTableCell(32, false, "%s",  "SymLoadStatus");
-		doc.PutTableCell(48, false, "%s",  "LoadedPDBName");
-		doc.PutTableCell(48, false, "%s",  "LoadedPDBGUIDnAge");
-		doc.PutTableCell(48, false, "%s",  "FileVersion");
-		doc.PutTableCell(48, false, "%s",  "TimeStamp");
-		doc.PutTableCell(48, true, "%s",  "GUIDnAge");
-		doc.EndTableRow();
-
-		// Walk through minidump modules
-		for(i=0; i<pMiniDump->GetModuleCount(); i++)
-		{
-			// Get current module info
-			MiniDumpModuleInfo* pmi = pMiniDump->GetModuleInfo(i);
-			if(!pmi)
-				break;
-
-			std::wstring sPdbGUIDnAge;
-			CPdbReader* pPdbReader = NULL;
-			CPeReader* pPeReader = NULL;
-			int hEntry = -1;
-
-			// Try to load PDB file for this module
-			bool bFind = m_pPdbCache->FindPdb(pmi->GUIDnAge(), pmi->m_sPdbFileName, pmi->m_sModuleName, peSearchDir,
-				&pPdbReader, &pPeReader, &hEntry, NULL, bExactMatchBuildAge);
-
-			if(bFind && pPdbReader!=NULL)
-			{
-				// Get PDB headers stream
-				CPdbHeadersStream* pHeaders = pPdbReader->GetHeadersStream();
-
-				// Read GUID+Age
-				if(pHeaders)
-					sPdbGUIDnAge = pHeaders->GetGUIDnAge();
-
-				//Release cache entry
-				m_pPdbCache->ReleaseCacheEntry(hEntry);
-			}
-
-			doc.BeginTableRow();
-			doc.PutTableCell(2, false, "%d", i+1);
-			doc.PutTableCell(32, false, "%s",  strconv::w2a(pmi->m_sShortModuleName).c_str());
-			doc.PutTableCell(32, false, "%s",  pPdbReader!=NULL?"1":"0");
-			doc.PutTableCell(48, false, "%s",  pPdbReader!=NULL?strconv::w2utf8(pPdbReader->GetFileName()).c_str():"");
-			doc.PutTableCell(48, false, "%s",  pPdbReader!=NULL?strconv::w2utf8(sPdbGUIDnAge).c_str():"");
-			doc.PutTableCell(48, false, "%s",  strconv::w2utf8(pmi->m_sVersion).c_str());
-			doc.PutTableCell(48, false, "%u", pmi->m_dwTimeDateStamp);
-			doc.PutTableCell(48, true, "%s",  strconv::w2utf8(pmi->GUIDnAge()).c_str());
-			doc.EndTableRow();
-		}
-
-		doc.EndSection();
 	}
 
 	doc.EndDocument();
