@@ -75,7 +75,7 @@ class CrashReportController extends Controller
 	 * This action displays a particular model.
 	 * @param integer $id the ID of the model to be displayed
 	 */
-	public function actionView($id, $tab='Summary', $thread=null)
+	public function actionView($id)
 	{
 		// Load crash report
 		$model = $this->loadModel($id);
@@ -83,51 +83,9 @@ class CrashReportController extends Controller
 		// Check if user is authorized to perform the action
 		$this->checkAuthorization($model);
 
-		// Determine what tab to display
-		$activeItem = 'Summary';
-		if($tab=='Summary' ||
-			$tab=='CustomProps' ||
-			$tab=='Screenshots' ||
-			$tab=='Videos' ||
-			$tab=='Threads' ||
-			$tab=='Modules' ||
-			$tab=='Files')
-			$activeItem = $tab;
-
-		$threadModel = null;
-		$stackTraceProvider = null;
-		if($thread!=null)
-		{
-			$threadModel = Thread::model()->findByPk((int)$thread);
-			if($threadModel==null)
-				throw new CHttpException(403, 'Unexpected parameter.');
-
-			$criteria = new CDbCriteria;
-			$criteria->compare('thread_id', (int)$thread);
-			$criteria->order = 'id ASC';
-			$stackTraceProvider = new CActiveDataProvider('StackFrame',  array(
-							'criteria'=>$criteria,
-							'pagination'=>false
-						));
-		}
-
-		$customProps = $model->searchCustomProps();
-		$screenshots = $model->searchScreenshots();
-		$videos = $model->searchVideos();
-		$modules = $model->searchModules();
-		$threads = $model->searchThreads();
-
 		$this->render('view',array(
 			'model'=>$model,
-			'activeItem'=>$activeItem,
-			'thread'=>(int)$thread,
-			'threadModel'=>$threadModel,
-			'stackTrace'=>$stackTraceProvider,
-			'customProps'=>$customProps,
-			'screenshots'=>$screenshots,
-			'videos'=>$videos,
-			'modules'=>$modules,
-			'threads'=>$threads
+		    'stackFrames'=> new CArrayDataProvider($model->getStackFrames(), ['keyField'=>'title', 'pagination' => false]),
 		));
 	}
 
@@ -293,34 +251,34 @@ class CrashReportController extends Controller
 		// Redirect to index
 		$this->redirect(array('crashReport/index'));
 	}
-	
+
 	public function actionDeleteAll()
 	{
 	    // Check if user is authorized to perform the action
 	    $this->checkAuthorization(null);
-	    
+
 	    // Get current project ID
 	    $projectId = Yii::app()->user->getCurProjectId();
 	    if($projectId==false)
 	        throw new CHttpException(400, 'Invalid request.');
-	        
+
         $curProjVer = Yii::app()->user->getCurProjectVer();
-        
+
         // Find all crash reports belonging to project.
         $criteria = new CDbCriteria();
         $criteria->compare('project_id', $projectId);
         if($curProjVer!=Project::PROJ_VER_ALL)
             $criteria->compare('appversion_id', $curProjVer);
-            
+
         $groupid = 0;
         if(isset($_GET['groupid']))
         {
             $groupid = (int)$_GET['groupid'];
             $criteria->compare('groupid', $groupid);
         }
-        
-        CrashReport::model()->updateAll(array('status' => CrashReport::STATUS_PENDING_DELETE), $criteria);        
-        
+
+        CrashReport::model()->updateAll(array('status' => CrashReport::STATUS_PENDING_DELETE), $criteria);
+
         // If we were on a crash collection page
         if($groupid)
         {
@@ -328,7 +286,7 @@ class CrashReportController extends Controller
             $this->redirect(array('crashGroup/view', 'id'=>$groupid));
             return;
         }
-        
+
         // Redirect to index
         $this->redirect(array('crashReport/index'));
 	}

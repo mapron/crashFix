@@ -36,7 +36,7 @@ class PollCommand extends CConsoleCommand
 		$this->processNewCrashReportFiles();
 
 		$this->cleanupCrashGroups();
-		
+
 		// Remove reports scheduled for deletion
 		$this->cleanupCrashReports();
 
@@ -360,7 +360,7 @@ class PollCommand extends CConsoleCommand
 			// Determine path to crash report file
 			$fileName = $crashReport->getLocalFilePath();
 			// Create a temporary file for outputting results
-			$outFile = tempnam(Yii::app()->getRuntimePath(), "aop");
+			$outFile = $crashReport->getXmlFilePath();
 
 			// Format daemon command
 			$command = 'assync dumper --dump-crash-report "'.$fileName.'" "'.$outFile.'"';
@@ -756,168 +756,6 @@ class PollCommand extends CConsoleCommand
 				$crashReport->clearErrors();
 			}
 
-			// Extract file items
-			$elemFileList = $doc->FileList;
-			if($elemFileList!=Null)
-			{
-				$i=0;
-				foreach($elemFileList->Row as $elemRow)
-				{
-					$i++;
-					if($i==1)
-						continue; // Skip header row
-
-					$itemNo = $elemRow->Cell[0]['val'];
-					$itemName = $elemRow->Cell[1]['val'];
-					$itemDesc = $elemRow->Cell[2]['val'];
-
-					$fileItem = new FileItem;
-					$fileItem->filename = $itemName;
-					$fileItem->description = $itemDesc;
-					$fileItem->crashreport_id = $crashReportId;
-
-					if(!$fileItem->save())
-						throw new Exception('Could not save file item record');
-				}
-			}
-
-			// Extract custom props
-			$elemAppDefinedProps = $doc->ApplicationDefinedProperties;
-			if($elemAppDefinedProps!=Null)
-			{
-				$i=0;
-				foreach($elemAppDefinedProps->Row as $elemRow)
-				{
-					$i++;
-					if($i==1)
-						continue; // Skip header row
-
-					$itemNo = $elemRow->Cell[0]['val'];
-					$name = $elemRow->Cell[1]['val'];
-					$val = $elemRow->Cell[2]['val'];
-
-					$customProp = new CustomProp;
-					$customProp->name = $name;
-					$customProp->value = $val;
-					$customProp->crashreport_id = $crashReportId;
-
-					if(!$customProp->save())
-						throw new Exception('Could not save custom property record');
-				}
-			}
-
-			// Extract the list of modules
-			$elemModuleList = $doc->ModuleList;
-			if($elemModuleList!=Null && $elemModuleList->count()!=0)
-			{
-				$i=0;
-				foreach($elemModuleList->Row as $elemRow)
-				{
-					$i++;
-					if($i==1)
-						continue; // Skip header row
-
-					$itemNo = $elemRow->Cell[0]['val'];
-					$name = $elemRow->Cell[1]['val'];
-					$symLoadStatus = $elemRow->Cell[2]['val'];
-					$loadedPdbName = $elemRow->Cell[3]['val'];
-					$loadedPdbGUID = $elemRow->Cell[4]['val'];
-					$fileVersion = $elemRow->Cell[5]['val'];
-					$timeStamp = $elemRow->Cell[6]['val'];
-					$guidnAge = $elemRow->Cell[7]['val'];
-
-					$module = new Module;
-					$module->crashreport_id = $crashReportId;
-					$module->name = $name;
-					$module->sym_load_status = $symLoadStatus;
-					$module->file_version = $fileVersion;
-					$module->timestamp = $timeStamp;
-					$module->matching_pdb_guid = $guidnAge;
-
-					$debugInfo = DebugInfo::model()->findByAttributes(array('guid'=>$loadedPdbGUID));
-					if($debugInfo!=null)
-						$module->loaded_debug_info_id = $debugInfo->id;
-
-					if(!$module->save())
-						throw new Exception('Could not save module record');
-				}
-			}
-
-			// Extract the list of stack traces
-			foreach($doc->StackTrace as $elemStackTrace)
-			{
-				$threadId = $elemStackTrace->ThreadID;
-				$stackTraceMD5 = $elemStackTrace->StackTraceMD5;
-
-				$thread = new Thread;
-				$thread->thread_id = $threadId;
-				$thread->crashreport_id = $crashReportId;
-
-				if(strlen($stackTraceMD5)!=0)
-					$thread->stack_trace_md5 = $stackTraceMD5;
-
-				if(!$thread->save())
-						throw new Exception('Could not save thread record');
-
-				$i=0;
-				foreach($elemStackTrace->Row as $elemRow)
-				{
-					$i++;
-					if($i==1)
-						continue; // Skip header row
-
-					$title = $elemRow->Cell[0]['val'];
-					$addrPC = $elemRow->Cell[1]['val'];
-					$moduleName = $elemRow->Cell[2]['val'];
-					$offsInModule = $elemRow->Cell[3]['val'];
-					$symName = $elemRow->Cell[4]['val'];
-					$undSymName = $elemRow->Cell[5]['val'];
-					$offsInSym = $elemRow->Cell[6]['val'];
-					$srcFile = $elemRow->Cell[7]['val'];
-					$srcLine = $elemRow->Cell[8]['val'];
-					$offsInLine = $elemRow->Cell[9]['val'];
-
-					$stackFrame = new StackFrame;
-					$stackFrame->thread_id = $thread->id;
-					$stackFrame->addr_pc = $addrPC;
-
-					if(strlen($moduleName)!=0)
-					{
-						$module = Module::model()->findByAttributes(
-								array(
-									'name'=>$moduleName,
-									'crashreport_id'=>$crashReportId
-									)
-								);
-						if($module!=null)
-							$stackFrame->module_id = $module->id;
-
-						$stackFrame->offs_in_module = $offsInModule;
-					}
-
-					if(strlen($symName)!=0)
-						$stackFrame->symbol_name = $symName;
-
-					if(strlen($undSymName)!=0)
-						$stackFrame->und_symbol_name = $undSymName;
-
-					if(strlen($offsInSym)!=0)
-						$stackFrame->offs_in_symbol = $offsInSym;
-
-					if(strlen($srcFile)!=0)
-						$stackFrame->src_file_name = $srcFile;
-
-					if(strlen($srcLine)!=0)
-						$stackFrame->src_line = $srcLine;
-
-					if(strlen($offsInLine)!=0)
-						$stackFrame->offs_in_line = $offsInLine;
-
-					if(!$stackFrame->save())
-						throw new Exception('Could not save stack frame record');
-				}
-			}
-
 			// Commit transaction
 			$transaction->commit();
 
@@ -1003,14 +841,6 @@ class PollCommand extends CConsoleCommand
 					$crashReport->status = DebugInfo::STATUS_INVALID;
 					$crashReport->save();
 				}
-			}
-
-			// Delete temp XML file
-			Yii::log('Deleting file '.$xmlFileName, 'info');
-			if(!@unlink($xmlFileName))
-			{
-				// Couldn't delete file
-				Yii::log('Error deleting file '.$xmlFileName, 'error');
 			}
 		}
 		else if($op->optype==Operation::OPTYPE_IMPORTPDB)
@@ -1356,10 +1186,10 @@ class PollCommand extends CConsoleCommand
 			}
 		}
 	}
-	
+
 	private function cleanupCrashReports()
 	{
-	    $deleteCount = 1000; // We will delete maximum 1000 reports at once	    
+	    $deleteCount = 1000; // We will delete maximum 1000 reports at once
 	    $criteria=new CDbCriteria;
 	    $criteria->compare('status', CrashReport::STATUS_PENDING_DELETE);
 	    $criteria->limit = $deleteCount;

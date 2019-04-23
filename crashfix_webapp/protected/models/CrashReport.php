@@ -238,9 +238,7 @@ class CrashReport extends CActiveRecord
 		$this->md5 = md5_file($this->fileAttachment->getTempName());
 
 		// Create the directory where we will place the uploaded file
-		$subDir1 = substr($this->md5, 0, 3);
-		$subDir2 = substr($this->md5, 3, 3);
-		$dirName = Yii::app()->getBasePath()."/data/crashReports/".$subDir1."/".$subDir2;
+		$dirName = $this->getReportDirectory();
 		if(!@is_dir($dirName))
 		{
 			if(False==@mkdir($dirName, 0777, TRUE))
@@ -250,13 +248,12 @@ class CrashReport extends CActiveRecord
 				return false;
 			}
 		}
-
+		$fileName = $this->getLocalFilePath();
 		// Move attachment file to an appropriate directory and delete temp file.
 		// Handle this differently for uploaded file and local file.
 		if($this->fileAttachmentIsUploaded==true)
 		{
 			// Move uploaded file to an appropriate directory and delete temp file
-			$fileName = $dirName."/".$this->md5.".zip";
 			if(!$this->fileAttachment->saveAs($fileName, true) && !$this->ignoreFileAttachmentErrors)
 			{
 				$this->addError("fileAttachment", "Couldn't save data to local storage");
@@ -266,7 +263,6 @@ class CrashReport extends CActiveRecord
 		else
 		{
 			// Local file.
-			$fileName = $dirName."/".$this->md5.".zip";
 			if(!copy($this->fileAttachment->getTempName(), $fileName))
 			{
 				$this->addError("fileAttachment", "Couldn't copy data to local storage");
@@ -285,21 +281,33 @@ class CrashReport extends CActiveRecord
 		return true;
 	}
 
+	public function getReportDirectory()
+	{
+	    if(!isset($this->md5) || strlen($this->md5)!=32)
+	        return false;
+
+        // Determine path to local file
+        $subDir1 = substr($this->md5, 0, 3);
+        $subDir2 = substr($this->md5, 3, 3);
+        $dirName = Yii::app()->getBasePath()."/data/crashReports/".$subDir1."/".$subDir2;
+        return $dirName;
+	}
+
 	/**
 	 *  This method returns the absolute local path to this crash report file.
 	 */
 	public function getLocalFilePath()
 	{
-		if(!isset($this->md5) || strlen($this->md5)!=32)
-			return false;
-
-		// Determine path to local file
-		$subDir1 = substr($this->md5, 0, 3);
-		$subDir2 = substr($this->md5, 3, 3);
-		$dirName = Yii::app()->getBasePath()."/data/crashReports/".$subDir1."/".$subDir2;
-		$fileName = $dirName."/".$this->md5.'.zip';
-		return $fileName;
+	    $dirName = $this->getReportDirectory();
+	    return $dirName ? $dirName."/".$this->md5.'.zip' : false;
 	}
+
+	public function getXmlFilePath()
+	{
+	    $dirName = $this->getReportDirectory();
+	    return $dirName ? $dirName."/".$this->md5.'.xml' : false;
+	}
+
 
 	/**
 	 * This method looks for an existing crash group for the given crash report
@@ -368,7 +376,18 @@ class CrashReport extends CActiveRecord
 
 		// Skip the following code on update.
 		if(!$this->isNewRecord)
+		{
+		    $reportFileName = $this->getLocalFilePath();
+		    $xmlFileName = $this->getXmlFilePath();
+		    $filesize = 0;
+		    if (file_exists($reportFileName))
+		        $filesize += filesize($reportFileName);
+		    if (file_exists($xmlFileName))
+		        $filesize += filesize($xmlFileName);
+
+		    $this->filesize = $filesize;
 			return true;
+		}
 
 		// Set project name
 		if(!isset($this->project_id))
@@ -457,24 +476,6 @@ class CrashReport extends CActiveRecord
 
 		try
 		{
-			// Remove all related threads
-			foreach($this->threads as $thread)
-			{
-				$thread->delete();
-			}
-
-			// Remove all related modules
-			foreach($this->modules as $module)
-			{
-				$module->delete();
-			}
-
-			// Remove all related file items
-			foreach($this->fileItems as $fileItem)
-			{
-				$fileItem->delete();
-			}
-
 			// Remove all related custom props
 			foreach($this->customProps as $customProp)
 			{
@@ -520,6 +521,7 @@ class CrashReport extends CActiveRecord
 
 		// Get local file path to crash report file
 		$fileName = $this->getLocalFilePath();
+		$xmlName = $this->getXmlFilePath();
 
 		// Get parent directory names
 		$dirName = dirname($fileName);
@@ -527,6 +529,9 @@ class CrashReport extends CActiveRecord
 
 		// Remove crash report file
 		@unlink($fileName);
+
+		// Remove xml meta info
+		@unlink($xmlName);
 
 		// Try to delete file owning directory (if it is empty)
 		@rmdir($dirName);
@@ -537,6 +542,63 @@ class CrashReport extends CActiveRecord
 		return true;
 
 	}
+
+	public function getStackFrames($symbolizedOnly = false)
+	{
+	    $xmlFileName = $this->getXmlFilePath();
+	    if (!file_exists($xmlFileName))
+	        return false;
+	    $doc = @simplexml_load_file($xmlFileName);
+	    if($doc == Null)
+            return false;
+
+        // Extract the list of stack traces
+        if (!isset($doc->StackTrace))
+            return false;
+
+        $elemStackTrace = $doc->StackTrace[0];
+
+        $stackTrace = [];
+        $stackTraceNonFiltered = [];
+
+        $i = 0;
+        foreach ($elemStackTrace->Row as $elemRow)
+        {
+            $i ++;
+            if ($i == 1)
+                continue; // Skip header row
+
+            $title        = (string)$elemRow->Cell[0]['val'];
+            $addrPC       = (int)$elemRow->Cell[1]['val'];
+            $moduleName   = (string)$elemRow->Cell[2]['val'];
+            //$offsInModule = $elemRow->Cell[3]['val'];
+            $symName      = (string)$elemRow->Cell[4]['val'];
+            //$undSymName   = $elemRow->Cell[5]['val'];
+            //$offsInSym    = $elemRow->Cell[6]['val'];
+            //$srcFile      = $elemRow->Cell[7]['val'];
+            //$srcLine      = $elemRow->Cell[8]['val'];
+            //$offsInLine   = $elemRow->Cell[9]['val'];
+
+            // Check if this is a special frame [UnwindInfoNotAvail]
+            if($addrPC==0)
+            {
+                $title = '[WARNING: Stack unwind information not available. Frames below may be wrong.]';
+            }
+
+            if (empty($symName) && $symbolizedOnly)
+                continue;
+
+            $stackTraceNonFiltered[] = array('title'=> $title);
+            if(0!=preg_match('/^CrashRpt([0-9]{4})(d{0,1}){0,1}\.dll$/', $moduleName))
+                continue;
+
+            $stackTrace[] = array('title'=> $title);
+        }
+        if (sizeof($stackTrace) == 0)
+            $stackTrace = $stackTraceNonFiltered; // if we have only crashRpt.dll in stack, leave it.
+
+        return $stackTrace;
+    }
 
 	/**
 	 * Returns crash group title for this crash report.
@@ -586,27 +648,9 @@ class CrashReport extends CActiveRecord
 			// If title is still empty...
 			if(strlen($title)==0)
 			{
-				// Find exception thread
-				$exceptionThread = null;
-				foreach($this->threads as $thread)
-				{
-					if($thread->thread_id==$this->exception_thread_id)
-					{
-						$exceptionThread = $thread;
-						Yii::log('Exception thread found '.$thread->thread_id, 'info');
-						break;
-					}
-				}
-
-				// If threre is an exception thread and it has stack frames
-				if($exceptionThread!=null && isset($exceptionThread->stack_trace_md5))
-				{
-					// Use the topmost stack frame as title
-					$title = $exceptionThread->getExceptionStackFrameTitle();
-					Yii::log('Exception stack frame title = '.$title, 'info');
-					if(strlen($title)!=0)
-						$hash = $exceptionThread->stack_trace_md5;
-				}
+			    $frames = $this->getStackFrames(true);
+			    if ($frames)
+			        $title = $frames[0]['title'];
 			}
 
 			// If title is still not determined...
@@ -646,25 +690,6 @@ class CrashReport extends CActiveRecord
 	}
 
 	/**
-	 * Looks for exception thread model for this crash report.
-	 */
-	public function getExceptionThread()
-	{
-		// Find exception thread
-		$exceptionThread = null;
-		foreach($this->threads as $thread)
-		{
-			if($thread->thread_id==$this->exception_thread_id)
-			{
-				$exceptionThread = $thread;
-				break;
-			}
-		}
-
-		return $exceptionThread;
-	}
-
-	/**
 	 * @return array relational rules.
 	 */
 	public function relations()
@@ -673,9 +698,6 @@ class CrashReport extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'project'=>array(self::BELONGS_TO, 'Project', 'project_id'),
-			'fileItems'=>array(self::HAS_MANY, 'FileItem', 'crashreport_id'),
-			'threads'=>array(self::HAS_MANY, 'Thread', 'crashreport_id'),
-			'modules'=>array(self::HAS_MANY, 'Module', 'crashreport_id'),
 			'customProps'=>array(self::HAS_MANY, 'CustomProp', 'crashreport_id'),
 			'collection'=>array(self::BELONGS_TO, 'CrashGroup', 'groupid'),
 			'bugs'=>array(self::HAS_MANY, 'BugCrashReportMapping', 'crashreport_id'),
@@ -893,49 +915,6 @@ class CrashReport extends CActiveRecord
 	}
 
 	/**
-	 * This method looks in {{module}} table for modules belonging this
-	 * crash report and returns the list of models.
-	 * @return \CActiveDataProvider
-	 */
-	public function searchModules()
-	{
-		$criteria=new CDbCriteria;
-		$criteria->compare('crashreport_id', $this->id);
-
-		$dataProvider =  new CActiveDataProvider('Module', array(
-			'criteria'=>$criteria,
-			'sort'=>array(
-				'defaultOrder'=>'sym_load_status DESC, name ASC'
-			),
-			'pagination'=>false
-		));
-
-		return $dataProvider;
-	}
-
-	/**
-	 * This method looks in {{thread}} table for threads belonging this
-	 * crash report and returns the list of models.
-	 * @return \CActiveDataProvider
-	 */
-	public function searchThreads()
-	{
-		$criteria=new CDbCriteria;
-		$criteria->compare('crashreport_id', $this->id);
-		$criteria->order = 'thread_id ASC';
-
-		$dataProvider = new CActiveDataProvider('Thread', array(
-			'criteria'=>$criteria,
-			'sort'=>array(
-				'defaultOrder'=>'thread_id ASC'
-			),
-			'pagination'=>false
-		));
-
-		return $dataProvider;
-	}
-
-	/**
 	 *  This method dumps the content of attachment file to stdout.
 	 *  This method is used when downloading the debug info file.
 	 */
@@ -978,214 +957,6 @@ class CrashReport extends CActiveRecord
 		// Close out file
 		if($file!=null)
 			fclose($fout);
-	}
-
-	/**
-	 * Extracts a file item from crash report to a temporary location and
-	 * returns file name, or False on error.
-	 * @param string $itemName File item name.
-	 * @return string file name.
-	 */
-	public function extractFileItem($itemName)
-	{
-		// Determine path to local crash report file
-		$crashReportFileName = $this->getLocalFilePath();
-
-		// Create temp file for output
-		$outFile = tempnam(Yii::app()->getRuntimePath(), "ext");
-
-		// Format daemon command
-		$command = 'dumper --extract-file "'.$crashReportFileName.'" "'.$itemName.'" "'.$outFile.'"';
-
-		// Execute the command
-		$responce = "";
-		$retCode = Yii::app()->daemon->execCommand($command, $responce);
-
-		if($retCode!=0)
-		{
-			Yii::log('Error executing command '.$command.', responce = '.$responce, 'error');
-
-			// Remove temp file
-			@unlink($outFile);
-			return False;
-		}
-
-		return $outFile;
-	}
-
-	/**
-	 * This method dumps the content of a given zipped file to stdout or to a file.
-	 * This method is used when downloading the crash report file contents.
-	 * @param $itemName Name of file item.
-	 * @param $asOctetStream If true, dumps as application/octet stream.
-	 * @param $file File name; can be Null.
-	 * @throw CHttpException
-	 * @return void
-	 */
-	public function dumpFileItemContent($itemName, $asOctetStream=true, $file=null)
-	{
-		if($file!=null)
-		{
-			$fout = @fopen($file, 'w');
-			if($fout==false)
-				throw new CHttpException(403, 'Invalid output file.');
-		}
-
-		// Extract file item to a temp file
-		$tmpfile = $this->extractFileItem($itemName);
-		if($tmpfile==False)
-			throw new CHttpException(403, 'File does not exists.');
-
-		// Try to open file
-		if ($fd = fopen ($tmpfile, "r"))
-		{
-			$fsize = filesize($tmpfile);
-
-			$mimeType='application/octet-stream';
-			if(!$asOctetStream)
-			{
-				$path_parts = pathinfo($itemName);
-				$ext = $path_parts['extension'];
-				if(strcasecmp($ext,'jpg')==0)
-					$mimeType = 'image/jpg';
-				else if(strcasecmp($ext,'png')==0)
-					$mimeType = 'image/png';
-				else if(strcasecmp($ext,'ogg')==0)
-					$mimeType = 'video/ogg';
-			}
-
-			// Write HTTP headers
-			header("Content-type: $mimeType");
-			header("Content-Disposition: filename=\"".$itemName."\"");
-			header("Content-length: $fsize");
-			header("Cache-control: private"); //use this to open files directly
-
-			// Write file content
-			while(!feof($fd))
-			{
-				$buffer = fread($fd, 2048);
-				if($file==null)
-					echo $buffer;
-				else
-					fwrite($fout, $buffer);
-			}
-
-			// Close file
-			fclose($fd);
-		}
-		else
-			throw new CHttpException(403, 'File does not exist.');
-
-		if($file!=null)
-			fclose($fout);
-
-		// Remove temp file
-		@unlink($tmpfile);
-	}
-
-	/**
-	 * This method dumps a screenshot thumbnail image to stdout or to a file.
-	 * @param string $itemName File item name.
-	 */
-	public function dumpScreenshotThumbnail($itemName, $file=null)
-	{
-		// Extract file item to a temp file
-		$tmpfile = $this->extractFileItem($itemName);
-		if($tmpfile==False)
-			throw new CHttpException(403, 'File does not exists.');
-
-		$src_img=null;
-		$path_parts = pathinfo($itemName);
-		$ext = $path_parts['extension'];
-		if(strcasecmp($ext,'jpg')==0)
-			$src_img = imagecreatefromjpeg($tmpfile);
-		else if(strcasecmp($ext,'png')==0)
-			$src_img = imagecreatefrompng($tmpfile);
-
-		if($src_img===null)
-			throw new CHttpException(403, 'Invalid file.');
-
-		$thumb_w = 220;
-		$thumb_h = 190;
-		$dst_w = 0;
-		$dst_h = 0;
-		$dst_x = 0;
-		$dst_y = 0;
-		$src_w=imageSX($src_img);
-		$src_h=imageSY($src_img);
-		$src_ratio = $src_w/$src_h;
-		$dst_ratio = $thumb_w/$thumb_h;
-		if($dst_ratio > $src_ratio)
-		{
-			$dst_h=$thumb_h;
-			$dst_w=$dst_h*$old_ratio;
-			$dst_x = $thumb_w/2-$dst_w/2;
-		}
-		else
-		{
-			$dst_w=$thumb_w;
-			$dst_h=$dst_w/$src_ratio;
-			$dst_y = $thumb_h/2-$dst_h/2;
-		}
-
-		$dst_img=ImageCreateTrueColor($thumb_w,$thumb_h);
-		imagecopyresampled($dst_img,$src_img,$dst_x,$dst_y,0,0,$dst_w,$dst_h,$src_w,$src_h);
-
-		imagejpeg($dst_img, $tmpfile);
-		imagedestroy($dst_img);
-		imagedestroy($src_img);
-
-		// Open out file
-		if($file!=null)
-		{
-			$fout = @fopen($file, 'w');
-			if($fout==false)
-			{
-				@unlink($tmpfile);
-				throw new CHttpException(403, 'Invalid file.');
-			}
-		}
-
-		// Try to open file
-		if ($fd = fopen ($tmpfile, "r"))
-		{
-			$fsize = filesize($tmpfile);
-
-			$path_parts = pathinfo($itemName);
-			$ext = $path_parts['extension'];
-			if(strcasecmp($ext,'jpg')==0)
-				$mimeType = 'image/jpg';
-			else if(strcasecmp($ext,'png')==0)
-				$mimeType = 'image/png';
-
-			// Write HTTP headers
-			header("Content-type: $mimeType");
-			header("Content-Disposition: filename=\"".$itemName."\"");
-			header("Content-length: $fsize");
-			header("Cache-control: private"); //use this to open files directly
-
-			// Write file content
-			while(!feof($fd))
-			{
-				$buffer = fread($fd, 2048);
-
-				if($file!=null)
-					fwrite($fout, $buffer);
-				else
-					echo $buffer;
-			}
-
-			// Close file
-			fclose($fd);
-		}
-		else
-			throw new CHttpException(403, 'File does not exist.');
-
-		if($file!=null)
-			fclose($fout);
-
-		// Remove temp file
-		@unlink($tmpfile);
 	}
 
 	/**
