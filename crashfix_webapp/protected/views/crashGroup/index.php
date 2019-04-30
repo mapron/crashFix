@@ -13,107 +13,106 @@ You have no projects assigned.
 <?php else: ?>
 
 <!-- Project Selection Form -->
-<div class="span-27 last" id="div_proj_selection">	
+<div class="span-27 last" id="div_proj_selection">
 	<?php echo CHtml::beginForm(array('site/setCurProject'), 'get', array('id'=>'proj_form')); ?>
 	<div class="span-27 last">
 		Current Project:
-		<?php 		
+		<?php
 			$models = Yii::app()->user->getMyProjects();
-			$projects = CHtml::listData($models, 'id', 'name');			
-			echo CHtml::dropDownList('proj', array('selected'=>Yii::app()->user->getCurProjectId()), $projects); 			
-		?>					
+			$projects = CHtml::listData($models, 'id', 'name');
+			echo CHtml::dropDownList('proj', array('selected'=>Yii::app()->user->getCurProjectId()), $projects);
+		?>
 		Version:
-		<?php 		
+		<?php
 			$selVer = -1;
-			$versions = Yii::app()->user->getCurProjectVersions($selVer);			
-			echo CHtml::dropDownList('ver', array('selected'=>$selVer), $versions); 
-		?>					
+			$versions = Yii::app()->user->getCurProjectVersions($selVer);
+			echo CHtml::dropDownList('ver', array('selected'=>$selVer), $versions);
+		?>
 	</div>
 	<?php echo CHtml::endForm(); ?>
 </div>
 
 <!-- Simple Search Form -->
-<div class="span-27 last" id="div_simple_search">	
+<div class="span-27 last" id="div_simple_search">
 	<?php echo CHtml::beginForm(array('crashGroup/index'), 'get', array('id'=>'group_form')); ?>
 	<div class="span-27 last"><p id="stat_filter">Search collections by title:</p></div>
 	<div class="span-7"><div id="dropdown_search">
-		<?php 
-			$statuses = array(												
-				CrashGroup::FILTER_ALL         =>'All collections', 
-			    CrashGroup::FILTER_UNPROCESSED =>'Unprocessed collections without bugs',	
+		<?php
+			$statuses = array(
+				CrashGroup::FILTER_ALL         =>'All collections',
+			    CrashGroup::FILTER_UNPROCESSED =>'Unprocessed collections without bugs',
 			    CrashGroup::FILTER_PROCESSED   =>'Collections with bug created',
 			    CrashGroup::FILTER_OPEN        =>'Collections with at least one open bug',
 			    CrashGroup::FILTER_CLOSED      =>'Collections with closed bugs',
-			);			
-			echo CHtml::dropDownList('status', array('selected'=>isset($model->bugStatusFilter) ? CHtml::encode($model->bugStatusFilter) : CrashGroup::FILTER_UNPROCESSED), $statuses); 
+			);
+			echo CHtml::dropDownList('status', array('selected'=>isset($model->bugStatusFilter) ? CHtml::encode($model->bugStatusFilter) : CrashGroup::FILTER_UNPROCESSED), $statuses);
 		?></div>
 	</div>
 	<div class="span-18">
-		<?php echo CHtml::textField('q', isset($model->filter)?CHtml::encode($model->filter):"", array('id'=>'text_filter')); ?>		
+		<?php echo CHtml::textField('q', isset($model->filter)?CHtml::encode($model->filter):"", array('id'=>'text_filter')); ?>
 	</div>
 	<div class="span-2 last">
 		<?php echo CHtml::submitButton('Search', array('id'=>'btn_filter')); ?>
-	</div>	
+	</div>
 	<?php echo CHtml::endForm(); ?>
 </div>
 
 <div class="span-27 last" >
-<?php echo CHtml::beginForm(array('crashGroup/deleteMultiple'), 'post', 
-		array('name'=>'del_form')); 
+<?php echo CHtml::beginForm(array('crashGroup/deleteMultiple'), 'post',
+		array('name'=>'del_form'));
 ?>
-	
+
 <!-- Actions Toolbar -->
 <div class="span-27 last">
-	<div class="div_actions">				
-		<?php 
-			if(Yii::app()->user->checkAccess('pperm_manage_crash_reports',  
+	<div class="div_actions">
+		<?php
+			if(Yii::app()->user->checkAccess('pperm_manage_crash_reports',
                     array('project_id'=>Yii::app()->user->getCurProjectId())))
-				echo CHtml::linkButton("Delete Selected", 
+				echo CHtml::linkButton("Delete Selected",
 						array(
-							'id'=>'delete_selected', 
-							'form'=>'del_form', 
+							'id'=>'delete_selected',
+							'form'=>'del_form',
 							'confirm'=>"Are you sure you want to permanently delete selected collection(s) with all crash reports they contain?"
 						)
-				); 
-		?>	
-	</div>	
+				);
+		?>
+	</div>
 </div>
 
 <!-- Grid view -->
 <div class="span-27 last" id="main_table">
-<?php 
+<?php
 $this->widget('zii.widgets.grid.CGridView', array(
       'dataProvider'=>$dataProvider,
 	  'selectableRows'=>null,
-      'columns'=>array(		  
-		  array(            
-              'class'=>'CCheckBoxColumn',			  			  
+      'columns'=>array(
+		  array(
+              'class'=>'CCheckBoxColumn',
 			  'id'=>'DeleteRows',
 			  'selectableRows'=>2, // allow multiple rows to select
           ),
-		  array(            
+		  array(
               'name' => 'id',
 			  'type' => 'text',
 			  'value' => '$data->id',
-			  'cssClassExpression' => '"column-right-align"',			  
-          ),		  
-		  array(                          			  
+			  'cssClassExpression' => '"column-right-align"',
+          ),
+		  array(
 			  'name'=>'title',
 			  'type' => 'raw',
-			  'value'=>'CHtml::link(MiscHelpers::addEllipsis(htmlspecialchars($data->title), 150), \'view/\'.$data->id)',			  
+			  'value'=>'CHtml::link(MiscHelpers::addEllipsis(htmlspecialchars($data->title), 150), \'view/\'.$data->id)',
           ),
 		  'crashReportCount',
-          'deletedCount',
-          array(                          			  
+          array(
 			  'name'=>'distinctIPs',
 			  'header'=>'Distinct IPs',
 			  'type'=>'text',
-			  'value'=>'$data->getDistinctIPs()',			  
+			  'value'=>'$data->getDistinctIPs()',
           ),
           array(            // display 'dateuploaded' using an expression
               'name'=>'created',
               'value'=>'date("d/m/y H:i", $data->created)',
-          ),  
+          ),
           array(
               'name' =>'bug_id',
               'header'=>'Bugs',
@@ -130,33 +129,33 @@ $this->widget('zii.widgets.grid.CGridView', array(
               }
           ),
       ),
- )); 
-  
+ ));
+
  ?>
 </div>
 <?php echo CHtml::endForm(); ?>
 </div>
 
-<?php 
+<?php
  $script = <<<SCRIPT
 
 $("#main_table").on('click', ':checkbox', function(e)
-{	
+{
     var totalSelected = $("#main_table input:checked").length;
-	$("#delete_selected").toggle(totalSelected > 0);	
+	$("#delete_selected").toggle(totalSelected > 0);
 });
-   
+
 $("#proj, #ver").bind('change', function(e)
-{	
+{
 	$("#proj_form").submit();
 });
 
 SCRIPT;
- 
+
  Yii::app()->getClientScript()->registerScript(
-		 "CrashGroup", 
-		 $script, 
-		 CClientScript::POS_READY); 
+		 "CrashGroup",
+		 $script,
+		 CClientScript::POS_READY);
  ?>
 
 <?php endif; ?>

@@ -89,7 +89,6 @@ class CrashGroup extends CActiveRecord
 			'status' => 'Status',
 			'title' => 'Title',
 			'crashReportCount' => 'Reports',
-		    'deletedCount' => 'Deleted',
 		);
 	}
 
@@ -168,7 +167,7 @@ class CrashGroup extends CActiveRecord
 		}
 
 		$criteria->compare('id', $this->id);
-		$criteria->select = 't.*, COUNT({{crashreport}}.id) + t.deletedCount AS crashReportCount';
+		$criteria->select = 't.*, COUNT({{crashreport}}.id) AS crashReportCount';
 		$criteria->compare('created',$this->created, true);
 		$criteria->compare('t.status', $this->status);
 		$criteria->compare('title', $this->title, true);

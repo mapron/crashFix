@@ -524,8 +524,6 @@ class CrashReport extends CActiveRecord
 		if(!$this->deleteAssociatedRecords())
 			return false;
 
-		CrashGroup::model()->updateCounters(['deletedCount' => 1], ['condition' => "id = " . $this->groupid]);
-
 		$this->deleteReportFiles();
 
 		return true;
