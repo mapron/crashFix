@@ -118,7 +118,7 @@ $this->widget('zii.widgets.CDetailView', array(
 		array(
             'name'=>'srcfilename',
             'type'=>'raw',
-            'value' => CHtml::link($model->srcfilename, array('crashReport/download', 'id'=>$model->id)),
+		    'value' => $model->filesize ? CHtml::link($model->srcfilename, array('crashReport/download', 'id'=>$model->id)) : $model->srcfilename,
         ),
 		array(
 			'name'=>'groupid',
@@ -230,6 +230,8 @@ $this->widget('zii.widgets.CDetailView', array(
 	),
 ));
 
+if (!empty($stackFrames))
+{
 ?>
 
 <div class="span-27 last detail-group-caption">Stack trace:</div>
@@ -249,5 +251,5 @@ $this->widget('zii.widgets.grid.CGridView', array(
     ),
 ));
 
-
+}
 ?>

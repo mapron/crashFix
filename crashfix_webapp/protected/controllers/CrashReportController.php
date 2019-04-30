@@ -83,9 +83,11 @@ class CrashReportController extends Controller
 		// Check if user is authorized to perform the action
 		$this->checkAuthorization($model);
 
+		$stackFrames = $model->getStackFrames();
+
 		$this->render('view',array(
 			'model'=>$model,
-		    'stackFrames'=> new CArrayDataProvider($model->getStackFrames(), ['keyField'=>'title', 'pagination' => false]),
+		    'stackFrames'=> empty($stackFrames) ? null : new CArrayDataProvider($stackFrames, ['keyField'=>'title', 'pagination' => false]),
 		));
 	}
 
