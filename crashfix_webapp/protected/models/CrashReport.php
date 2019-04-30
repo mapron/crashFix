@@ -505,6 +505,13 @@ class CrashReport extends CActiveRecord
 		return true;
 	}
 
+	public function clearFileData()
+	{
+	    $this->deleteReportFiles();
+	    $this->filesize = 0;
+	    $this->save();
+	}
+
 	/**
 	 * This method is executed before AR is deleted from database.
 	 * @return boolean True on success.
@@ -519,28 +526,33 @@ class CrashReport extends CActiveRecord
 
 		CrashGroup::model()->updateCounters(['deletedCount' => 1], ['condition' => "id = " . $this->groupid]);
 
-		// Get local file path to crash report file
-		$fileName = $this->getLocalFilePath();
-		$xmlName = $this->getXmlFilePath();
-
-		// Get parent directory names
-		$dirName = dirname($fileName);
-		$outerDirName = dirname($dirName);
-
-		// Remove crash report file
-		@unlink($fileName);
-
-		// Remove xml meta info
-		@unlink($xmlName);
-
-		// Try to delete file owning directory (if it is empty)
-		@rmdir($dirName);
-
-		// Try to delete outer directory (if it is empty)
-		@rmdir($outerDirName);
+		$this->deleteReportFiles();
 
 		return true;
 
+	}
+
+	protected function deleteReportFiles()
+	{
+	    // Get local file path to crash report file
+	    $fileName = $this->getLocalFilePath();
+	    $xmlName = $this->getXmlFilePath();
+
+	    // Get parent directory names
+	    $dirName = dirname($fileName);
+	    $outerDirName = dirname($dirName);
+
+	    // Remove crash report file
+	    @unlink($fileName);
+
+	    // Remove xml meta info
+	    @unlink($xmlName);
+
+	    // Try to delete file owning directory (if it is empty)
+	    @rmdir($dirName);
+
+	    // Try to delete outer directory (if it is empty)
+	    @rmdir($outerDirName);
 	}
 
 	public function getStackFrames($symbolizedOnly = false)

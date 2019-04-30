@@ -1165,13 +1165,15 @@ class PollCommand extends CConsoleCommand
 
 			$project = Project::model()->findByPk($group->project_id);
 			$groupQuota = $project->crash_reports_per_group_quota;
-			if ($group->crashReportCount > $groupQuota)
+
+			if ($group->nonEmptyCrashReportCount > $groupQuota)
 			{
-				$deleteCount = $group->crashReportCount - $groupQuota;
+			    $deleteCount = $group->nonEmptyCrashReportCount - $groupQuota;
 				// for debug:
 				//print $project->name . " quota=" . $groupQuota . " group=" . $group->title . " count=" . $group->crashReportCount . " delete=" . $deleteCount . "\r\n";
 				$criteria=new CDbCriteria;
 				$criteria->compare('groupid', $group->id);
+				$criteria->compare('filesize', '<>0');
 				$criteria->order = 'received ASC';
 				$criteria->limit = $deleteCount;
 				// find earliest records
@@ -1182,7 +1184,7 @@ class PollCommand extends CConsoleCommand
 				$criteria->addInCondition('id', $report_ids);
 
 				foreach (CrashReport::model()->findAll($criteria) as $report)
-					$report->delete(); // deleteAll does not trigger events!
+				    $report->clearFileData();
 			}
 		}
 	}

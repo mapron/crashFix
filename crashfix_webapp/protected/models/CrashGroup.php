@@ -72,6 +72,7 @@ class CrashGroup extends CActiveRecord
 		return array(
 			'crashReports'=>array(self::HAS_MANY, 'CrashReport', 'groupid'),
 			'crashReportCount'=>array(self::STAT, 'CrashReport', 'groupid'),
+		    'nonEmptyCrashReportCount'=>array(self::STAT, 'CrashReport', 'groupid', 'condition' => 'filesize<>0'),
 			'bugs'=>array(self::HAS_MANY, 'BugCrashGroupMapping', 'crashgroup_id'),
 			'bugCount'=>array(self::STAT, 'BugCrashGroupMapping', 'crashgroup_id'),
 		);
