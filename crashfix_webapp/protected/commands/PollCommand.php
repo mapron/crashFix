@@ -103,20 +103,14 @@ class PollCommand extends CConsoleCommand
 			$outFile = $crashReport->getXmlFilePath();
 
 			// Format daemon command
-			$command = 'assync dumper --dump-crash-report "'.$fileName.'" "'.$outFile.'"';
-
-			// Check if project allows to load PDB files without checking for matching build age
-			if(isset($crashReport->project) && $crashReport->project->require_exact_build_age==false )
-			{
-				$command .= ' --relax-build-age';
-			}
+			$command = 'assync dumper dump-crash-report -i "'.$fileName.'" -o "'.$outFile.'"';
 
 			$version = $crashReport->appVersion->version;
 			$projectName = $crashReport->project->name;
 
-			$command .= ' --pe-search-dir "' . Yii::app()->getBasePath()
+			$command .= ' --search-dir "' . Yii::app()->getBasePath()
 				. DIRECTORY_SEPARATOR . "data"
-				. DIRECTORY_SEPARATOR . "peFiles"
+				. DIRECTORY_SEPARATOR . "debugInfo"
 				. DIRECTORY_SEPARATOR . $projectName
 				. DIRECTORY_SEPARATOR . $version
 				. '"';
