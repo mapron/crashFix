@@ -200,51 +200,6 @@ You have no projects assigned.
 
 	<?php endif;?>
 
-	<?php
-		if(Yii::app()->user->checkAccess('pperm_browse_debug_info',
-				array('project_id'=>Yii::app()->user->getCurProjectId()))):
-	?>
-
-	<div class="span-9 loud prepend-top">
-		<div class="digest-pane" style="height:240px;">
-		<div class="subheader" title="Displays how many debug info files were uploaded for this project">Debug Info Totals (All Versions)</div>
-			<ul class="totals">
-                <li>
-                <?php
-                    $totalFileSize = 0;
-                    $percentOfDiskQuota = 0;
-                    $fileCount = Yii::app()->user->getCurProject()->getDebugInfoCount($totalFileSize, $percentOfDiskQuota);
-                    $percentOfDiskQuotaStr = sprintf("%.0f", $percentOfDiskQuota);
-                    echo $fileCount.' files ('.MiscHelpers::fileSizeToStr($totalFileSize);
-                    if($percentOfDiskQuota>0)
-                        echo ', '.$percentOfDiskQuotaStr.'% of disk quota';
-                    echo ')';
-                ?>
-
-                <?php $this->widget('zii.widgets.jui.CJuiProgressBar', array(
-                            'value'=>$percentOfDiskQuota,
-                            // additional javascript options for the progress bar plugin
-                            'options'=>array(
-                            ),
-                            'htmlOptions'=>array(
-                                'style'=>'height:20px;margin:5px'
-                            ),
-                        ));
-                ?>
-                </li>
-            </ul>
-		</div>
-	</div>
-
-	<div class="span-18 last prepend-top">
-		<div class="digest-pane" style="height:240px;">
-			<div class="subheader" title="Displays recent debug info file upload dynamics for all version of this project">Debug Info Uploads (All Versions)</div>
-			<div class="loading digest-pane-image" id="debuginfo-upload-stat" style="width:685px;height:200px;"></div>
-		</div>
-	</div>
-
-	<?php endif;?>
-
 	<p/>
 
 </div>
@@ -260,10 +215,6 @@ $urlCrashReportUploads365 = Yii::app()->createAbsoluteUrl('crashReport/uploadSta
 $urlBugDynamicsStat7 = Yii::app()->createAbsoluteUrl('bug/statusDynamics', array('w'=>684, 'h'=>200, 'period'=>7));
 $urlBugDynamicsStat30 = Yii::app()->createAbsoluteUrl('bug/statusDynamics', array('w'=>684, 'h'=>200, 'period'=>30));
 $urlBugDynamicsStat365 = Yii::app()->createAbsoluteUrl('bug/statusDynamics', array('w'=>684, 'h'=>200, 'period'=>365));
-
-$urlDebugInfoUploads7 = Yii::app()->createAbsoluteUrl('debugInfo/uploadStat', array('w'=>685, 'h'=>200, 'period'=>7));
-$urlDebugInfoUploads30 = Yii::app()->createAbsoluteUrl('debugInfo/uploadStat', array('w'=>685, 'h'=>200, 'period'=>30));
-$urlDebugInfoUploads365 = Yii::app()->createAbsoluteUrl('debugInfo/uploadStat', array('w'=>685, 'h'=>200, 'period'=>365));
 
 $urlBugStatusDist = Yii::app()->createAbsoluteUrl('bug/statusDist', array('w'=>324, 'h'=>200));
 
@@ -289,28 +240,6 @@ function loadCrashReportUploads(period)
 			} else {
 				$("#crashreport-upload-stat").html(img);
 				$("#crashreport-upload-stat").removeClass("loading");
-			}
-		});
-}
-
-function loadDebugInfoUploads(period)
-{
-	$("#debuginfo-upload-stat").empty();
-	$("#debuginfo-upload-stat").addClass("loading");
-
-	var url = "$urlDebugInfoUploads7";
-	if(period==30)
-		url = "$urlDebugInfoUploads30";
-	if(period==365)
-		url = "$urlDebugInfoUploads365";
-
-	var img = $("<img />").attr('src', url)
-		.load(function() {
-			if (!this.complete) {
-				$("#debuginfo-upload-stat").removeClass("loading");
-			} else {
-				$("#debuginfo-upload-stat").html(img);
-				$("#debuginfo-upload-stat").removeClass("loading");
 			}
 		});
 }
@@ -375,7 +304,6 @@ $("#link_bug_year").bind('click', function(e)
 
 
 loadCrashReportUploads(7);
-loadDebugInfoUploads(7);
 loadBugDynamics(7);
 
 var img2 = $("<img />").attr('src', "$urlVersionDist")
