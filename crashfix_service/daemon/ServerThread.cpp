@@ -19,8 +19,8 @@
 
 CServerThread::CServerThread(CSocketServer* pServer, int nThreadId)
 {
-    m_pServer = pServer;
-    m_nThreadId = nThreadId;
+	m_pServer = pServer;
+	m_nThreadId = nThreadId;
 	m_pLog = pServer->m_pLog;
 	m_bBusy = false;
 	m_StartTime = 0;
@@ -29,100 +29,100 @@ CServerThread::CServerThread(CSocketServer* pServer, int nThreadId)
 
 long CServerThread::ThreadProc(void* pParam)
 {
-    // Waiting for requests in infinite loop.
-    while(1)
-    {
-        // Check if server waits for all threads termination.
-        if(!m_pServer->IsRunning())
-        {
-            m_pLog->write(1, "Terminating thread %d\n", m_nThreadId);
-        }
+	// Waiting for requests in infinite loop.
+	while(1)
+	{
+		// Check if server waits for all threads termination.
+		if(!m_pServer->IsRunning())
+		{
+			m_pLog->write(1, "Terminating thread %d\n", m_nThreadId);
+		}
 
-        // Wait for incoming request.
-        m_pServer->m_Cond.Wait();
+		// Wait for incoming request.
+		m_pServer->m_Cond.Wait();
 
-        m_pLog->write(2, "Thread %d: Waked up.\n", m_nThreadId);
+		m_pLog->write(2, "Thread %d: Waked up.\n", m_nThreadId);
 
-        int nRequestsProcessed = 0;
+		int nRequestsProcessed = 0;
 
-        // In loop, get all pending requests from queue and process each one
-        while(1)
-        {
-            // Check if there are pending requests.
-            SOCK sock = 0;
-            double IncomingTime = 0;
+		// In loop, get all pending requests from queue and process each one
+		while(1)
+		{
+			// Check if there are pending requests.
+			SOCK sock = 0;
+			double IncomingTime = 0;
 			std::string sCmdId;
 			std::string sCommand;
-            if(m_pServer->GetRequest(sock, IncomingTime, sCmdId, sCommand))
-            {
-                {
+			if(m_pServer->GetRequest(sock, IncomingTime, sCmdId, sCommand))
+			{
+				{
 					CAutoLock lock(&m_CritSec);
 
-                    // Set busy flag
-                    m_bBusy = true;
+					// Set busy flag
+					m_bBusy = true;
 
-                    // Set start time
-                    time(&m_StartTime);
+					// Set start time
+					time(&m_StartTime);
 
-                    // Save socket
-                    m_Sock = sock;
+					// Save socket
+					m_Sock = sock;
 
 					// Save command.
 					m_sCommand = sCommand;
 					m_sCmdId = sCmdId;
-                }
+				}
 
-                m_pLog->write(2, "Thread %d: Processing request on sock = %d.\n", m_nThreadId, m_Sock);
+				m_pLog->write(2, "Thread %d: Processing request on sock = %d.\n", m_nThreadId, m_Sock);
 
-                // Handle client request.
-                HandleSocketRequest();
+				// Handle client request.
+				HandleSocketRequest();
 
-                // Increment count of processed requests.
-                nRequestsProcessed++;
-            }
-            else
-            {
-                // There are no pending requests for us
-                m_pLog->write(2, "Thread %d: There are no pending requests in the queue, go to sleep.\n", m_nThreadId);
-                break;
-            }
-        }
+				// Increment count of processed requests.
+				nRequestsProcessed++;
+			}
+			else
+			{
+				// There are no pending requests for us
+				m_pLog->write(2, "Thread %d: There are no pending requests in the queue, go to sleep.\n", m_nThreadId);
+				break;
+			}
+		}
 
-        //
-        if(nRequestsProcessed>0)
-        {
-            // Update our status.
-            CAutoLock lock(&m_CritSec);
-            m_bBusy = false;
-            m_Sock = -1;
-        }
-    }
+		//
+		if(nRequestsProcessed>0)
+		{
+			// Update our status.
+			CAutoLock lock(&m_CritSec);
+			m_bBusy = false;
+			m_Sock = -1;
+		}
+	}
 
-    return 0;
+	return 0;
 }
 
 time_t CServerThread::GetStartTime()
 {
-    CAutoLock lock(&m_CritSec);
-    return m_StartTime;
+	CAutoLock lock(&m_CritSec);
+	return m_StartTime;
 }
 
 bool CServerThread::IsBusy()
 {
-    CAutoLock lock(&m_CritSec);
-    return m_bBusy;
+	CAutoLock lock(&m_CritSec);
+	return m_bBusy;
 }
 
 SOCK CServerThread::GetSocket()
 {
-    CAutoLock lock(&m_CritSec);
+	CAutoLock lock(&m_CritSec);
 	return m_Sock;
 }
 
 void CServerThread::SetSocket(SOCK sock)
 {
-    CAutoLock lock(&m_CritSec);
-    m_Sock = sock;
+	CAutoLock lock(&m_CritSec);
+	m_Sock = sock;
 }
 
 
@@ -130,16 +130,16 @@ void CServerThread::SetSocket(SOCK sock)
 // It reads client request data from sock socket and processes the request.
 void CServerThread::HandleSocketRequest()
 {
-    // Set up the input buffer.
-    std::string sInputBuffer;
-    std::vector<std::string> asCommandSeq;
-    int nParseResult = -1;
-    int nProcessResult = -1;
-    std::string sRecvError;
-    std::string sResponse;
+	// Set up the input buffer.
+	std::string sInputBuffer;
+	std::vector<std::string> asCommandSeq;
+	int nParseResult = -1;
+	int nProcessResult = -1;
+	std::string sRecvError;
+	std::string sResponse;
 	const int TIMEOUT = 5;
-    const int MAX_IN_BUFF_SIZE = 10240;
-    std::string sErrorMsg;
+	const int MAX_IN_BUFF_SIZE = 10240;
+	std::string sErrorMsg;
 
 	// Check if socket number is valid
 	if(m_Sock!=0)
@@ -194,7 +194,7 @@ void CServerThread::HandleSocketRequest()
 
 exit:
 
-    // Clean up
+	// Clean up
 	if(m_Sock)
 	{
 		// Close socket
@@ -205,84 +205,84 @@ exit:
 	// Clean command
 	m_sCommand.clear();
 
-    // End.
-    return;
+	// End.
+	return;
 }
 
 int CServerThread::ParseInputBuffer(std::string& sInput, std::vector<std::string>& asCmdSeq)
 {
-    m_pLog->write(2, "Thread %d: Parsing input buffer.\n", m_nThreadId);
+	m_pLog->write(2, "Thread %d: Parsing input buffer.\n", m_nThreadId);
 
-    // Init output
-    asCmdSeq.clear();
+	// Init output
+	asCmdSeq.clear();
 
-    char* pPtr = NULL;
-    const char* szInput = sInput.c_str();
-    size_t nBufSize = sInput.size();
+	char* pPtr = NULL;
+	const char* szInput = sInput.c_str();
+	size_t nBufSize = sInput.size();
 
-    // Now split the command sequence using ';' character as a separator.
+	// Now split the command sequence using ';' character as a separator.
 
-    // Get first command
-    char* pCmd = strtok_r((char*)szInput, ";\n", &pPtr);
-    while( pCmd != NULL )
-    {
-        if(strlen(pCmd)==0)
-        {
-            m_pLog->write(2, "Thread %d: encountered empty command.\n", m_nThreadId);
-            break;
-        }
+	// Get first command
+	char* pCmd = strtok_r((char*)szInput, ";\n", &pPtr);
+	while( pCmd != NULL )
+	{
+		if(strlen(pCmd)==0)
+		{
+			m_pLog->write(2, "Thread %d: encountered empty command.\n", m_nThreadId);
+			break;
+		}
 
-        // Add command to the list
-        asCmdSeq.push_back(pCmd);
+		// Add command to the list
+		asCmdSeq.push_back(pCmd);
 
-        m_pLog->write(2, "Thread %d: encountered command: %s\n", m_nThreadId, pCmd);
+		m_pLog->write(2, "Thread %d: encountered command: %s\n", m_nThreadId, pCmd);
 
-        // Get the next command
-        pCmd = strtok_r(NULL, ";\n", &pPtr);
-    }
+		// Get the next command
+		pCmd = strtok_r(NULL, ";\n", &pPtr);
+	}
 
-    // Done
-    m_pLog->write(2, "Thread %d: command sequence parsed ok.\n", m_nThreadId);
-    return 0;
+	// Done
+	m_pLog->write(2, "Thread %d: command sequence parsed ok.\n", m_nThreadId);
+	return 0;
 }
 
 int CServerThread::ProcessCommandSequence(std::vector<std::string>& cmd_seq, std::string& err_msg)
 {
-    char err_code[64] = "";
-    char sz_cmd_num[10] = "";
-    int result = -1;
-    std::string cmd_err_msg;
+	char err_code[64] = "";
+	char sz_cmd_num[10] = "";
+	int result = -1;
+	std::string cmd_err_msg;
 
-    unsigned i;
-    for(i=0; i<cmd_seq.size(); i++)
-    {
-        result = ProcessCommand(cmd_seq[i].c_str(), cmd_err_msg);
-        if(result<0)
-        {
-            break;
-        }
-    }
+	unsigned i;
+	for(i=0; i<cmd_seq.size(); i++)
+	{
+		result = ProcessCommand(cmd_seq[i].c_str(), cmd_err_msg);
+		if(result<0)
+		{
+			break;
+		}
+	}
 
-    sprintf(err_code, "%d ", result);
-    sprintf(sz_cmd_num, "%u ", i);
+	sprintf(err_code, "%d ", result);
+	sprintf(sz_cmd_num, "%u ", i);
 
-    err_msg = std::string(err_code);
-    err_msg += cmd_err_msg;
-    err_msg += "\n"; // end of message marker
+	err_msg = std::string(err_code);
+	err_msg += cmd_err_msg;
+	err_msg += "\n"; // end of message marker
 
-    return result;
+	return result;
 }
 
 int CServerThread::ProcessCommand(const char* szCmdLine, std::string& sErrorMsg)
 {
-    char *pArg = NULL, *pPtr = NULL;
-    char *argv[WR_MAX_ARG + 1] = {NULL};
-    int	 argc = 0;
+	char *pArg = NULL, *pPtr = NULL;
+	char *argv[WR_MAX_ARG + 1] = {NULL};
+	int	 argc = 0;
 	std::string sCmdLine = szCmdLine;
 
-    argc = 0;
-    if( szCmdLine != NULL && *szCmdLine != '\0' )
-    {
+	argc = 0;
+	if( szCmdLine != NULL && *szCmdLine != '\0' )
+	{
 		size_t nLen = strlen(szCmdLine);
 		pArg = pPtr = (char*)szCmdLine;
 		bool bDoubleQuotes = false;
@@ -337,25 +337,25 @@ int CServerThread::ProcessCommand(const char* szCmdLine, std::string& sErrorMsg)
 				pPtr++;
 			}
 
-            if( argc >= WR_MAX_ARG )
-            {
-                m_pLog->write(2, "process_command: Count of command arguments has exeeded the limit.\n");
-                sErrorMsg = "Count of command arguments has exeeded the limit.";
-                return -1;
-            }
-        }
-    }
+			if( argc >= WR_MAX_ARG )
+			{
+				m_pLog->write(2, "process_command: Count of command arguments has exeeded the limit.\n");
+				sErrorMsg = "Count of command arguments has exeeded the limit.";
+				return -1;
+			}
+		}
+	}
 
-    argv[argc] = NULL;
+	argv[argc] = NULL;
 
-    int i;
-    for(i=0; i<argc; i++)
-    {
-        m_pLog->write(2, "%s\n", argv[i]);
-    }
+	int i;
+	for(i=0; i<argc; i++)
+	{
+		m_pLog->write(2, "%s\n", argv[i]);
+	}
 
-    int nErrorCode = 101;
-    sErrorMsg = "Unknown command.\n";
+	int nErrorCode = 101;
+	sErrorMsg = "Unknown command.\n";
 
 	if(argc>0 && strcmp(argv[0], "assync")==0)
 	{
@@ -391,75 +391,75 @@ int CServerThread::ProcessCommand(const char* szCmdLine, std::string& sErrorMsg)
 		}
 	}
 	else if(argc>0 && strcmp(argv[0], "dumper")==0)
-    {
+	{
 #if 0 // inprocess execution - use for debug.
 		// A synchronous "dumper" command
-        CCommandProcessor cp;
-        cp.SubstituteLog(m_pLog, false);
+		CCommandProcessor cp;
+		cp.SubstituteLog(m_pLog, false);
 		cp.SubstitutePdbCache(&m_pServer->m_PdbCache, false);
-        nErrorCode = cp.Run(argc, argv);
-        sErrorMsg = cp.GetErrorMsg();
+		nErrorCode = cp.Run(argc, argv);
+		sErrorMsg = cp.GetErrorMsg();
 #else
 		const std::string sPdbSearchDir = sCmdLine.find("--dump-crash-report") != std::string::npos ? m_pServer->GetDefaultPdbCache() : "";
 		const std::string cmd = GetExecutablePath() + "/" + std::string(sCmdLine) + " " + sPdbSearchDir;
 
-        if (executeWithTimeout(cmd.c_str(), 30) == 0)
-        {
-            sErrorMsg = "";
-            nErrorCode = 0;
-        }
-        else
-        {
-            nErrorCode = 1;
-            sErrorMsg = "Failed to execute dumper command";
-        }
+		if (executeWithTimeout(cmd.c_str(), 30) == 0)
+		{
+			sErrorMsg = "";
+			nErrorCode = 0;
+		}
+		else
+		{
+			nErrorCode = 1;
+			sErrorMsg = "Failed to execute dumper command";
+		}
 #endif
-    }
-    else if(argc>0 && strcmp(argv[0], "daemon")==0)
-    {
+	}
+	else if(argc>0 && strcmp(argv[0], "daemon")==0)
+	{
 		// A synchronous "daemon" command
-        nErrorCode = ProcessServerCommand(argc, argv, sErrorMsg);
-    }
-    else
-    {
-        nErrorCode = 101;
+		nErrorCode = ProcessServerCommand(argc, argv, sErrorMsg);
+	}
+	else
+	{
+		nErrorCode = 101;
 
-        if(argc==0)
-            sErrorMsg = "No command specified.";
-        else
-            sErrorMsg = "Unexpected command encountered.";
-    }
+		if(argc==0)
+			sErrorMsg = "No command specified.";
+		else
+			sErrorMsg = "Unexpected command encountered.";
+	}
 
-    return nErrorCode;
+	return nErrorCode;
 }
 
 int CServerThread::ProcessServerCommand(int argc, char* argv[], std::string& sErrMsg)
 {
 	int cur_arg = 0;
-    int nStatus = R_INVALID_PARAM;
-    sErrMsg = ("Unspecified error.");
+	int nStatus = R_INVALID_PARAM;
+	sErrMsg = ("Unspecified error.");
 
-    if(!cmp_arg("daemon"))
-    {
-        sErrMsg = ("Unknown server command.");
-        goto exit;
-    }
+	if(!cmp_arg("daemon"))
+	{
+		sErrMsg = ("Unknown server command.");
+		goto exit;
+	}
 
 	skip_arg();
 
-    if(cmp_arg("status"))
-    {
+	if(cmp_arg("status"))
+	{
 		skip_arg();
 
-        if(args_left()!=0)
-        {
-            sErrMsg = "Invalid parameter count.";
-            goto exit;
-        }
+		if(args_left()!=0)
+		{
+			sErrMsg = "Invalid parameter count.";
+			goto exit;
+		}
 
-        nStatus = m_pServer->GetServerStatus(sErrMsg);
-        goto exit;
-    }
+		nStatus = m_pServer->GetServerStatus(sErrMsg);
+		goto exit;
+	}
 	else if(cmp_arg("get-license-info"))
 	{
 		skip_arg();
@@ -468,7 +468,7 @@ int CServerThread::ProcessServerCommand(int argc, char* argv[], std::string& sEr
 		if(szOutFile==NULL)
 		{
 			sErrMsg = "Invalid argument.";
-            goto exit;
+			goto exit;
 		}
 
 		std::wstring sOutFile = strconv::a2w(szOutFile);
@@ -484,7 +484,7 @@ int CServerThread::ProcessServerCommand(int argc, char* argv[], std::string& sEr
 		if(szOutFile==NULL)
 		{
 			sErrMsg = "Invalid argument.";
-            goto exit;
+			goto exit;
 		}
 
 		std::wstring sOutFile = strconv::a2w(szOutFile);
@@ -493,7 +493,7 @@ int CServerThread::ProcessServerCommand(int argc, char* argv[], std::string& sEr
 		goto exit;
 	}
 	else if(cmp_arg("get-assync-info"))
-    {
+	{
 		bool bEraseCompleted = false;
 		std::string sCommandId;
 
@@ -521,17 +521,17 @@ int CServerThread::ProcessServerCommand(int argc, char* argv[], std::string& sEr
 		}
 
 		nStatus = m_pServer->GetAssyncCommandInfo(sErrMsg, sCommandId.c_str(), bEraseCompleted);
-        goto exit;
-    }
-    else
-    {
-        nStatus = R_INVALID_PARAM;
-        sErrMsg = "Invalid command name.";
-        goto exit;
-    }
+		goto exit;
+	}
+	else
+	{
+		nStatus = R_INVALID_PARAM;
+		sErrMsg = "Invalid command name.";
+		goto exit;
+	}
 
 exit:
-    return nStatus;
+	return nStatus;
 }
 
 //--------------------------------------------------
@@ -540,58 +540,58 @@ exit:
 
 CSitePollingThread::CSitePollingThread(CSocketServer* pServer, std::string sPollCommand)
 {
-    m_pServer = pServer;
+	m_pServer = pServer;
 	m_sPollCommand = sPollCommand;
 }
 
 long CSitePollingThread::ThreadProc(void* pParam)
 {
 	// In loop, wake up regularily and poll our PHP script.
-    // The script will issue client requests back to us and collect results.
-    for(;;)
-    {
-        // Sleep for some time
-        Sleep(30*1000);
+	// The script will issue client requests back to us and collect results.
+	for(;;)
+	{
+		// Sleep for some time
+		Sleep(30*1000);
 
 		// Record starting time
-        double start_time = microtime();
+		double start_time = microtime();
 
-        int nRet = 1; // ret code
+		int nRet = 1; // ret code
 
 #ifdef _WIN32
-        // Execute PHP script
-        nRet = execute(m_sPollCommand.c_str());
+		// Execute PHP script
+		nRet = execute(m_sPollCommand.c_str());
 #else
-        nRet = system(m_sPollCommand.c_str());
-        if(nRet!=-1)
-        {
-            nRet = WEXITSTATUS(nRet);
-        }
-        else
-        {
-            m_pServer->m_pLog->log_last_error(0, "Function system failed");
-        }
+		nRet = system(m_sPollCommand.c_str());
+		if(nRet!=-1)
+		{
+			nRet = WEXITSTATUS(nRet);
+		}
+		else
+		{
+			m_pServer->m_pLog->log_last_error(0, "Function system failed");
+		}
 
 #endif
 
 		// Record finish time
-        double finish_time = microtime();
+		double finish_time = microtime();
 		// Calculate duration
-        double duration = (finish_time-start_time)/1000;
+		double duration = (finish_time-start_time)/1000;
 
 		// Check script's ret val
-        if(nRet!=0)
+		if(nRet!=0)
 		{
 			m_pServer->m_pLog->write(0,
-                "Polling thread has encountered an error when executing PHP script '%s'; execution time = %0.2f sec; error code = %d.\n",
-                m_sPollCommand.c_str(), duration, nRet);
+				"Polling thread has encountered an error when executing PHP script '%s'; execution time = %0.2f sec; error code = %d.\n",
+				m_sPollCommand.c_str(), duration, nRet);
 
 			if(nRet==255)
 			{
 				m_pServer->m_pDaemon->AddError(true,
 					"CrashFix web application is installed, but not configured correctly. "
 					"PHP CLI has exited with return code 255 indicating that the PHP CLI has crashed while executing the script. Please check your php.ini "
-				    "config file and ensure that all required PHP extensions are enabled.");
+					"config file and ensure that all required PHP extensions are enabled.");
 			}
 			else
 			{
@@ -601,14 +601,14 @@ long CSitePollingThread::ThreadProc(void* pParam)
 					);
 			}
 		}
-        else
-        {
-            m_pServer->m_pLog->write(1,
-                "Polling thread has executed PHP script successfully (execution time = %0.2f sec).\n",
-                duration);
-        }
+		else
+		{
+			m_pServer->m_pLog->write(1,
+				"Polling thread has executed PHP script successfully (execution time = %0.2f sec).\n",
+				duration);
+		}
 
-        // Additionally perform log rotation for daemon
-        m_pServer->m_pLog->check_error_log_size();
-    }
+		// Additionally perform log rotation for daemon
+		m_pServer->m_pLog->check_error_log_size();
+	}
 }
