@@ -100,20 +100,6 @@ bool CSocketServer::Init(CDaemon* pDaemon, int nPort, int nMaxQueueSize, int nTo
 	/* Create worker threads. */
 	InitThreadPool();
 
-	// Init PDB cache
-	std::wstring sPdbSearchDir = strconv::utf82w(this->GetDefaultPdbCache());
-	bool bAdd = m_PdbCache.AddPdbSearchDir(sPdbSearchDir, PDB_USUAL_DIR, true);
-	if(!bAdd)
-	{
-		m_sErrorMsg = "Failed to init debug info cache in directory ";
-		m_sErrorMsg += strconv::w2utf8(sPdbSearchDir);
-		CLOSESOCK(m_ServerSock);
-		return false;
-	}
-
-	// Set max mem usage (convert to KB).
-	m_PdbCache.SetMaxMemUsage(m_nMaxMemUsageMB*1024);
-
 	// Done
 	m_sErrorMsg = "Success.";
 	return true;
@@ -710,17 +696,6 @@ std::string CSocketServer::GetErrorMsg()
 {
 	// Return the last error
 	return m_sErrorMsg;
-}
-
-std::string CSocketServer::GetDefaultPdbCache()
-{
-	std::string sPdbSearchDir = m_pDaemon->GetWebRootDir();
-#ifdef _WIN32
-	sPdbSearchDir += "protected\\data\\debugInfo";
-#else
-	sPdbSearchDir += "protected/data/debugInfo";
-#endif
-	return sPdbSearchDir;
 }
 
 bool CSocketServer::AddRequest(SOCK& Sock, const char* szCommand, std::string* psCmdId)

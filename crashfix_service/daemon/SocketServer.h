@@ -90,8 +90,6 @@ public:
 	//! Returns the last error msg.
 	std::string GetErrorMsg();
 
-	std::string GetDefaultPdbCache();
-
 	//! Sends a zero-terminated message to socket and waits for response for a given timeout.
 	//! \return Zero on success.
 	//! @param[in] sock Socket.
@@ -178,7 +176,6 @@ private:
 	CLog* m_pLog;                         //!< Error log.
 	CCritSec m_Lock;                      //!< Synchronisation object.
 	CCondVar m_Cond;                      //!< Conditional variable (used to wake up a thread from pool).
-	CPdbCache m_PdbCache;                 //!< PDB cache.
 };
 
 
