@@ -49,7 +49,7 @@ public:
 	//! @param[in] szOutFile Output XML file that will receive the resulting information.
 	//! @param[in] szSymbolSearchDir Directory name where to search symbols. Optional.
 	//! @param[in] bExactMatchBuildAge Wether to require exact match of PDB build age or not require.
-	int DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, const std::wstring & peSearchDir, bool bExactMatchBuildAge);
+	int DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, bool bExactMatchBuildAge);
 
 	//! Extracts a file from crash report ZIP archive.
 	int ExtractFile(LPCWSTR szCrashRptFileName, LPCWSTR szFileItemName, LPCWSTR szOutFile);

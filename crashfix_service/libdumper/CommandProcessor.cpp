@@ -55,180 +55,77 @@ CCommandProcessor::~CCommandProcessor()
 int CCommandProcessor::Run(int argc, char* argv[])
 {
 	int cur_arg = 1;
+	std::vector<std::string> argsList;
+	std::string command;
+	if (argc >= 2)
+		command = argv[1];
 
-	if(cmp_arg("--read-minidump"))
+	for (int i = 2; i < argc; ++i)
 	{
-		skip_arg();
-		LPCSTR szFileName = get_arg();
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-		return ReadDump(szFileName, szOutFile);
+		argsList.push_back(argv[i]);
 	}
-	else if(cmp_arg("--read-pdb"))
+	std::map<std::string, std::string> args;
+	for (size_t i = 0; i < argsList.size(); i += 2)
 	{
-		skip_arg();
-		LPCSTR szFileName = get_arg();
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-		return ReadPdb(szFileName, szOutFile);
-	}
-	else if(cmp_arg("--dump-pdb-stream"))
-	{
-		skip_arg();
-		LPCSTR szPdbFileName = get_arg();
-		skip_arg();
-		LPCSTR szStreamNum = get_arg();
-		int nStream = atoi(szStreamNum);
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-		return ExtractPdbStream(szPdbFileName, nStream, szOutFile);
-	}
-	else if(cmp_arg("--dump-pdb-streams"))
-	{
-		skip_arg();
-		LPCSTR szPdbFileName = get_arg();
-		skip_arg();
-		LPCSTR szOutDir = get_arg();
-		return ExtractPdbStreams(szPdbFileName, szOutDir);
-	}
-	else if(cmp_arg("--dia2dump"))
-	{
-		skip_arg();
-		LPCSTR szPdbFileName = get_arg();
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-		return Dia2Dump(szPdbFileName, szOutFile);
-	}
-	else if(cmp_arg("--dump-crash-report"))
-	{
-		skip_arg();
-		LPCSTR szCrashRptFileName = get_arg();
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-		skip_arg();
-
-		std::wstring sCrashRptFileName;
-		std::wstring sOutFile;
-		std::wstring sSymbolSearchDir;
-		std::wstring sPeSearchDir;
-		bool bRelaxBuildAge = false;
-		if(szCrashRptFileName)
+		const auto & arg = argsList[i];
+		if (arg[0] != '-')
 		{
-			sCrashRptFileName = strconv::a2w(szCrashRptFileName);
-		}
-		if(szOutFile)
-		{
-			sOutFile = strconv::a2w(szOutFile);
-		}
-
-		LPCSTR szRelaxBuildAge = get_arg();
-
-		if(szRelaxBuildAge!=NULL && strcmp(szRelaxBuildAge, "--relax-build-age")==0)
-		{
-			bRelaxBuildAge = true;
-			skip_arg();
-		}
-
-		LPCSTR peSearchKey = get_arg();
-		if (peSearchKey && std::string(peSearchKey) == "--pe-search-dir")
-		{
-			skip_arg();
-			LPCSTR szPeSearchDir = get_arg();
-			skip_arg();
-			sPeSearchDir = strconv::a2w(szPeSearchDir);
-		}
-
-		LPCSTR szSymbolSearchDir = get_arg();
-		skip_arg();
-
-		if(szSymbolSearchDir)
-		{
-			sSymbolSearchDir = strconv::a2w(szSymbolSearchDir);
-		}
-
-		return DumpCrashReport(sCrashRptFileName, sOutFile, sSymbolSearchDir, sPeSearchDir, !bRelaxBuildAge);
-	}
-	else if(cmp_arg("--extract-file"))
-	{
-		skip_arg();
-		LPCSTR szCrashRptFileName = get_arg();
-		skip_arg();
-		LPCSTR szFileItemName = get_arg();
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-
-		LPCWSTR wszCrashRptFileName = NULL;
-		LPCWSTR wszFileItemName = NULL;
-		LPCWSTR wszOutFile = NULL;
-
-		std::wstring sCrashRptFileName;
-		std::wstring sFileItemName;
-		std::wstring sOutFile;
-
-		if(szCrashRptFileName)
-		{
-			sCrashRptFileName = strconv::a2w(szCrashRptFileName);
-			wszCrashRptFileName = sCrashRptFileName.c_str();
-		}
-
-		if(szFileItemName)
-		{
-			sFileItemName = strconv::a2w(szFileItemName);
-			wszFileItemName = sFileItemName.c_str();
-		}
-
-		if(szOutFile)
-		{
-			sOutFile = strconv::a2w(szOutFile);
-			wszOutFile = sOutFile.c_str();
-		}
-
-		return ExtractFile(wszCrashRptFileName, wszFileItemName, wszOutFile);
-	}
-	else if(cmp_arg("--import-pdb"))
-	{
-		skip_arg();
-		LPCSTR szPdbFileName = get_arg();
-		skip_arg();
-		LPCSTR szSymDir = get_arg();
-		skip_arg();
-		LPCSTR szOutFile = get_arg();
-		skip_arg();
-
-		if(args_left()!=0)
-		{
-			m_sErrorMsg = "Invalid argument count for --import-pdb";
+			m_sErrorMsg = "CommandProcessor has encountered an unexpected argument '" + arg + "'.";
 			return -1;
 		}
-
-		LPCWSTR wszPdbFileName = NULL;
-		LPCWSTR wszSymDir = NULL;
-		LPCWSTR wszOutFile = NULL;
-		std::wstring sPdbFileName;
-		std::wstring sSymDir;
-		std::wstring sOutFile;
-
-		if(szPdbFileName)
+		if (i + 1 >= argsList.size())
 		{
-			sPdbFileName = strconv::a2w(szPdbFileName);
-			wszPdbFileName = sPdbFileName.c_str();
+			m_sErrorMsg = "CommandProcessor has encountered an odd argument '" + arg + "'.";
+			return -1;
 		}
-
-		if(szSymDir)
-		{
-			sSymDir = strconv::a2w(szSymDir);
-			wszSymDir = sSymDir.c_str();
-		}
-
-		if(szOutFile)
-		{
-			sOutFile = strconv::a2w(szOutFile);
-			wszOutFile = sOutFile.c_str();
-		}
-
-		return ImportPdb(wszPdbFileName, wszSymDir, wszOutFile);
+		args[arg] = argsList[i + 1];
 	}
-	else if(cmp_arg("--delete-debug-info"))
+
+	if(command == "read-minidump")
+	{
+		return ReadDump(args["-i"].c_str(), args["-o"].c_str());
+	}
+	else if(command == "read-pdb")
+	{
+		return ReadPdb(args["-i"].c_str(), args["-o"].c_str());
+	}
+	else if(command == "dump-pdb-stream")
+	{
+		int nStream = atoi(args["--stream"].c_str());
+		return ExtractPdbStream(args["-i"].c_str(), nStream, args["-o"].c_str());
+	}
+	else if(command == "dump-pdb-streams")
+	{
+		return ExtractPdbStreams(args["-i"].c_str(), args["--out-dir"].c_str());
+	}
+	else if(command == "dia2dump")
+	{
+		return Dia2Dump(args["-i"].c_str(), args["-o"].c_str());
+	}
+	else if(command == "dump-crash-report")
+	{
+		skip_arg();
+		LPCSTR szCrashRptFileName = get_arg();
+		skip_arg();
+		LPCSTR szOutFile = get_arg();
+		skip_arg();
+
+		std::wstring sCrashRptFileName = strconv::a2w(args["-i"]);
+		std::wstring sOutFile          = strconv::a2w(args["-o"]);
+		std::wstring sSymbolSearchDir  = strconv::a2w(args["--search-dir"]);
+
+
+		return DumpCrashReport(sCrashRptFileName, sOutFile, sSymbolSearchDir, true);
+	}
+	else if(command == "import-pdb")
+	{
+		std::wstring sPdbFileName = strconv::a2w(args["-i"]);
+		std::wstring sSymDir      = strconv::a2w(args["--sym-dir"]);
+		std::wstring sOutFile     = strconv::a2w(args["-o"]);
+
+		return ImportPdb(sPdbFileName.c_str(), sSymDir.c_str(), sOutFile.c_str());
+	}
+	else if(command == "delete-debug-info")
 	{
 		skip_arg();
 		LPCSTR szPdbFileName = get_arg();
@@ -237,13 +134,7 @@ int CCommandProcessor::Run(int argc, char* argv[])
 	}
 	else
 	{
-		m_sErrorMsg = "CommandProcessor has encountered an unexpected argument '";
-		LPCSTR szArg = get_arg();
-		if(szArg!=NULL)
-		{
-			m_sErrorMsg += std::string(szArg);
-		}
-		m_sErrorMsg +="'.";
+		m_sErrorMsg = "CommandProcessor has encountered an unexpected argument '" + command + "'.";
 		return -1;
 	}
 }
@@ -821,7 +712,7 @@ cleanup:
 	return nStatus;
 }
 
-int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, const std::wstring & peSearchDir, bool bExactMatchBuildAge)
+int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, bool bExactMatchBuildAge)
 {
 	m_sErrorMsg = "Unspecified error";
 	int nStatus = 1;
@@ -1085,7 +976,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 
 			BOOL bUnwindNotAvail = FALSE;
 
-			CStackWalker StackWalker(peSearchDir);
+			CStackWalker StackWalker(L""); // @todo:!!!
 			bool bInit = StackWalker.Init(pMiniDump, m_pPdbCache, pThread->m_uThreadId, bExactMatchBuildAge);
 			if(bInit)
 			{
