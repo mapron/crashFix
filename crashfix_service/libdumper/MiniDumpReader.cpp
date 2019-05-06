@@ -439,9 +439,15 @@ BOOL CMiniDumpReader::ReadModuleListStream(ULONG uRva, ULONG uSize)
 
 		std::wstring sShortModuleName = m.m_sModuleName;
 		size_t pos = m.m_sModuleName.rfind(L'\\');
-		if(pos!=m.m_sModuleName.npos)
+		if(pos!=std::wstring::npos)
 			sShortModuleName = sShortModuleName.substr(pos+1, std::string::npos);
 		m.m_sShortModuleName = sShortModuleName;
+
+		pos = m.m_sPdbFileName.rfind(L'\\');
+		std::wstring shortPdbFileName = m.m_sPdbFileName;
+		if(pos!=std::wstring::npos)
+			shortPdbFileName = shortPdbFileName.substr(pos+1, std::string::npos);
+		m.m_sShortPdbFileName = shortPdbFileName;
 
 		m_aModules.push_back(m);
 	}

@@ -165,12 +165,13 @@ struct MiniDumpModuleInfo
 	}
 
 	std::wstring m_sModuleName;              //!< Module name.
-	std::wstring m_sShortModuleName;         //!< Short module name.
+	std::wstring m_sShortModuleName;         //!< Short module name (without path).
 	DWORD64 m_dwBaseAddr;                    //!< Module's starting address.
 	DWORD64 m_dwImageSize;                   //!< Size of the module.
 	std::wstring m_sPdbGuid;                 //!< Program database GUID.
 	DWORD m_dwPdbAge;                        //!< PDB build age.
 	std::wstring m_sPdbFileName;             //!< PDB file name.
+	std::wstring m_sShortPdbFileName;        //!< PDB file name without path.
 	DWORD m_dwTimeDateStamp;                 //!< Timestamp.
 	std::wstring m_sVersion;                 //!< Module version.
 

@@ -59,8 +59,6 @@ public:
 	//! @param[in] Name of the symbol store directory
 	int ImportPdb(LPCWSTR szPdbFileName, LPCWSTR szSymDir, LPCWSTR szOutFile);
 
-	int DeleteDebugInfo(LPCWSTR szPdbFileName);
-
 	//! Opens log file
 	bool InitLog(std::wstring sFileName, int nLoggingLevel);
 

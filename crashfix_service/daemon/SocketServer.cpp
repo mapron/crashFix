@@ -79,7 +79,7 @@ bool CSocketServer::Init(CDaemon* pDaemon, int nPort, int nMaxQueueSize, int nTo
 	m_Server.sin_port = htons(m_nServerPort);          /* server port */
 
 	/* Bind the server socket */
-	if (bind(m_ServerSock, (struct sockaddr *) &m_Server, sizeof(sockaddr_in)) < 0)
+	if (::bind(m_ServerSock, (struct sockaddr *) &m_Server, sizeof(sockaddr_in)) < 0)
 	{
 		std::ostringstream err_msg;
 		err_msg << "Failed to bind the server socket to port ";

@@ -125,13 +125,6 @@ int CCommandProcessor::Run(int argc, char* argv[])
 
 		return ImportPdb(sPdbFileName.c_str(), sSymDir.c_str(), sOutFile.c_str());
 	}
-	else if(command == "delete-debug-info")
-	{
-		skip_arg();
-		LPCSTR szPdbFileName = get_arg();
-
-		return DeleteDebugInfo(strconv::a2w(szPdbFileName).c_str());
-	}
 	else
 	{
 		m_sErrorMsg = "CommandProcessor has encountered an unexpected argument '" + command + "'.";
@@ -763,7 +756,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 
 	if(!szSymbolSearchDir.empty())
 	{
-		m_pPdbCache->AddPdbSearchDir(szSymbolSearchDir, PDB_USUAL_DIR, true);
+		m_pPdbCache->AddSearchDir(szSymbolSearchDir);
 	}
 
 	bRead = CrashRptReader.Init(sCrashRptFileName);
@@ -1364,44 +1357,3 @@ exit:
 
 	return nStatus;
 }
-
-int CCommandProcessor::DeleteDebugInfo(LPCWSTR szPdbFileName)
-{
-	int nStatus = 1;
-	m_sErrorMsg = "Unspecified error.";
-	std::wstring sPdbFileName = szPdbFileName;
-	bool bDelete = false;
-
-	// Validate input
-	if(szPdbFileName==NULL)
-	{
-		nStatus = 1;
-		m_sErrorMsg = "Input file name is missing.";
-		goto exit;
-	}
-
-	sPdbFileName = szPdbFileName;
-
-	if(m_pPdbCache==NULL)
-	{
-		m_pLog->write(0, "Debug info cache is not specified!\n");
-		m_sErrorMsg = "Debug info cache is not specified";
-		goto exit;
-	}
-
-	bDelete = m_pPdbCache->DeleteCachedFile(sPdbFileName, true);
-	if(!bDelete)
-	{
-		m_sErrorMsg = "File could not be deleted or it is not in PDB cache search path.";
-		nStatus = 1;
-		goto exit;
-	}
-
-	m_sErrorMsg = "Success";
-	nStatus = 0;
-
-exit:
-
-	return nStatus;
-}
-

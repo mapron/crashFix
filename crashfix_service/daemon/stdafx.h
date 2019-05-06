@@ -8,9 +8,9 @@
 #include <stdio.h>
 
 #ifdef _WIN32 // Windows includes
-#ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
+#ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
-#endif		
+#endif
 #include <tchar.h>
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #include <windows.h>
@@ -45,7 +45,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-using namespace std;
+
 #include <queue>
 #include <set>
 

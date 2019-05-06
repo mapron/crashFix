@@ -150,7 +150,7 @@ BOOL CStackWalker::NextStackFrame(BOOL bFirstFrame)
 	}
 
 	// Determine if we have AMD64 stack
-	BOOL bAMD64 = m_pMdmpReader->GetSystemInfo()->m_uProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64;
+	bool bAMD64 = m_pMdmpReader->GetSystemInfo()->m_uProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64;
 
 	// Find module the instruction pointer register address belongs to
 	int nModuleIndex = m_pMdmpReader->FindModuleIndexByAddr(m_StackFrame.m_dwAddrPC);
@@ -158,118 +158,68 @@ BOOL CStackWalker::NextStackFrame(BOOL bFirstFrame)
 	if(pModuleInfo)
 	{
 		// Module found, now find matching PDB/image files for the module
-		CPdbReader* pPdbReader = NULL;
-		CPeReader* pPeReader = NULL;
-		int nEntry = -1;
-		bool bFind = m_pPdbCache->FindPdb(pModuleInfo->GUIDnAge(), pModuleInfo->m_sPdbFileName,
-			pModuleInfo->m_sModuleName, m_PeSearchDir, &pPdbReader, &pPeReader, &nEntry, NULL, m_bExactMatchBuildAge);
-		if(bFind)
+		if(bAMD64) // AMD64
 		{
-			// Matching PDB/PE found
+			auto peReader = m_pPdbCache->FindPE(pModuleInfo->m_sShortModuleName, bAMD64);
+			if(!peReader)
+				return FALSE;
 
-			if(!bAMD64) // x86
+			// Determine instruction address relative to module base
+			DWORD64 dwInstructionAddr = m_StackFrame.m_dwAddrPC-pModuleInfo->m_dwBaseAddr;
+
+			// Get unwind info for the address
+			DWORD dwUnwindInfoRVA = 0;
+			DWORD dwOffsInFunc = 0;
+			if(!GetAMD64UnwindInfo(peReader.get(), dwInstructionAddr, dwUnwindInfoRVA, dwOffsInFunc))
 			{
-				// Find FPO record that the address belongs to
+				// If no function table entry is found, then it is in a leaf function,
+				// and RSP will directly address the return pointer. The return pointer
+				// at [RSP] is stored in the updated context, the simulated RSP is incremented
+				// by 8, and step 1 is repeated.
 
-				//CPdbFPOStream* pFPOStream = pPdbReader->GetFPOStream();
-				//CPdbFPOStream* pNewFPOStream = pPdbReader->GetNewFPOStream();
-				//if(pNewFPOStream)
-				//{
-					//DWORD dwOffsInModule = (DWORD)(m_StackFrame.m_dwAddrPC-pModuleInfo->m_dwBaseAddr);
-					//int nFPORec = pNewFPOStream->FindFPORecordByAddr(dwOffsInModule);
-					//if(nFPORec>=0)
-					//{
-					//	FPO_DATA_RECORD* pFPORec = pNewFPOStream->GetFPORecord(nFPORec);
-					//
-					//	if((pFPORec->fpo2.dwUnknown2&0x4)!=0) // EBP allocated
-					//	{
-					//		// Ommit frame using FPO data
-					//		m_StackFrame.m_dwAddrStack = m_StackFrame.m_dwAddrFrame+pFPORec->fpo2.cbParams + 4/*ret*/;
+				// Read return address
 
-					//		m_StackFrame.m_dwAddrStack += 4; /*EBP*/
-
-					//		if((pFPORec->fpo2.dwUnknown2&0x1)!=0) // SEH handler allocated
-					//		{
-					//			m_StackFrame.m_dwAddrStack += 12;
-					//		}
-					//	}
-					//	else // No EBP
-					//	{
-					//		// Ommit frame using FPO data
-					//		m_StackFrame.m_dwAddrFrame = m_StackFrame.m_dwAddrStack+
-					//			pFPORec->fpo2.cbSavedRegs + pFPORec->fpo2.cdwLocals;
-
-					//		m_StackFrame.m_dwAddrStack = m_StackFrame.m_dwAddrStack+
-					//			pFPORec->fpo2.cbSavedRegs + pFPORec->fpo2.cdwLocals+
-					//			pFPORec->fpo2.cbParams+4/*ret*/;
-					//	}
-	 //               }
-	 //           }
-			}
-			else // AMD64
-			{
-				if(pPeReader==NULL)
+				DWORD dwBytesRead = 0;
+				BOOL bRead = m_pMdmpReader->ReadMemory(m_StackFrame.m_dwAddrStack, &dwRetAddr64, sizeof(DWORD64), &dwBytesRead);
+				if(!bRead || dwBytesRead!=sizeof(DWORD64))
 					return FALSE;
 
-				// Determine instruction address relative to module base
-				DWORD64 dwInstructionAddr = m_StackFrame.m_dwAddrPC-pModuleInfo->m_dwBaseAddr;
+				// Get pointer to AMD64 thread context
+				PCONTEXT_x64 pThreadContextX64 = (PCONTEXT_x64)m_pThreadContext;
 
-				// Get unwind info for the address
-				DWORD dwUnwindInfoRVA = 0;
-				DWORD dwOffsInFunc = 0;
-				if(!GetAMD64UnwindInfo(pPeReader, dwInstructionAddr, dwUnwindInfoRVA, dwOffsInFunc))
+				pThreadContextX64->Rip = dwRetAddr64;
+			}
+			else
+			{
+				// If a function table entry is found, RIP can lie within three regions
+				// a) in an epilog, b) in the prolog, or c) in code that may be covered
+				// by an exception handler.
+
+				// Read 128-byte fragment of code
+				BYTE uchProgram[128];
+				BOOL bRead = m_pMdmpReader->ReadMemory(m_StackFrame.m_dwAddrPC, &uchProgram, 128, &dwBytesRead);
+				if(!bRead || dwBytesRead!=128)
+					return FALSE;
+
+				// Check if instruction pointer is within prolog or epilog.
+				CStackFrame StackFrame = m_StackFrame;
+				if(CheckAMD64Epilog(uchProgram, dwBytesRead, &StackFrame))
 				{
-					// If no function table entry is found, then it is in a leaf function,
-					// and RSP will directly address the return pointer. The return pointer
-					// at [RSP] is stored in the updated context, the simulated RSP is incremented
-					// by 8, and step 1 is repeated.
-
-					// Read return address
-
-					DWORD dwBytesRead = 0;
-					BOOL bRead = m_pMdmpReader->ReadMemory(m_StackFrame.m_dwAddrStack, &dwRetAddr64, sizeof(DWORD64), &dwBytesRead);
-					if(!bRead || dwBytesRead!=sizeof(DWORD64))
-						return FALSE;
-
-					// Get pointer to AMD64 thread context
-					PCONTEXT_x64 pThreadContextX64 = (PCONTEXT_x64)m_pThreadContext;
-
-					pThreadContextX64->Rip = dwRetAddr64;
+					// The effects of the epilog must be continued to compute the
+					// context of the caller function.
+					m_StackFrame = StackFrame;
 				}
 				else
 				{
-					// If a function table entry is found, RIP can lie within three regions
-					// a) in an epilog, b) in the prolog, or c) in code that may be covered
-					// by an exception handler.
+					// The effects of the prolog must be undone to compute the
+					// context of the caller function.
 
-					// Read 128-byte fragment of code
-					BYTE uchProgram[128];
-					BOOL bRead = m_pMdmpReader->ReadMemory(m_StackFrame.m_dwAddrPC, &uchProgram, 128, &dwBytesRead);
-					if(!bRead || dwBytesRead!=128)
+					if(!UndoAMD64Prolog(peReader.get(), dwUnwindInfoRVA, dwOffsInFunc))
 						return FALSE;
-
-					// Check if instruction pointer is within prolog or epilog.
-					CStackFrame StackFrame = m_StackFrame;
-					if(CheckAMD64Epilog(uchProgram, dwBytesRead, &StackFrame))
-					{
-						// The effects of the epilog must be continued to compute the
-						// context of the caller function.
-						m_StackFrame = StackFrame;
-					}
-					else
-					{
-						// The effects of the prolog must be undone to compute the
-						// context of the caller function.
-
-						if(!UndoAMD64Prolog(pPeReader, dwUnwindInfoRVA, dwOffsInFunc))
-							return FALSE;
-					}
 				}
 			}
-
-			// Release PDB cache entry
-			m_pPdbCache->ReleaseCacheEntry(nEntry);
 		}
+
 	}
 
 	if(!bAMD64) // x86
@@ -810,15 +760,12 @@ bool CStackWalker::GetSymbolInfoForCurStackFrame()
 		DWORD64 dwAddr = m_StackFrame.m_dwAddrPC - pModuleInfo->m_dwBaseAddr;
 		m_StackFrame.m_dwOffsInModule = (DWORD)dwAddr;
 
-		CPdbReader* pPdbReader = NULL;
-		CPeReader* pPeReader = NULL;
-		int nEntry = -1;
-		bool bFind = m_pPdbCache->FindPdb(pModuleInfo->GUIDnAge(), pModuleInfo->m_sPdbFileName,
-			pModuleInfo->m_sModuleName, m_PeSearchDir,  &pPdbReader, &pPeReader, &nEntry, NULL, m_bExactMatchBuildAge);
-		if(bFind)
+		const bool bAMD64 = m_pMdmpReader->GetSystemInfo()->m_uProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64;
+		auto pdbReader = m_pPdbCache->FindPdb(pModuleInfo->m_sShortPdbFileName, bAMD64);
+		if(pdbReader)
 		{
-			m_StackFrame.m_sPdbFileName = pPdbReader->GetFileName();
-			CPdbSymbolStream* pSymbolStream = pPdbReader->GetSymbolStream();
+			m_StackFrame.m_sPdbFileName = pdbReader->GetFileName();
+			CPdbSymbolStream* pSymbolStream = pdbReader->GetSymbolStream();
 			if(pSymbolStream)
 			{
 				int nSymIndex = pSymbolStream->GetSymbolIndexByAddr(dwAddr);
@@ -836,7 +783,7 @@ bool CStackWalker::GetSymbolInfoForCurStackFrame()
 				}
 			}
 
-			CPdbDebugInfoStream* pDBI = pPdbReader->GetDebugInfoStream();
+			CPdbDebugInfoStream* pDBI = pdbReader->GetDebugInfoStream();
 			int nSectionContrib = pDBI->FindSectionContribByAddr(dwAddr);
 			if(nSectionContrib>=0)
 			{
@@ -845,7 +792,7 @@ bool CStackWalker::GetSymbolInfoForCurStackFrame()
 				DBI_ModuleInfo* pModuleInfo = pDBI->GetModuleInfo(nModuleIndex);
 				if(pModuleInfo)
 				{
-					CPdbCompilandStream* pCompiland = pPdbReader->GetCompilandStream(pModuleInfo);
+					CPdbCompilandStream* pCompiland = pdbReader->GetCompilandStream(pModuleInfo);
 					if(pCompiland)
 					{
 						int nSymIndex = pCompiland->GetSymbolIndexByAddr(dwAddr);
@@ -871,8 +818,6 @@ bool CStackWalker::GetSymbolInfoForCurStackFrame()
 					}
 				}
 			}
-
-			m_pPdbCache->ReleaseCacheEntry(nEntry);
 		}
 	}
 
