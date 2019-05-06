@@ -12,8 +12,7 @@ class ProcessingError extends CActiveRecord
 {
 	// Processing error types
 	const TYPE_CRASH_REPORT_ERROR = 1; // This error is associated with a crash report.
-	const TYPE_DEBUG_INFO_ERROR   = 2; // This error is associated with a debug info.
-	
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
@@ -48,10 +47,10 @@ class ProcessingError extends CActiveRecord
 			array('id, type, srcid, message', 'safe', 'on'=>'search'),
 		);
 	}
-	
+
 	/**
 	 * This validator method checks if srcid is a valid crash report ID or
-	 * debug info ID. 
+	 * debug info ID.
 	 */
 	public function checkSrcId()
 	{
@@ -64,16 +63,7 @@ class ProcessingError extends CActiveRecord
 				return false;
 			}
 		}
-		else if($this->type==ProcessingError::TYPE_DEBUG_INFO_ERROR)
-		{
-			$debugInfo = DebugInfo::model()->find('id='.$this->srcid);
-			if($debugInfo===Null)
-			{
-				$this->addError('srcid', 'SrcID must be a valid debug info ID.');
-				return false;
-			}
-		}			
-		
+
 		return true;
 	}
 }
