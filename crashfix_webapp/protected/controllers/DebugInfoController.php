@@ -12,16 +12,19 @@ class DebugInfoController extends Controller
 	public $sidebarActiveItem = 'DebugInfo';
 
 	private $_debugInfoProvider;
+	private $_debugInfoRoot;
 
 	public function init()
 	{
+	    $this->_debugInfoRoot = Yii::app()->getBasePath() . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . "debugInfo";
+
 	    $project = Yii::app()->user->getCurProject();
 
 	    if (empty($project))
 	        return;
 
 	   $selVer = null; // stupid getCurProjectVersions API.
-	   $this->_debugInfoProvider = new DebugInfo(Yii::app()->getBasePath() . DIRECTORY_SEPARATOR . "data" . DIRECTORY_SEPARATOR . "debugInfo",
+	   $this->_debugInfoProvider = new DebugInfo($this->_debugInfoRoot,
 	       $project->name,
 	       Yii::app()->user->getCurProjectVersions($selVer));
 	}
@@ -44,6 +47,12 @@ class DebugInfoController extends Controller
 	public function accessRules()
 	{
 		return array(
+		    array('allow',  // allow not authenticated users to upload externally
+		        'actions'=>array(
+		            'uploadExternal'
+		        ),
+		        'users'=>array('?'),
+		    ),
 			array('allow',  // Allow authenticated users
 				'actions'=>array(
 					'index',
@@ -131,6 +140,11 @@ class DebugInfoController extends Controller
 	    $this->redirect(array('debugInfo/index'));
 	}
 
+	public function actionUploadExternal($project, $version, $arch)
+	{
+	    echo ($this->processUploadedFile($project, $version, $arch) ? 'OK' : 'FAIL');
+	}
+
 	/**
 	 * Checks if user is authorized to perform the action.
 	 * @param string $permission Permission name.
@@ -165,9 +179,10 @@ class DebugInfoController extends Controller
 
         $zip = new SevenZipArchive($tmpName);
 
-        $path = $this->_debugInfoProvider->getPath($project, $version, $arch);
+        $path = $this->_debugInfoRoot.DIRECTORY_SEPARATOR.$project.DIRECTORY_SEPARATOR.$version.DIRECTORY_SEPARATOR.$arch;
 
-        mkdir($path, 0777, true);
+        if (!file_exists($path))
+            mkdir($path, 0666, true);
 
         return $zip->extractTo($path);
 	}
