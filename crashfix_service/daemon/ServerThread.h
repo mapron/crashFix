@@ -8,6 +8,8 @@
 #include "Thread.h"
 #include "CritSec.h"
 
+#include <memory>
+
 #ifdef _WIN32
 typedef SOCKET SOCK;
 #define CLOSESOCK(x) closesocket(x)
@@ -83,7 +85,7 @@ private:
 	CSocketServer* m_pServer;  //!< Owner server.
 	CCritSec m_CritSec;        //!< Critical section.
 	int m_nThreadId;           //!< Thread number.
-	CLog* m_pLog;              //!< Log.
+	std::shared_ptr<CLog> m_pLog; //!< Log.
 	bool m_bBusy;              //!< Busy flag.
 	time_t m_StartTime;        //!< Start time of the last request processing.
 	SOCK m_Sock;               //!< Socket.

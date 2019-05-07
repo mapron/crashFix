@@ -73,7 +73,7 @@ public:
 	//! @param[in] nMaxQueueSize Maximum size of request queue.
 	//! @param[in] nTotalThreads Total count of concurrent threads.
 	//! @param[in] pLog Pointer to log object.
-	bool Init(CDaemon* pDaemon, int nPort, int nMaxQueueSize, int nTotalThreads, int nMaxMemUsageMB, CLog* pLog);
+	bool Init(CDaemon* pDaemon, int nPort, int nMaxQueueSize, int nTotalThreads, int nMaxMemUsageMB, const std::shared_ptr<CLog> & pLog);
 
 	//! Terminates the socket server (closes all socket connections).
 	void Terminate();
@@ -173,7 +173,7 @@ private:
 	int m_nAssyncCommandIdSeed;           //!< Used to generate unique IDs for assync commands.
 	int m_nBusyThreads;                   //!< Count of busy threads.
 	bool m_bRunning;                      //!< Running flag.
-	CLog* m_pLog;                         //!< Error log.
+	std::shared_ptr<CLog> m_pLog;                         //!< Error log.
 	CCritSec m_Lock;                      //!< Synchronisation object.
 	CCondVar m_Cond;                      //!< Conditional variable (used to wake up a thread from pool).
 };

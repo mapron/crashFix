@@ -1,6 +1,8 @@
 #pragma once
 #include "stdafx.h"
 
+#include <memory>
+
 // The following macros are used for parsing the command line
 #define args_left() (argc-cur_arg)
 #define arg_exists() (cur_arg<argc && argv[cur_arg]!=NULL)
@@ -63,19 +65,17 @@ public:
 	bool InitLog(std::wstring sFileName, int nLoggingLevel);
 
 	//! Replaces our log with another one
-	CLog* SubstituteLog(CLog* pLog, bool bOwn = true);
+	void SetLog(const std::shared_ptr<CLog> & pLog);
 
 	//! Returns last error message
 	std::string GetErrorMsg();
 
 	//! Replaces
-	CPdbCache* SubstitutePdbCache(CPdbCache* pPdbCache, bool bOwn = true);
+	void SetPdbCache(const std::shared_ptr<CPdbCache> & pPdbCache);
 
 private:
 
 	std::string m_sErrorMsg; //!< Last error message
-	CLog* m_pLog;            //!< Pointer to log
-	bool m_bLogIsOwned;      //!< Log is owned and should be deleted when we exit
-	CPdbCache* m_pPdbCache;  //!< PDB cache.
-	bool m_bPdbCacheIsOwned; //!< PDB cache is owned and should be deleted when we exit
+	std::shared_ptr<CLog> m_pLog; //!< Pointer to log
+	std::shared_ptr<CPdbCache> m_pPdbCache;  //!< PDB cache.
 };

@@ -8,14 +8,10 @@
 #include "DumpStruct.h"
 #include "PeStruct.h"
 
-CStackWalker::CStackWalker(const std::wstring & sPeSearchDir)
-	: m_PeSearchDir(sPeSearchDir)
+CStackWalker::CStackWalker()
 {
-	m_pMdmpReader = NULL;
 	m_pThreadContext = NULL;
 	m_uThreadContextSize = 0;
-	m_pPdbCache = NULL;
-	m_bExactMatchBuildAge = false;
 }
 
 CStackWalker::~CStackWalker()
@@ -23,17 +19,17 @@ CStackWalker::~CStackWalker()
 	Destroy();
 }
 
-bool CStackWalker::Init(CMiniDumpReader* pMiniDump, CPdbCache* pPdbCache, DWORD dwThreadId, bool bExactMatchBuildAge)
+bool CStackWalker::Init(const std::shared_ptr<CMiniDumpReader> pMiniDump, const std::shared_ptr<CPdbCache> & pPdbCache, DWORD dwThreadId)
 {
 	bool bResult = false;
 	m_sErrorMsg = L"Unspecified error.";
 	BOOL bGetContext = FALSE;
 	DWORD dwMachineType = 0;
-	MiniDumpSystemInfo* pSysInfo = NULL;
+	MiniDumpSystemInfo* pSysInfo = nullptr;
 
 	// Validate input params
-	if(pMiniDump==NULL ||
-		pPdbCache==NULL)
+	if(pMiniDump==nullptr ||
+		pPdbCache==nullptr)
 	{
 		m_sErrorMsg = L"Stack walker couldn't initialize itself (invalid argument passed).";
 		goto cleanup;
@@ -45,7 +41,6 @@ bool CStackWalker::Init(CMiniDumpReader* pMiniDump, CPdbCache* pPdbCache, DWORD 
 	// Save input vars for later use
 	m_pMdmpReader = pMiniDump;
 	m_pPdbCache = pPdbCache;
-	m_bExactMatchBuildAge = bExactMatchBuildAge;
 
 	// Determine machine type (x86 or x64)
 	pSysInfo = pMiniDump->GetSystemInfo();

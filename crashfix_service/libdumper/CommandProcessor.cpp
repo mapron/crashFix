@@ -11,6 +11,7 @@
 #include "Misc.h"
 #include "Outputter.h"
 #include "md5.h"
+#include "ScopeExit.h"
 
 namespace
 {
@@ -30,25 +31,10 @@ std::string FilterSubmodulePath(std::string filename)
 
 CCommandProcessor::CCommandProcessor()
 {
-	m_pLog = NULL;
-	m_bLogIsOwned = true;
-
-	m_pPdbCache = NULL;
-	m_bPdbCacheIsOwned = true;
 }
 
 CCommandProcessor::~CCommandProcessor()
 {
-	if(m_pLog != NULL && m_bLogIsOwned)
-	{
-		m_pLog->term();
-		delete m_pLog;
-	}
-
-	if(m_pPdbCache != NULL && m_bPdbCacheIsOwned)
-	{
-		delete m_pPdbCache;
-	}
 }
 
 
@@ -139,30 +125,20 @@ std::string CCommandProcessor::GetErrorMsg()
 
 bool CCommandProcessor::InitLog(std::wstring sFileName, int nLoggingLevel)
 {
-	m_pLog = new CLog();
+	m_pLog.reset(new CLog());
 	BOOL bInit = m_pLog->init(sFileName, false);
 	m_pLog->set_level(nLoggingLevel);
 	return bInit?true:false;
 }
 
-CLog* CCommandProcessor::SubstituteLog(CLog* pLog, bool bOwn)
+void CCommandProcessor::SetLog(const std::shared_ptr<CLog> & pLog)
 {
-	CLog* pOldLog = m_pLog;
-
 	m_pLog = pLog;
-	m_bLogIsOwned = bOwn;
-
-	return pOldLog;
 }
 
-CPdbCache* CCommandProcessor::SubstitutePdbCache(CPdbCache* pPdbCache, bool bOwn)
+void CCommandProcessor::SetPdbCache(const std::shared_ptr<CPdbCache> & pPdbCache)
 {
-	CPdbCache* pOldCache = m_pPdbCache;
-
 	m_pPdbCache = pPdbCache;
-	m_bPdbCacheIsOwned = bOwn;
-
-	return pOldCache;
 }
 
 void CCommandProcessor::PrintUsage()
@@ -708,39 +684,38 @@ cleanup:
 int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, const std::wstring & szOutFile, const std::wstring & szSymbolSearchDir, bool bExactMatchBuildAge)
 {
 	m_sErrorMsg = "Unspecified error";
-	int nStatus = 1;
+
 	FILE* f = NULL;
+	SCOPE_EXIT([&f]{ if (f) fclose(f);});
 	CCrashReportReader CrashRptReader;
 	BOOL bRead = FALSE;
 	std::wstring sCrashRptFileName;
 	std::wstring sOutFile;
-	CCrashDescReader* pCrashDesc = NULL;
-	CMiniDumpReader* pMiniDump = NULL;
 	char szBuffer[1024]="";
 	COutputter doc;
 	std::string sUtf8OutFile;
-	MiniDumpExceptionInfo* pExcInfo = NULL;
-	MiniDumpSystemInfo* pSysInfo = NULL;
+	MiniDumpExceptionInfo* pExcInfo = nullptr;
+	MiniDumpSystemInfo* pSysInfo = nullptr;
 	std::wstring sStackTrace;
 
 	if(m_pLog==NULL)
 	{
 		m_sErrorMsg = "Log is not specified";
-		goto cleanup;
+		return 1;
 	}
 
 	if(szCrashRptFileName.empty())
 	{
 		m_pLog->write(0, "Invalid src file name specified!\n");
 		m_sErrorMsg = "Invalid src file name specified";
-		goto cleanup;
+		return 1;
 	}
 
 	if(szOutFile.empty())
 	{
 		m_pLog->write(0, "Invalid output file name specified!\n");
 		m_sErrorMsg = "Invalid output file name specified";
-		goto cleanup;
+		return 1;
 	}
 
 	sUtf8OutFile = strconv::w2a(szOutFile);
@@ -751,7 +726,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	{
 		m_pLog->write(0, "Debug info cache is not specified!\n");
 		m_sErrorMsg = "Debug info cache is not specified";
-		goto cleanup;
+		return 1;
 	}
 
 	if(!szSymbolSearchDir.empty())
@@ -765,12 +740,12 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 		m_pLog->write(0, "Couldn't read crash report file!\n");
 		m_sErrorMsg = "Couldn't read crash report file: ";
 		m_sErrorMsg += strconv::w2a(CrashRptReader.GetErrorMsg());
-		goto cleanup;
+		return 1;
 	}
 
-	pCrashDesc = CrashRptReader.GetCrashDescReader();
-	pMiniDump = CrashRptReader.GetMiniDumpReader();
-	if(pMiniDump!=NULL)
+	std::shared_ptr<CCrashDescReader> pCrashDesc = CrashRptReader.GetCrashDescReader();
+	std::shared_ptr<CMiniDumpReader>  pMiniDump = CrashRptReader.GetMiniDumpReader();
+	if(pMiniDump)
 	{
 		pExcInfo = pMiniDump->GetExceptionInfo();
 		pSysInfo = pMiniDump->GetSystemInfo();
@@ -780,7 +755,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	{
 		m_pLog->write(0, "Not supported CPU architecture of crash report file!\n");
 		m_sErrorMsg = "Unsupported CPU architecture";
-		goto cleanup;
+		return 1;
 	}
 
 #ifdef _WIN32
@@ -792,7 +767,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	{
 		m_pLog->write(0, "Couldn't open output file for writing!\n");
 		m_sErrorMsg = "Couldn't open output file for writing";
-		goto cleanup;
+		return 1;
 	}
 
 	doc.Init(f, OUTPUT_XML);
@@ -969,8 +944,8 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 
 			BOOL bUnwindNotAvail = FALSE;
 
-			CStackWalker StackWalker(L""); // @todo:!!!
-			bool bInit = StackWalker.Init(pMiniDump, m_pPdbCache, pThread->m_uThreadId, bExactMatchBuildAge);
+			CStackWalker StackWalker;
+			bool bInit = StackWalker.Init(pMiniDump, m_pPdbCache, pThread->m_uThreadId);
 			if(bInit)
 			{
 				sStackTrace.clear();
@@ -1088,17 +1063,7 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 	doc.EndDocument();
 
 	m_sErrorMsg = "Success";
-	nStatus = 0;
-
-cleanup:
-
-	if(f!=NULL)
-	{
-		fclose(f);
-		f=NULL;
-	}
-
-	return nStatus;
+	return 0;
 }
 
 int CCommandProcessor::ExtractFile(LPCWSTR szCrashRptFileName, LPCWSTR szFileItemName, LPCWSTR szOutFile)

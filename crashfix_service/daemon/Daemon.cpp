@@ -49,6 +49,7 @@ CDaemon::CDaemon()
 #ifdef _WIN32
 	m_hEventStop = CreateEvent(NULL, TRUE, FALSE, L"Local\\04B8BCA1-BDAF-4686-82CE-A7DF707C5287");
 	m_bLogInitialized = false;
+	m_Log = std::make_shared<CLog>();
 
 	CreateDir(GetModulePath(nullptr) + L"\\logs");
 #endif
@@ -174,7 +175,7 @@ start:
 	}
 
 	// Exit.
-	m_Log.write(0, "Daemon is exiting.\n");
+	m_Log->write(0, "Daemon is exiting.\n");
 	exit(EXIT_SUCCESS);
 }
 
@@ -447,12 +448,12 @@ void CDaemon::InitErrorLog()
 #ifndef _WIN32
 		// In Linux, we have to first close the handle to error.log file,
 		// which is already opened.
-		m_Log.term();
+		m_Log->term();
 #endif
-		bInitLog = m_Log.init(strconv::a2w(m_sMonitorLogFile), true);
+		bInitLog = m_Log->init(strconv::a2w(m_sMonitorLogFile), true);
 	}
 	else
-		bInitLog = m_Log.init(strconv::a2w(m_sErrorLogFile), true);
+		bInitLog = m_Log->init(strconv::a2w(m_sErrorLogFile), true);
 	if(!bInitLog)
 	{
 		std::string sErrorMsg = "Couldn't open log file ";
@@ -461,38 +462,38 @@ void CDaemon::InitErrorLog()
 	}
 
 	// Set logging level (take the level from config).
-	m_Log.set_level(m_nLoggingLevel);
-	m_Log.set_max_size(m_nErrorLogMaxSizeKB);
+	m_Log->set_level(m_nLoggingLevel);
+	m_Log->set_max_size(m_nErrorLogMaxSizeKB);
 
 	// Write general server info to error.log
-	m_Log.write(0, "==================================\n");
+	m_Log->write(0, "==================================\n");
 	if(m_MonitorOption==MO_IS_MONITOR)
-		m_Log.write(0, "CrashFix Daemon Monitor Log\n");
+		m_Log->write(0, "CrashFix Daemon Monitor Log\n");
 	else
-		m_Log.write(0, "CrashFix Daemon Log\n");
-	m_Log.write(0, "==================================\n");
-	m_Log.write(0, "Configuration summary:\n");
-	m_Log.write(0, "Path to configuration file is '%s'\n", m_sConfigFile.c_str());
-	m_Log.write(0, "Logging level is %d\n", m_nLoggingLevel);
-	m_Log.write(0, "Log maximum file size is %d KB.\n", m_nErrorLogMaxSizeKB);
+		m_Log->write(0, "CrashFix Daemon Log\n");
+	m_Log->write(0, "==================================\n");
+	m_Log->write(0, "Configuration summary:\n");
+	m_Log->write(0, "Path to configuration file is '%s'\n", m_sConfigFile.c_str());
+	m_Log->write(0, "Logging level is %d\n", m_nLoggingLevel);
+	m_Log->write(0, "Log maximum file size is %d KB.\n", m_nErrorLogMaxSizeKB);
 	if(m_MonitorOption==MO_IS_MONITOR)
-		m_Log.write(0, "Path to log file is '%s'\n", m_sMonitorLogFile.c_str());
+		m_Log->write(0, "Path to log file is '%s'\n", m_sMonitorLogFile.c_str());
 	else
 	{
-		m_Log.write(0, "Path to log file is '%s'\n", m_sErrorLogFile.c_str());
-		m_Log.write(0, "Path to pidfile is '%s'\n", m_sPIDFile.c_str());
-		m_Log.write(0, "Count of worker threads is %d\n", m_nThreadCount);
-		//m_Log.write(0, "Server port number is %d\n", m_nServerPort);
-		//m_Log.write(0, "Maximum request queue size is %d\n", m_nMaxQueueSize);
-		m_Log.write(0, "Debug info cache maximum size is %d\n", m_nCacheMaxEntries);
-		m_Log.write(0, "Memory consumption maximum limit is %d MB\n", m_nCacheMaxMemUsageMB);
+		m_Log->write(0, "Path to log file is '%s'\n", m_sErrorLogFile.c_str());
+		m_Log->write(0, "Path to pidfile is '%s'\n", m_sPIDFile.c_str());
+		m_Log->write(0, "Count of worker threads is %d\n", m_nThreadCount);
+		//m_Log->write(0, "Server port number is %d\n", m_nServerPort);
+		//m_Log->write(0, "Maximum request queue size is %d\n", m_nMaxQueueSize);
+		m_Log->write(0, "Debug info cache maximum size is %d\n", m_nCacheMaxEntries);
+		m_Log->write(0, "Memory consumption maximum limit is %d MB\n", m_nCacheMaxMemUsageMB);
 	}
 }
 
 void CDaemon::InitSocketServer()
 {
 	// Init socket server - try to bind the server socket.
-	bool bInit = m_SocketServer.Init(this, m_nServerPort, m_nMaxQueueSize, m_nThreadCount, m_nCacheMaxMemUsageMB, &m_Log);
+	bool bInit = m_SocketServer.Init(this, m_nServerPort, m_nMaxQueueSize, m_nThreadCount, m_nCacheMaxMemUsageMB, m_Log);
 	if(!bInit)
 	{
 		// Coldn't init the socket server by some reason.
@@ -546,13 +547,13 @@ bool CDaemon::Daemonize(eDaemonizeType Flag)
 		else if(Flag==DT_SPAWN_DAEMON_ON_CRASH)
 		{
 			// We (monitor) have spawned the child (daemon) process
-			m_Log.write(0, "Spawned the daemon process: pid = %d.\n", pid);
+			m_Log->write(0, "Spawned the daemon process: pid = %d.\n", pid);
 			m_nPidToMonitor = pid;
 		}
 		else if(Flag==DT_SPAWN_MONITOR_PROCESS)
 		{
 			// We have spawned the monitor process
-			m_Log.write(0, "Spawned the monitoring process: pid = %d\n", pid);
+			m_Log->write(0, "Spawned the monitoring process: pid = %d\n", pid);
 			m_nPidToMonitor = pid;
 		}
 	}
@@ -613,7 +614,7 @@ cleanup:
 	{
 		if(Flag==DT_SPAWN_DAEMON_ON_CRASH)
 		{
-			m_Log.write(0, sErrorMsg.c_str());
+			m_Log->write(0, sErrorMsg.c_str());
 			std::string sErr = "Error spawning the child process while restarting the daemon: ";
 			sErr += sErrorMsg;
 			AddError(true, sErr.c_str());
@@ -748,7 +749,7 @@ void CDaemon::Die(const char* szMessage, bool bUsePStr)
 	// terminate the process with error code.
 
 	// Log error message
-	m_Log.write(0, "Dying: %s\n", szMessage);
+	m_Log->write(0, "Dying: %s\n", szMessage);
 
 #ifdef _WIN32
 	printf(szMessage);
@@ -866,10 +867,10 @@ CDaemon* CDaemon::GetInstance()
 	return m_pInstance;
 }
 
-CLog* CDaemon::GetLog()
+std::shared_ptr<CLog> CDaemon::GetLog() const
 {
 	// Returns owned log object.
-	return &m_Log;
+	return m_Log;
 }
 
 void CDaemon::RunAsMonitor()
@@ -883,7 +884,7 @@ void CDaemon::RunAsMonitor()
 	int nServerRetCode = -1;
 	std::vector<std::string> asServerErrors;
 
-	m_Log.write(0, "Running as monitoring process (pid to monitor = %d)\n", m_nPidToMonitor);
+	m_Log->write(0, "Running as monitoring process (pid to monitor = %d)\n", m_nPidToMonitor);
 
 	for(;;)
 	{
@@ -891,14 +892,14 @@ void CDaemon::RunAsMonitor()
 #ifdef _WIN32
 		if(WAIT_OBJECT_0==WaitForSingleObject(m_hEventStop, 60*1000))
 		{
-			m_Log.write(0, "Stop event.\n");
+			m_Log->write(0, "Stop event.\n");
 			return;
 		}
 #else
 		Sleep(60*1000); // Wair for a munute
 #endif
 
-		m_Log.write(1, "Waking up and checking daemon process.\n");
+		m_Log->write(1, "Waking up and checking daemon process.\n");
 
 		BOOL bError = FALSE;
 		BOOL bRestart = FALSE;
@@ -913,8 +914,8 @@ void CDaemon::RunAsMonitor()
 			// It seems that the process we are watching at has terminated (probably due to crash).
 			// We need to restart the process.
 
-			m_Log.write(0, "Unexpected event: Error opening process to monitor (PID = %d)\n", m_nPidToMonitor);
-			m_Log.log_last_error();
+			m_Log->write(0, "Unexpected event: Error opening process to monitor (PID = %d)\n", m_nPidToMonitor);
+			m_Log->log_last_error();
 			bError = TRUE;   // There is an error event
 			bRestart = TRUE; // We have to restart the process
 			AddError(true, "The monitoring process couldn't open the daemon process handle (the daemon process seems to be not launched or dead).");
@@ -931,9 +932,9 @@ void CDaemon::RunAsMonitor()
 			// We couldn't get the exit code of the process.
 			// We have to notify the webmaster and restart the process.
 
-			m_Log.write(0, "Unexpected event: the function GetExitCodeProcess has failed with error %u\n", dwExitCode);
+			m_Log->write(0, "Unexpected event: the function GetExitCodeProcess has failed with error %u\n", dwExitCode);
 			AddError(true, "The monitoring process couldn't get exit code of the daemon process (the daemon process seems to be not launched or dead).");
-			m_Log.log_last_error(0);
+			m_Log->log_last_error(0);
 			bError = TRUE;
 			bRestart = TRUE;
 			goto skip;
@@ -943,7 +944,7 @@ void CDaemon::RunAsMonitor()
 			// It seems that the process has exited.
 			// We have to notify the webmaster and restart the process.
 
-			m_Log.write(0, "Unexpected event: daemon process has exited with code = %u\n", dwExitCode);
+			m_Log->write(0, "Unexpected event: daemon process has exited with code = %u\n", dwExitCode);
 			AddError(true, "The monitoring process detected that the daemon process has terminated (probably because of a critical error). The daemon will be automatically restarted.");
 			bError = TRUE;
 			bRestart = TRUE;
@@ -954,8 +955,8 @@ void CDaemon::RunAsMonitor()
 		if(kill(m_nPidToMonitor, 0)<0)
 		{
 			// The process seems to be terminated.
-			m_Log.write(0, "Unexpected event: error opening process to monitor (PID = %d)\n", m_nPidToMonitor);
-			m_Log.log_last_error(0, "kill function returned error code");
+			m_Log->write(0, "Unexpected event: error opening process to monitor (PID = %d)\n", m_nPidToMonitor);
+			m_Log->log_last_error(0, "kill function returned error code");
 			AddError(true, "The monitoring process has detected that the daemon process is inactive (not launched at all or has terminated by some reason). The daemon process will be relaunched.");
 			bError = TRUE;   // There is an error event
 			bRestart = TRUE; // We have to restart the process
@@ -972,7 +973,7 @@ void CDaemon::RunAsMonitor()
 		{
 			// Critical error - couldn't execute request to daemon.
 			// We need to notify webmaster, but do not restart the process.
-			m_Log.write(0, "Unexpected event: couldn't execute a request to daemon: %s.\n", sErrorMsg.c_str());
+			m_Log->write(0, "Unexpected event: couldn't execute a request to daemon: %s.\n", sErrorMsg.c_str());
 			std::string sErr = "The monitoring process couldn't connect to daemon: " + sErrorMsg;
 			AddError(true, sErr.c_str());
 
@@ -987,12 +988,12 @@ void CDaemon::RunAsMonitor()
 			{
 				// It seems that the daemon reports an error status.
 				// We need to notify webmaster, but do not restart the process.
-				m_Log.write(0, "Unexpected event: the daemon reports some errors.\n");
+				m_Log->write(0, "Unexpected event: the daemon reports some errors.\n");
 				size_t i;
 				for(i=0; i<asServerErrors.size(); i++)
 				{
 					AddError(false, asServerErrors[i].c_str());
-					m_Log.write(0, "Error %d. %s\n", i+1, asServerErrors[i].c_str());
+					m_Log->write(0, "Error %d. %s\n", i+1, asServerErrors[i].c_str());
 				}
 
 				bError = TRUE;
@@ -1108,11 +1109,11 @@ int CDaemon::ExecuteClientRequest(const char* szCmdLine, std::string& sErrorMsg,
 		goto exit;
 	}
 
-	m_Log.write(2, "Server invitation: %s\n", sResponse.c_str());
+	m_Log->write(2, "Server invitation: %s\n", sResponse.c_str());
 
 	// Send request to server.
 
-	m_Log.write(2, "Sending request to server: %s\n", szCmdLine);
+	m_Log->write(2, "Sending request to server: %s\n", szCmdLine);
 	if(0!=m_SocketServer.SendMsgWithTimeout(sock, szCmdLine, TIMEOUT, sErrorMsg))
 	{
 		// Error reading server greeting
@@ -1121,7 +1122,7 @@ int CDaemon::ExecuteClientRequest(const char* szCmdLine, std::string& sErrorMsg,
 	}
 
 	// Read response from server.
-	m_Log.write(2, "Reading response from server\n");
+	m_Log->write(2, "Reading response from server\n");
 	if(0!=m_SocketServer.RecvMsgWithTimeout(sock, TIMEOUT, MAX_IN_BUFF_SIZE, sResponse, sErrorMsg))
 	{
 		// Error reading server greeting
@@ -1129,7 +1130,7 @@ int CDaemon::ExecuteClientRequest(const char* szCmdLine, std::string& sErrorMsg,
 		goto exit;
 	}
 
-	m_Log.write(2, "Server response: %s.\n", sResponse.c_str());
+	m_Log->write(2, "Server response: %s.\n", sResponse.c_str());
 
 	szInput = sResponse.c_str();
 	nBufSize = sResponse.size();
@@ -1143,7 +1144,7 @@ int CDaemon::ExecuteClientRequest(const char* szCmdLine, std::string& sErrorMsg,
 	}
 
 	nServerRetCode = atoi(pToken);
-	m_Log.write(2, "Server ret code: %d.\n", nServerRetCode);
+	m_Log->write(2, "Server ret code: %d.\n", nServerRetCode);
 
 	// Now split the error message list using ';' character as a separator.
 
@@ -1246,19 +1247,19 @@ void CDaemon::NotifyWebmasterOnError()
 		mail.AddMsgLine("CrashFix Daemon Monitor");
 
 		// Send mail
-		m_Log.write(0, "Sending an E-mail to webmaster %s\n", m_sWebmasterEmail.c_str());
+		m_Log->write(0, "Sending an E-mail to webmaster %s\n", m_sWebmasterEmail.c_str());
 
 		mail.Send();
 	}
 	catch(ECSmtp e)
 	{
 		// Caught an SMTP error
-		m_Log.write(0, "Email sending error (SMTP client error %d): %s.\n",
+		m_Log->write(0, "Email sending error (SMTP client error %d): %s.\n",
 			e.GetErrorNum(), e.GetErrorText().c_str());
 		std::string sServerResponse = e.GetServerResponce();
 		if(!sServerResponse.empty())
 		{
-			m_Log.write(0, "SMTP server response: %s.\n", sServerResponse.c_str());
+			m_Log->write(0, "SMTP server response: %s.\n", sServerResponse.c_str());
 		}
 	}
 }
@@ -1271,12 +1272,12 @@ bool CDaemon::RestartDaemonOnCrash()
 	// Check our config - should we restart the daemon on crash or not?
 	if(m_bRestartDaemonOnCrash==false)
 	{
-		m_Log.write(0, "Daemon restart disabled by config settings.\n");
+		m_Log->write(0, "Daemon restart disabled by config settings.\n");
 		// Return false to indicate we are still in parent process.
 		return false;
 	}
 
-	m_Log.write(0, "Restarting the daemon.\n");
+	m_Log->write(0, "Restarting the daemon.\n");
 
 	// Start the daemon process again
 #ifdef _WIN32
@@ -1293,13 +1294,13 @@ bool CDaemon::RestartDaemonOnCrash()
 
 	if(nResult!=0)
 	{
-		m_Log.write(0, "Error restarting daemon process (error code = %d)\n", nResult);
+		m_Log->write(0, "Error restarting daemon process (error code = %d)\n", nResult);
 	}
 	else
 	{
 		// Update PID we are watching
 		m_nPidToMonitor = nPid;
-		m_Log.write(0, "The daemon was restarted (PID = %d)\n", nPid);
+		m_Log->write(0, "The daemon was restarted (PID = %d)\n", nPid);
 	}
 
 	return false;
@@ -1357,7 +1358,7 @@ void CDaemon::AddError(bool bCritical, const char* szErrorMsg)
 	else
 	{
 		// There are too many errors
-		m_Log.write(0, "AddError: Could not add error message '%s' to error list, because error message list is too long.", szErrorMsg);
+		m_Log->write(0, "AddError: Could not add error message '%s' to error list, because error message list is too long.", szErrorMsg);
 	}
 }
 

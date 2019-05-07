@@ -47,7 +47,7 @@ CSocketServer::~CSocketServer()
 }
 
 // This function creates server socket
-bool CSocketServer::Init(CDaemon* pDaemon, int nPort, int nMaxQueueSize, int nTotalThreads, int nMaxMemUsageMB, CLog* pLog)
+bool CSocketServer::Init(CDaemon* pDaemon, int nPort, int nMaxQueueSize, int nTotalThreads, int nMaxMemUsageMB, const std::shared_ptr<CLog> & pLog)
 {
 	m_sErrorMsg = "Unspecified error.";
 	m_pDaemon = pDaemon;

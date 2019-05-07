@@ -14,8 +14,6 @@
 CCrashReportReader::CCrashReportReader()
 {
 	m_hZip = 0;
-	m_pDescReader = NULL;
-	m_pDmpReader = NULL;
 }
 
 CCrashReportReader::~CCrashReportReader()
@@ -131,13 +129,7 @@ BOOL CCrashReportReader::Init(std::wstring sFileName)
 		}
 
 		// Create crash desc reader
-		m_pDescReader = new CCrashDescReader;
-		if(!m_pDescReader)
-		{
-			SetErrorMsg(L"Error allocating crash description reader (out of memory).");
-			goto exit;
-		}
-
+		m_pDescReader.reset(new CCrashDescReader);
 		bool bResult = m_pDescReader->Init(sTmpName.c_str());
 
 		// Remove temp file
@@ -169,19 +161,13 @@ BOOL CCrashReportReader::Init(std::wstring sFileName)
 
 		m_sMiniDumpTempName = sTmpName;
 
-		m_pDmpReader = new CMiniDumpReader;
-		if(!m_pDmpReader)
-		{
-			SetErrorMsg(L"Error allocating minidump reader (out of memory).");
-			goto exit;
-		}
+		m_pDmpReader.reset(new CMiniDumpReader);
 
 		// Open minidump file
 		BOOL bReadMiniDump = m_pDmpReader->Init(m_sMiniDumpTempName);
 		if(!bReadMiniDump)
 		{
-			delete m_pDmpReader;
-			m_pDmpReader = NULL;
+			m_pDmpReader.reset();
 			SetErrorMsg(L"Error opening minidump file.");
 			goto exit;
 		}
@@ -219,17 +205,8 @@ exit:
 
 	if(status!=0)
 	{
-		if(m_pDescReader!=NULL)
-		{
-			delete m_pDescReader;
-			m_pDescReader = NULL;
-		}
-
-		if(m_pDmpReader)
-		{
-			delete m_pDmpReader;
-			m_pDmpReader = NULL;
-		}
+		m_pDescReader.reset();
+		m_pDmpReader.reset();
 
 		if(m_hZip!=0)
 		{
@@ -248,17 +225,8 @@ BOOL CCrashReportReader::IsInitialized()
 
 void CCrashReportReader::Destroy()
 {
-	if(m_pDescReader)
-	{
-		delete m_pDescReader;
-		m_pDescReader = NULL;
-	}
-
-	if(m_pDmpReader)
-	{
-		delete m_pDmpReader;
-		m_pDmpReader = NULL;
-	}
+	m_pDescReader.reset();
+	m_pDmpReader.reset();
 
 	if(m_hZip)
 	{
@@ -395,12 +363,12 @@ std::wstring CCrashReportReader::GetErrorMsg()
 	return m_sErrorMsg;
 }
 
-CCrashDescReader* CCrashReportReader::GetCrashDescReader()
+std::shared_ptr<CCrashDescReader> CCrashReportReader::GetCrashDescReader() const
 {
 	return m_pDescReader;
 }
 
-CMiniDumpReader* CCrashReportReader::GetMiniDumpReader()
+std::shared_ptr<CMiniDumpReader> CCrashReportReader::GetMiniDumpReader() const
 {
 	return m_pDmpReader;
 }

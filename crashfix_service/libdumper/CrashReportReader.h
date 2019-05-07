@@ -9,6 +9,8 @@
 #include "CrashDescReader.h"
 #include "MiniDumpReader.h"
 
+#include <memory>
+
 //! \class CCrashReportReader
 //! \brief Reads a crash report file.
 class CCrashReportReader
@@ -41,10 +43,10 @@ public:
 	BOOL ExtractFile(LPCWSTR lpszFileName, LPCWSTR lpszFileSaveAs, BOOL bOverwriteExisting);
 
 	//! Returns pointer to crash description XML reader.
-	CCrashDescReader* GetCrashDescReader();
+	std::shared_ptr<CCrashDescReader> GetCrashDescReader() const;
 
 	//! Returns pointer to minidump reader.
-	CMiniDumpReader* GetMiniDumpReader();
+	std::shared_ptr<CMiniDumpReader> GetMiniDumpReader() const;
 
 	//! Returns the last error message.
 	std::wstring GetErrorMsg();
@@ -62,8 +64,8 @@ private:
 
 	std::wstring m_sFileName;             //!< ZIP file name.
 	unzFile m_hZip;                       //!< Handle to the ZIP archive
-	CCrashDescReader* m_pDescReader;      //!< Pointer to the crash description reader object
-	CMiniDumpReader* m_pDmpReader;        //!< Pointer to the minidump reader object
+	std::shared_ptr<CCrashDescReader> m_pDescReader;      //!< Pointer to the crash description reader object
+	std::shared_ptr<CMiniDumpReader> m_pDmpReader;        //!< Pointer to the minidump reader object
 	std::wstring m_sMiniDumpTempName;     //!< The name of the tmp file to store extracted minidump in
 	std::vector<std::wstring> m_ContainedFiles; // The list of files contained in the report
 	std::wstring m_sErrorMsg;             //!< Last error message

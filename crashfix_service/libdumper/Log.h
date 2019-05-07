@@ -14,7 +14,7 @@ public:
 
 	// Construction/destruction
 	CLog();
-	virtual ~CLog(){};
+	virtual ~CLog();
 
 	//! Opens log file
 	BOOL init(std::wstring sPath, bool bRedirectStdStreams);

@@ -60,7 +60,7 @@ class CStackWalker
 public:
 
 	//! Constructor
-	CStackWalker(const std::wstring & sPeSearchDir);
+	CStackWalker();
 
 	//! Destructor
 	virtual ~CStackWalker();
@@ -70,7 +70,7 @@ public:
 	//! @param[in] pPdbCache PDB symbol cache
 	//! @param[in] dwThreadId Thread ID
 	//! @param[in] bExactMatchBuildAge If to require build age match.
-	bool Init(CMiniDumpReader* pMiniDump, CPdbCache* pPdbCache, DWORD dwThreadId, bool bExactMatchBuildAge = TRUE);
+	bool Init(const std::shared_ptr<CMiniDumpReader> pMiniDump, const std::shared_ptr<CPdbCache> & pPdbCache, DWORD dwThreadId);
 
 	//! Frees all used resources.
 	void Destroy();
@@ -108,12 +108,10 @@ private:
 	//! Undoes effects of prolog.
 	BOOL UndoAMD64Prolog(CPeReader* pPeReader, DWORD dwUnwindInfoRVA, DWORD dwOffsInFunc);
 
-	const std::wstring & m_PeSearchDir;
-	CMiniDumpReader* m_pMdmpReader; //!< Pointer to minidump reader
+	std::shared_ptr<CMiniDumpReader> m_pMdmpReader; //!< Pointer to minidump reader
 	LPBYTE m_pThreadContext;        //!< Thread context.
 	UINT m_uThreadContextSize;      //!< Thread context size.
-	CPdbCache* m_pPdbCache;         //!< PDB cache
-	bool m_bExactMatchBuildAge;       //!< If to require exact match of PDB build age.
+	std::shared_ptr<CPdbCache> m_pPdbCache; //!< PDB cache
 	CStackFrame m_StackFrame;       //!< Current stack frame
 	std::wstring m_sErrorMsg;       //!< Last error message
 };
