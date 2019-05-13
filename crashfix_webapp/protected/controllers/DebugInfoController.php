@@ -181,7 +181,7 @@ class DebugInfoController extends Controller
 
         $path = $this->_debugInfoRoot.DIRECTORY_SEPARATOR.$project.DIRECTORY_SEPARATOR.$version.DIRECTORY_SEPARATOR.$arch;
 
-        if (!file_exists($path))
+        if (!is_dir($path))
             mkdir($path, 0666, true);
 
         return $zip->extractTo($path);
