@@ -449,7 +449,7 @@ int CPeReader::GetSectionIndexByName(LPCSTR szSectionName)
 	for(i=0; i<GetSectionHeaderCount(); i++)
 	{
 		IMAGE_SECTION_HEADER* pSection = GetSectionHeader(i);
-		if(memcmp(pSection->Name, szSectionName, min(IMAGE_SIZEOF_SHORT_NAME, strlen(szSectionName)))==0)
+		if(memcmp(pSection->Name, szSectionName, std::min((size_t)IMAGE_SIZEOF_SHORT_NAME, strlen(szSectionName)))==0)
 			return i;
 	}
 

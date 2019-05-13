@@ -72,7 +72,7 @@ bool CBuffer::Reallocate(DWORD dwSize)
 	// Copy old buffer contents
 	if(m_pBuffer!=NULL)
 	{
-		memcpy(pNewBuf, m_pBuffer, min(m_dwSize, dwSize));
+		memcpy(pNewBuf, m_pBuffer, std::min(m_dwSize, dwSize));
 		Free();
 	}
 

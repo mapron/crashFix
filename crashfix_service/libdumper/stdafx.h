@@ -73,4 +73,3 @@
 
 #pragma warning(disable:4201)
 
-#define min(a,b)            (((a) < (b)) ? (a) : (b))

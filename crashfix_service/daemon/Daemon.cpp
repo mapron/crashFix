@@ -663,7 +663,7 @@ void CDaemon::TerminateHandler(int)
 	// should free used resources and exit as soon as possible.
 
 	// Log error message
-	CLog* pLog = CDaemon::GetInstance()->GetLog();
+	auto pLog = CDaemon::GetInstance()->GetLog();
 	pLog->write(0, "SIGTERM signal caught (the system wants us to shut down).\n");
 
 	// Soft shutdown
