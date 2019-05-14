@@ -53,7 +53,7 @@ class CrashReport extends CActiveRecord
 			array('description', 'length', 'max'=>256), // Problem description should not be longer than 256 characters
 			array('crashrptver', 'numerical', 'integerOnly'=>true, 'min'=>1000, 'max'=>9999), // CrashRpt version should be in range [1000; 9999]
 			// The following rules is used on search
-			array('id, received, status, md5, crashguid, appversion, ipaddress, exe_image, username, emailfrom, description', 'safe', 'on'=>'search'),
+			array('id, received, status, md5, crashguid, appversion, ipaddress, exe_image, username, emailfrom, description, huidhash', 'safe', 'on'=>'search'),
 			array('receivedFrom, receivedTo', 'compareFromToDates', 'on'=>'search'),
 		);
 
@@ -750,6 +750,10 @@ class CrashReport extends CActiveRecord
 			'product_type'=>'Machine Type',
 			'cpu_architecture'=>'CPU Architecture',
 			'username'=>'Username',
+		    'isTrial'=>'Trial',
+		    'sendStatistics'=>'Statistics enabled',
+		    'huid'=>'HUID',
+		    'huidhash'=>'HUID hash',
 			'cpu_count'=>'CPU Count',
 			'gui_resource_count'=>'GUI Resource Count',
 			'open_handle_count'=>'Open Handle Count',
@@ -811,6 +815,8 @@ class CrashReport extends CActiveRecord
 				$criteria->compare('exe_image', $this->exe_image, true, 'AND');
 			if(isset($this->username))
 				$criteria->compare('username', $this->username, true, 'AND');
+			if(isset($this->huidhash))
+			    $criteria->compare('huidhash', $this->huidhash, true, 'AND');
 			if(isset($this->emailfrom))
 				$criteria->compare('emailfrom', $this->emailfrom, true, 'AND');
 			if($this->status!=-1)

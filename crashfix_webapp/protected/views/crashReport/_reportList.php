@@ -34,6 +34,11 @@
 			array('value'=>$model->username)); ?>
 	</div>
 	<div class="row">
+		<?php echo CHtml::activeLabel($model, 'huidhash'); ?>
+		<?php echo CHtml::activeTextField($model, 'huidhash',
+		    array('value'=>$model->huidhash)); ?>
+	</div>
+	<div class="row">
 		<?php echo CHtml::activeLabel($model, 'emailfrom'); ?>
 		<?php echo CHtml::activeTextField($model, 'emailfrom',
 				array('value'=>$model->emailfrom)); ?>

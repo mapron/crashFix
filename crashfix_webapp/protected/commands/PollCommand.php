@@ -402,7 +402,12 @@ class PollCommand extends CConsoleCommand
 			$sehExceptionCode = $elemSummary->SEHExceptionCode;
 			$exceptionThreadID = $elemSummary->ExceptionThreadID;
 			$exceptionModuleName = (string)$elemSummary->ExceptionModuleName;
-			$userName = (string)$elemSummary->UserName;
+
+			$crashReport->username = (string)$elemSummary->UserName;
+			$crashReport->huid = (string)$elemSummary->HUID;
+			$crashReport->huidhash = (string)$elemSummary->HUIDHash;
+			$crashReport->isTrial = ((string)$elemSummary->IsTrial) === 'true';
+			$crashReport->sendStatistics = ((string)$elemSummary->SendStatistics) === 'true';
 
 			$exceptionModuleBase = (string)$elemSummary->ExceptionModuleBase;
 			if(strlen($exceptionModuleBase)==0)
@@ -455,9 +460,6 @@ class PollCommand extends CConsoleCommand
 
 			if(strlen($exceptionModuleBase)!=0)
 				$crashReport->exceptionmodulebase = $exceptionModuleBase;
-
-			if(strlen($userName)!=0)
-				$crashReport->username = $userName;
 
 			$crashReport->exe_image =  MiscHelpers::getUserImagePath($exeImage, $cpuArchitecture);
 

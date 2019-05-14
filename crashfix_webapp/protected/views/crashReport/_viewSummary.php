@@ -207,7 +207,11 @@ $this->widget('zii.widgets.CDetailView', array(
 		'product_type',
 		'cpu_architecture',
 		'cpu_count',
-        'username'
+	    'username',
+	    'huid',
+	    'huidhash',
+	    'isTrial',
+	    'sendStatistics'
 	),
 ));
 
