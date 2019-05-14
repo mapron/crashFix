@@ -19,6 +19,19 @@
 #define CR_CPP_SIGSEGV                  11   //!< C++ SIGSEGV signal (invalid storage access).
 #define CR_CPP_SIGTERM                  12   //!< C++ SIGTERM signal (termination request).
 
+namespace
+{
+const std::vector<std::string> g_extraFields {
+	"UserEmail",
+	"ProblemDescription",
+	"UserName",
+	"HUID",
+	"HUIDHash",
+	"IsTrial",
+	"SendStatistics",
+};
+}
+
 CCrashDescReader::CCrashDescReader()
 {
 	m_bInitialized = false;
@@ -199,42 +212,18 @@ bool CCrashDescReader::Init(std::wstring sFileName)
 		}
 	}
 
-	// Get UserEmail
-	TiXmlHandle hUserEmail = hRoot.ToElement()->FirstChild("UserEmail");
-	if(hUserEmail.ToElement())
+	for (const auto & key : g_extraFields)
 	{
-		TiXmlText* pTextElem = hUserEmail.FirstChild().Text();
-		if(pTextElem)
+		TiXmlHandle hxml = hRoot.ToElement()->FirstChild(key.c_str());
+		if(hxml.ToElement())
 		{
-			const char* text = pTextElem->Value();
-			if(text)
-				m_sUserEmail = strconv::a2w(text);
-		}
-	}
-
-	// Get ProblemDecription
-	TiXmlHandle hProblemDescription = hRoot.ToElement()->FirstChild("ProblemDescription");
-	if(hProblemDescription.ToElement())
-	{
-		TiXmlText* pTextElem = hProblemDescription.FirstChild().Text();
-		if(pTextElem)
-		{
-			const char* text = pTextElem->Value();
-			if(text)
-				m_sProblemDescription = strconv::a2w(text);
-		}
-	}
-
-	// Get UserName
-	TiXmlHandle hUserName = hRoot.ToElement()->FirstChild("UserName");
-	if(hUserName.ToElement())
-	{
-		TiXmlText* pTextElem = hUserName.FirstChild().Text();
-		if(pTextElem)
-		{
-			const char* text = pTextElem->Value();
-			if(text)
-				m_sUserName = strconv::a2w(text);
+			TiXmlText* pTextElem = hxml.FirstChild().Text();
+			if(pTextElem)
+			{
+				const char* text = pTextElem->Value();
+				if(text)
+					m_extraFields[key] = text;
+			}
 		}
 	}
 
@@ -445,13 +434,12 @@ void CCrashDescReader::Destroy()
 	m_sInvParamFunction.clear();
 	m_sInvParamFile.clear();
 	m_dwInvParamLine = 0;
-	m_sUserEmail.clear();
-	m_sProblemDescription.clear();
 	m_sMemoryUsageKbytes.clear();
 	m_sGUIResourceCount.clear();
 	m_sOpenHandleCount.clear();
 	m_aFileItems.clear();
 	m_aCustomProps.clear();
+	m_extraFields.clear();
 }
 
 int CCrashDescReader::LoadXmlv10(TiXmlHandle hDoc)
@@ -579,21 +567,6 @@ std::wstring CCrashDescReader::ExceptionTypeToStr(DWORD dwExcType)
 	return std::wstring(exctypes[dwExcType]);
 }
 
-std::wstring CCrashDescReader::GetUserEmail()
-{
-	return m_sUserEmail;
-}
-
-std::wstring CCrashDescReader::GetProblemDescription()
-{
-	return m_sProblemDescription;
-}
-
-std::wstring CCrashDescReader::GetUsername()
-{
-	return m_sUserName;
-}
-
 int CCrashDescReader::GetFileItemCount()
 {
 	return (int)m_aFileItems.size();
@@ -613,4 +586,9 @@ int CCrashDescReader::GetCustomPropCount()
 CustomProp* CCrashDescReader::GetCustomProp(int nProp)
 {
 	return &m_aCustomProps[nProp];
+}
+
+const std::map<std::string, std::string> & CCrashDescReader::GetExtraFields() const
+{
+	return m_extraFields;
 }

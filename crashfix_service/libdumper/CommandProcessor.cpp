@@ -862,11 +862,8 @@ int CCommandProcessor::DumpCrashReport(const std::wstring & szCrashRptFileName, 
 		}
 	}
 
-	doc.PutRecord("UserEmail", "%s", strconv::w2a(pCrashDesc->GetUserEmail()).c_str());
-
-	doc.PutRecord("ProblemDescription", "%s", strconv::w2a(pCrashDesc->GetProblemDescription()).c_str());
-
-	doc.PutRecord("UserName", "%s", strconv::w2a(pCrashDesc->GetUsername()).c_str());
+	for (const auto & keyValue : pCrashDesc->GetExtraFields())
+		doc.PutRecord(keyValue.first.c_str(), "%s", keyValue.second.c_str());
 
 	doc.EndSection();
 

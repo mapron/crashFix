@@ -83,15 +83,6 @@ public:
 	//! Converts exception type to string
 	static std::wstring ExceptionTypeToStr(DWORD dwExcType);
 
-	//! Returns user's email
-	std::wstring GetUserEmail();
-
-	//! Returns problem description string
-	std::wstring GetProblemDescription();
-
-	//! Returns username
-	std::wstring GetUsername();
-
 	//! Returns count of file items
 	int GetFileItemCount();
 
@@ -103,6 +94,8 @@ public:
 
 	//! Returns custom prop
 	CustomProp* GetCustomProp(int nProp);
+
+	const std::map<std::string, std::string> & GetExtraFields() const;
 
 private:
 
@@ -132,10 +125,7 @@ private:
 	std::wstring m_sInvParamFile; //!< Invalid param file name
 	DWORD m_dwInvParamLine;       //!< Invalid param line number
 
-	std::wstring m_sUserEmail;    //!< User email
-	std::wstring m_sProblemDescription; //!< User's problem description
-
-	std::wstring m_sUserName; //!< Username
+	std::map<std::string, std::string> m_extraFields;
 
 	std::wstring m_sMemoryUsageKbytes; //!< Memory usage in KB
 	std::wstring m_sGUIResourceCount;  //!< Count of GUI handles
