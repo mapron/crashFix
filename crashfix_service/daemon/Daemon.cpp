@@ -45,11 +45,12 @@ CDaemon::CDaemon()
 	m_nPidToMonitor = getpid();
 #endif
 	m_bRestartedAfterCrash = false;
+
+	m_Log = std::make_shared<CLog>();
 	//m_bCriticalError = false;
 #ifdef _WIN32
 	m_hEventStop = CreateEvent(NULL, TRUE, FALSE, L"Local\\04B8BCA1-BDAF-4686-82CE-A7DF707C5287");
 	m_bLogInitialized = false;
-	m_Log = std::make_shared<CLog>();
 
 	CreateDir(GetModulePath(nullptr) + L"\\logs");
 #endif
