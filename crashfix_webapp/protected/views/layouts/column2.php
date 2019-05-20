@@ -11,7 +11,7 @@
 
 </td><td>
 
-<div class="span-27 last">
+<div class="span-23 last">
 	<div id="adminmenu">
 			<?php
 				if(isset($this->adminMenuItem))
