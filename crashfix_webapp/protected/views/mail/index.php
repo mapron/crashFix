@@ -21,14 +21,14 @@ foreach (Yii::app()->user->getFlashes() as $key => $message) {
 	<?php echo CHtml::beginForm(Yii::app()->createUrl($this->route), 'get'); ?>
 	<div class="span-18 last"><p id="stat_filter">Search by subject/E-mail address:</p></div>
 	<div class="span-3"><div id="dropdown_search">
-		<?php 
-			$statuses = array(												
+		<?php
+			$statuses = array(
 				 1=>'Pending mail',
 				 2=>'Sent mail',
                                  3=>'Failed mail',
 				-1=>'All mail',
-			);			
-			echo CHtml::dropDownList('status', array('selected'=>isset($model->statusFilter)?CHtml::encode($model->statusFilter):-1), $statuses); 
+			);
+			echo CHtml::dropDownList('status', array('selected'=>isset($model->statusFilter)?CHtml::encode($model->statusFilter):-1), $statuses);
 		?></div>
 	</div>
 	<div class="span-13">
@@ -41,10 +41,10 @@ foreach (Yii::app()->user->getFlashes() as $key => $message) {
 </div>
 
 <!-- Actions Toolbar -->
-<div class="span-18 last">
+<div class="span-27 last">
 	<div class="div_actions">
-				
-	</div>	
+
+	</div>
 </div>
 
 <!-- Grid view -->
@@ -54,7 +54,7 @@ $this->widget('zii.widgets.grid.CGridView', array(
     'dataProvider' => $dataProvider,
     'selectableRows' => null,
     'columns' => array(
-        
+
         array(
             'name' => 'id',
             'cssClassExpression' => '"column-right-align"',
@@ -67,7 +67,7 @@ $this->widget('zii.widgets.grid.CGridView', array(
         array(
             'name' => 'recipient',
             'value' => '$data->recipient',
-        ),        
+        ),
         array(
             'name' => 'createTime',
             'type' => 'text',
@@ -82,8 +82,8 @@ $this->widget('zii.widgets.grid.CGridView', array(
             'header' => 'Status',
             'name' => 'status',
             'value' => '$data->getStatusStr()',
-        ),     
-        
+        ),
+
     ),
 ));
 ?>

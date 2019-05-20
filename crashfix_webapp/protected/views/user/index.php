@@ -1,6 +1,6 @@
 <?php
 $this->breadcrumbs=array(
-	'Administer', 
+	'Administer',
 	'Users',
 
 );
@@ -12,13 +12,13 @@ $this->breadcrumbs=array(
 	<?php echo CHtml::beginForm(Yii::app()->createUrl($this->route), 'post'); ?>
 	<div class="span-18 last"><p id="stat_filter">Search by user name/E-mail address:</p></div>
 	<div class="span-4"><div id="dropdown_search">
-		<?php 
-			$user_statuses = array(												
+		<?php
+			$user_statuses = array(
 				 1=>'Active users',
 				 2=>'Disabled users',
 				-1=>'All users',
-			);			
-			echo CHtml::dropDownList('User[status]', array('selected'=>isset($model->status)?CHtml::encode($model->status):1), $user_statuses); 
+			);
+			echo CHtml::dropDownList('User[status]', array('selected'=>isset($model->status)?CHtml::encode($model->status):1), $user_statuses);
 		?></div>
 	</div>
 	<div class="span-11">
@@ -31,10 +31,10 @@ $this->breadcrumbs=array(
 </div>
 
 <!-- Actions Toolbar -->
-<div class="span-18 last">
+<div class="span-27 last">
 	<div class="div_actions">
-		<?php echo CHtml::link('Add New User', $this->createUrl('user/create')); ?>		
-	</div>	
+		<?php echo CHtml::link('Add New User', $this->createUrl('user/create')); ?>
+	</div>
 </div>
 
 <!-- Grid view -->
@@ -42,27 +42,27 @@ $this->breadcrumbs=array(
 <?php $this->widget('zii.widgets.grid.CGridView', array(
       'dataProvider'=>$model->search(),
 	  'selectableRows'=>null,
-      'columns'=>array(		  
-          'id',             
-          array(            
+      'columns'=>array(
+          'id',
+          array(
               'name' => 'username',
 			  'type' => 'raw',
-			  'value' => 'CHtml::link($data->username, \'view/\'.$data->id)',	  			  			  
-          ),		  
-		  array(
-			  'header'=>'Group',			  
-              'name'=>'usergroup',
-			  'type' => 'raw',
-              'value'=>'CHtml::link($data->group->name, array(\'userGroup/view/\', \'id\'=>$data->usergroup))',	  			  			  
+			  'value' => 'CHtml::link($data->username, \'view/\'.$data->id)',
           ),
 		  array(
-			  'header'=>'Status',			  
+			  'header'=>'Group',
+              'name'=>'usergroup',
+			  'type' => 'raw',
+              'value'=>'CHtml::link($data->group->name, array(\'userGroup/view/\', \'id\'=>$data->usergroup))',
+          ),
+		  array(
+			  'header'=>'Status',
               'name'=>'status',
               'value'=>'$data->getEffectiveStatusStr()',
-          ),		  		  
-		  'email',       
+          ),
+		  'email',
       ),
- )); 
-  
+ ));
+
  ?>
 </div>

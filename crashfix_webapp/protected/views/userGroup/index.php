@@ -1,6 +1,6 @@
 <?php
-$this->breadcrumbs=array(	
-	'Administer', 
+$this->breadcrumbs=array(
+	'Administer',
 	'Groups',
 );
 
@@ -8,7 +8,7 @@ $this->breadcrumbs=array(
 
 <!-- Flash messages -->
 <div class="span-18 last">
-<?php	
+<?php
     foreach(Yii::app()->user->getFlashes() as $key => $message) {
         echo '<div class="flash-' . $key . '">' . $message . "</div>\n";
     }
@@ -16,10 +16,10 @@ $this->breadcrumbs=array(
 </div>
 
 <!-- Actions Toolbar -->
-<div class="span-18 last">
+<div class="span-27 last">
 	<div class="div_actions">
-		<?php echo CHtml::link('Add New Group', $this->createUrl('userGroup/create')); ?>		
-	</div>	
+		<?php echo CHtml::link('Add New Group', $this->createUrl('userGroup/create')); ?>
+	</div>
 </div>
 
 <!-- Grid view -->
@@ -27,20 +27,20 @@ $this->breadcrumbs=array(
     <?php $this->widget('zii.widgets.grid.CGridView', array(
       'dataProvider'=>$dataProvider,
 	  'selectableRows'=>null,
-      'columns'=>array(		  
-          'id',                       
-		  array(            
+      'columns'=>array(
+          'id',
+		  array(
               'name' => 'name',
 			  'type' => 'raw',
-			  'value' => 'CHtml::link($data->name, \'view/\'.$data->id)',	  			  			  
+			  'value' => 'CHtml::link($data->name, \'view/\'.$data->id)',
           ),
-		  array(                          			  
+		  array(
 			  'name'=>'status',
-			  'value'=>'Lookup::item(\'UserGroupStatus\', $data->status)',			  
+			  'value'=>'Lookup::item(\'UserGroupStatus\', $data->status)',
           ),
-		  'description',       
+		  'description',
       ),
- )); 
-  
+ ));
+
  ?>
 </div>

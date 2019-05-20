@@ -3,7 +3,7 @@
 $this->pageTitle=Yii::app()->name . ' - Browse Daemon Status';
 
 $this->breadcrumbs=array(
-	'Administer', 
+	'Administer',
 	'Daemon',
 );
 
@@ -21,49 +21,49 @@ $this->breadcrumbs=array(
 </div>
 </div>
 
-<div class="span-18 last">
+<div class="span-27 last">
 <div class="subheader">Recent Daemon Operations:</div>
 
 <!-- Grid view -->
 <?php $this->widget('zii.widgets.grid.CGridView', array(
       'dataProvider'=>$dataProvider,
 	  'selectableRows'=>null,
-      'columns'=>array(		            		  
-		  array(  
+      'columns'=>array(
+		  array(
 			'header'=>'Operation',
-            'name'=>'optype',            
+            'name'=>'optype',
             'value'=>'$data->getOperationDescStr()',
 		  ),
-		  array(                          
+		  array(
 			  'header'=>'Status',
 			  'name'=>'status',
-			  'value'=>'Lookup::item(\'OperationStatus\', $data->status)',			  
-          ),		  
-		  array(  
+			  'value'=>'Lookup::item(\'OperationStatus\', $data->status)',
+          ),
+		  array(
             'name'=>'timestamp',
             'type'=>'text',
             'value'=>'date("d/m/y H:i", $data->timestamp)',
-		  ),		  
+		  ),
       ),
- )); 
-  
+ ));
+
  ?>
 </div>
 
-<?php 
- 
+<?php
+
  $url = Yii::app()->createAbsoluteUrl('site/daemonStatus');
 
  $script = <<<SCRIPT
 
-	$.ajax({		
+	$.ajax({
 		url: "$url",
 		data: ""
 	}).done(function( msg ) {
 		$("#daemon_status").replaceWith(msg);
 	});
 
- 
+
 SCRIPT;
- 
+
  Yii::app()->getClientScript()->registerScript("DebugInfo", $script, CClientScript::POS_READY); ?>
